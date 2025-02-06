@@ -136,12 +136,39 @@ function displayTags(tags) {
     tagFilters.innerHTML = ""; // Clear previous tags
 
     tags.forEach(tag => {
-        const tagElement = document.createElement("span");
-        tagElement.classList.add("tag");
-        tagElement.textContent = tag.tag;
+        const tagElement = document.createElement("div");
+        tagElement.classList.add("tag-item");
+        tagElement.innerHTML = `
+            <span class="tag">${tag.tag}</span>
+            <button class="delete-tag-btn" onclick="confirmDeleteTag('${tag._id}')">🗑️</button>
+        `;
         tagFilters.appendChild(tagElement);
     });
 }
+
+function confirmDeleteTag(tagId) {
+    if (confirm("Are you sure you want to permanently delete this tag?")) {
+        deleteTag(tagId);
+    }
+}
+
+async function deleteTag(tagId) {
+    try {
+        const response = await fetch(`http://localhost:5001/tags/${tagId}`, {
+            method: "DELETE",
+        });
+
+        if (response.ok) {
+            console.log("Tag deleted successfully.");
+            fetchTags(); // Refresh tags after deletion
+        } else {
+            console.error("Failed to delete tag.");
+        }
+    } catch (error) {
+        console.error("Error deleting tag:", error);
+    }
+}
+
 
 // Call fetchTags when the page loads
 document.addEventListener("DOMContentLoaded", fetchTags);
