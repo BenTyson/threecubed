@@ -153,6 +153,8 @@ function confirmDeleteTag(tagId) {
 }
 
 async function deleteTag(tagId) {
+    console.log("Attempting to delete tag with ID:", tagId); // Debugging log
+
     try {
         const response = await fetch(`http://localhost:5001/tags/${tagId}`, {
             method: "DELETE",
@@ -168,6 +170,7 @@ async function deleteTag(tagId) {
         console.error("Error deleting tag:", error);
     }
 }
+
 
 
 // Call fetchTags when the page loads

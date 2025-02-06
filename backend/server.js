@@ -60,6 +60,21 @@ app.post("/tags", async (req, res) => {
     res.json(newTag);
 });
 
+// delete tags
+app.delete("/tags/:id", async (req, res) => {
+    console.log("Delete request received for tag ID:", req.params.id); // Debugging log
+
+    try {
+        const deletedTag = await Tag.findByIdAndDelete(req.params.id);
+        if (!deletedTag) {
+            return res.status(404).json({ error: "Tag not found in database" });
+        }
+        res.json({ message: "Tag deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting tag:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
 
 
 
