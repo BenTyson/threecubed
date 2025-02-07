@@ -95,17 +95,25 @@ async function deleteContent(contentId) {
 
 
 //filter content
-function filterContent() {
-	const searchQuery = document.getElementById("search").value.toLowerCase();
-	const selectedCategory = document.getElementById("categoryFilter").value;
-	
-	const filteredData = contentData.filter(item => 
-		(selectedCategory === "All Categories" || item.category === selectedCategory) &&
-		item.title.toLowerCase().includes(searchQuery)
-	);
-	
-	displayContent(filteredData);
+async function filterContent() {
+    const searchQuery = document.getElementById("search").value.toLowerCase();
+    const selectedCategory = document.getElementById("categoryFilter").value;
+
+    try {
+        const response = await fetch("http://localhost:5001/content");
+        let contentData = await response.json(); // Fetch latest content from the backend
+
+        contentData = contentData.filter(item => 
+            (selectedCategory === "All Categories" || item.category === selectedCategory) &&
+            item.title.toLowerCase().includes(searchQuery)
+        );
+
+        displayContent(contentData);
+    } catch (error) {
+        console.error("Error filtering content:", error);
+    }
 }
+
 
 async function addNewContent() {
     const newTitleElement = document.getElementById("newTitle");
