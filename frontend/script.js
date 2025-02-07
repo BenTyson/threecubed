@@ -68,20 +68,31 @@ function displayContent(contentData) {
 
 
 function editContent(id, title, category, tags, message) {
-    // Ensure switching to Creator view
-    document.getElementById("creatorView").style.display = "block";
-    document.getElementById("viewerView").style.display = "none";
+    const creatorView = document.getElementById("creator");
+    const viewerView = document.getElementById("viewer"); // ✅ Ensure consistency
 
-    // Populate the form fields
+    if (!creatorView) {
+        console.error("❌ Error: 'creator' view not found in HTML!");
+    }
+    if (!viewerView) {
+        console.error("❌ Error: 'viewer' not found in HTML!");
+    }
+    if (!creatorView || !viewerView) return;
+
+    // Switch views
+    creatorView.style.display = "block";
+    viewerView.style.display = "none";
+
+    // Populate the form
     document.getElementById("newTitle").value = title;
     document.getElementById("categorySelect").value = category;
     document.getElementById("newTags").value = tags.split(",");
     document.getElementById("newMessage").value = message;
 
-    // Ensure the "Add Content" button is visible and change its function
+    // Change button function
     const addButton = document.getElementById("addContentButton");
     if (!addButton) {
-        console.error("Error: addContentButton not found!");
+        console.error("❌ Error: addContentButton not found in HTML!");
         return;
     }
 
@@ -90,6 +101,8 @@ function editContent(id, title, category, tags, message) {
         updateContent(id);
     };
 }
+
+
 
 
 
@@ -377,12 +390,21 @@ async function deleteTag(tagId) {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Start in Viewer mode by default
-    document.getElementById("creator").style.display = "none";
-    document.getElementById("viewerView").style.display = "block";
+    const creatorView = document.getElementById("creator");
+    const viewerView = document.getElementById("viewerView");
 
-    fetchTags();  
-    populateCategories();  
+    if (!creatorView || !viewerView) {
+        console.error("Error: One or both views (creator/viewer) not found!");
+        return;
+    }
+
+    // Start in Viewer mode by default
+    creatorView.style.display = "none";
+    viewerView.style.display = "block";
+
+    fetchTags();
+    populateCategories();
     fetchContent();
 });
+
 
