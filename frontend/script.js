@@ -208,6 +208,10 @@ function updateCategoryDropdown(categories) {
     });
 }
 
+// Fetch categories when the page loads
+document.addEventListener("DOMContentLoaded", fetchCategories);
+
+
 
 async function addNewTag() {
     console.log("addNewTag function triggered!"); // Debugging log
