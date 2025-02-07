@@ -59,10 +59,12 @@ function displayContent(contentData) {
                 <p><strong>Category:</strong> ${item.category}</p>
                 <p><strong>Tags:</strong> ${tagsHTML}</p>
                 <p><strong>Message:</strong> ${item.message ? item.message : "No message available"}</p>
+                <button class="delete-content-btn" onclick="confirmDeleteContent('${item._id}')">🗑️ Delete</button>
             </div>
         `;
     });
 }
+
 
 
 
@@ -74,7 +76,8 @@ document.addEventListener("DOMContentLoaded", fetchContent);
 
 //delete content
 function confirmDeleteContent(contentId) {
-    if (confirm("Are you sure you want to permanently delete this content block?")) {
+    const confirmDelete = confirm("Are you sure you want to permanently delete this content block?");
+    if (confirmDelete) {
         deleteContent(contentId);
     }
 }
@@ -89,12 +92,13 @@ async function deleteContent(contentId) {
             console.log("Content block deleted successfully.");
             fetchContent(); // Refresh content list after deletion
         } else {
-            console.error("Failed to delete content.");
+            console.error("Failed to delete content block.");
         }
     } catch (error) {
-        console.error("Error deleting content:", error);
+        console.error("Error deleting content block:", error);
     }
 }
+
 
 
 //filter content

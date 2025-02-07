@@ -53,7 +53,7 @@ app.post("/content", async (req, res) => {
 
 // Delete content
 app.delete("/content/:id", async (req, res) => {
-    console.log("Delete request received for content ID:", req.params.id);
+    console.log("Delete request received for content ID:", req.params.id); // Debugging log
 
     try {
         const deletedContent = await Content.findByIdAndDelete(req.params.id);
@@ -66,6 +66,7 @@ app.delete("/content/:id", async (req, res) => {
         res.status(500).json({ error: "Error deleting content" });
     }
 });
+
 
 // Define Category Schema
 const categorySchema = new mongoose.Schema({
