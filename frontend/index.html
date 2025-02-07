@@ -38,7 +38,7 @@
             <h3>Add New Content Block</h3>
             <input type="text" id="newTitle" placeholder="Enter title">
 			<select id="categorySelect"></select> <!-- This should match `categorySelect` -->
-			<input type="text" id="newTags" placeholder="Enter tags (comma-separated)">
+			<select id="newTags" multiple></select> <!-- Multi-select dropdown -->
 			<textarea id="newMessage" placeholder="Enter content message"></textarea>
 			<button onclick="addNewContent()">Add Content</button>
 

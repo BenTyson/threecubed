@@ -125,8 +125,11 @@ async function filterContent() {
 async function addNewContent() {
     const newTitle = document.getElementById("newTitle").value.trim();
     const newCategory = document.getElementById("categorySelect").value.trim();
-    const newTags = document.getElementById("newTags").value.split(",").map(tag => tag.trim()).filter(tag => tag);
-    const newMessage = document.getElementById("newMessage").value.trim(); // Get message input
+    const newMessage = document.getElementById("newMessage").value.trim();
+    
+    // Get selected tags as an array
+    const newTagsDropdown = document.getElementById("newTags");
+    const newTags = Array.from(newTagsDropdown.selectedOptions).map(option => option.value);
 
     if (!newTitle || !newCategory || !newMessage) {
         alert("Title, category, and message are required.");
@@ -145,8 +148,8 @@ async function addNewContent() {
             fetchContent();
             document.getElementById("newTitle").value = "";
             document.getElementById("categorySelect").value = "";
-            document.getElementById("newTags").value = "";
-            document.getElementById("newMessage").value = ""; // Clear message field
+            document.getElementById("newMessage").value = "";
+            newTagsDropdown.selectedIndex = -1; // Clear selection
         } else {
             console.error("Failed to add content block.");
         }
@@ -154,6 +157,7 @@ async function addNewContent() {
         console.error("Error adding content block:", error);
     }
 }
+
 
 
 
@@ -249,12 +253,20 @@ async function fetchTags() {
         const response = await fetch("http://localhost:5001/tags");
         const tags = await response.json();
 
-        console.log("Tags from backend:", tags); // Debugging log
-        displayTags(tags);
+        const tagsDropdown = document.getElementById("newTags");
+        tagsDropdown.innerHTML = ""; // Clear previous options
+
+        tags.forEach(tag => {
+            const option = document.createElement("option");
+            option.value = tag.tag;
+            option.textContent = tag.tag;
+            tagsDropdown.appendChild(option);
+        });
     } catch (error) {
         console.error("Error fetching tags:", error);
     }
 }
+
 
 function displayTags(tags) {
     const tagFilters = document.getElementById("tagFilters");
@@ -298,12 +310,8 @@ async function deleteTag(tagId) {
 
 
 
-// Call fetchTags when the page loads
-document.addEventListener("DOMContentLoaded", fetchTags);
-
-
-
 document.addEventListener("DOMContentLoaded", () => {
-	populateCategories();
-	displayContent();
+    fetchTags();  // Populate the tag dropdown
+    populateCategories();  // Populate the category dropdown
+    fetchContent();  // Load existing content blocks
 });
