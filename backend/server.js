@@ -17,8 +17,9 @@ const contentSchema = new mongoose.Schema({
     title: String,
     category: String,
     tags: [String],
-    message: String // Added message field
+    message: { type: String, required: true } // Ensure this field exists
 });
+
 
 
 const Content = mongoose.model("Content", contentSchema);
@@ -31,11 +32,24 @@ app.get("/content", async (req, res) => {
 
 // Add new content block
 app.post("/content", async (req, res) => {
-    const { title, category, tags } = req.body;
-    const newContent = new Content({ title, category, tags });
-    await newContent.save();
-    res.json(newContent);
+    try {
+        console.log("Received request body:", req.body); // Debugging Log
+
+        const { title, category, tags, message } = req.body;
+
+        if (!title || !category || !message) {
+            return res.status(400).json({ error: "Title, category, and message are required." });
+        }
+
+        const newContent = new Content({ title, category, tags, message });
+        await newContent.save();
+        res.json(newContent);
+    } catch (error) {
+        console.error("Error adding content:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
 });
+
 
 // Delete content
 app.delete("/content/:id", async (req, res) => {

@@ -122,7 +122,7 @@ async function addNewContent() {
     const newTitle = document.getElementById("newTitle").value.trim();
     const newCategory = document.getElementById("categorySelect").value.trim();
     const newTags = document.getElementById("newTags").value.split(",").map(tag => tag.trim()).filter(tag => tag);
-    const newMessage = document.getElementById("newMessage").value.trim();
+    const newMessage = document.getElementById("newMessage").value.trim(); // Get message input
 
     if (!newTitle || !newCategory || !newMessage) {
         alert("Title, category, and message are required.");
@@ -142,7 +142,7 @@ async function addNewContent() {
             document.getElementById("newTitle").value = "";
             document.getElementById("categorySelect").value = "";
             document.getElementById("newTags").value = "";
-            document.getElementById("newMessage").value = "";
+            document.getElementById("newMessage").value = ""; // Clear message field
         } else {
             console.error("Failed to add content block.");
         }
