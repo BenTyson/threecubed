@@ -17,32 +17,30 @@
             <button onclick="showSection('viewer')">Viewer</button>
         </div>
 
-        <!-- ✅ Creator Section -->
-        <div id="creator" class="section">
-            <h2>📌 Creator View</h2>
-            
-            <h3>Add New Tag</h3>
-            <input type="text" id="newTagInput" placeholder="Enter new tag">
-            <button onclick="addNewTag()">Add Tag</button>
-            
-            <div id="creatorView" class="view">
-				<h2>Manage Tags</h2>
-				<div id="tagFilters"></div>  <!-- Move this inside Creator View -->
-			</div>
+       <!-- ✅ Creator Section -->
+<div id="creator" class="section">
+    <h2>📌 Creator View</h2>
 
+    <h3>Add New Tag</h3>
+    <input type="text" id="newTagInput" placeholder="Enter new tag">
+    <button onclick="addNewTag()">Add Tag</button>
 
-            <h3>Add New Category</h3>
-            <input type="text" id="newCategoryInput" placeholder="Enter new category">
-            <button onclick="addNewCategory()">Add Category</button>
+    <h3>Manage Tags</h3>
+    <div id="tagFilters"></div>  <!-- Moved inside Creator View -->
 
-            <h3>Add New Content Block</h3>
-            <input type="text" id="newTitle" placeholder="Enter title">
-			<select id="categorySelect"></select> <!-- This should match `categorySelect` -->
-			<select id="newTags" multiple></select> <!-- Multi-select dropdown -->
-			<textarea id="newMessage" placeholder="Enter content message"></textarea>
-			<button onclick="addNewContent()">Add Content</button>
+    <h3>Add New Category</h3>
+    <input type="text" id="newCategoryInput" placeholder="Enter new category">
+    <button onclick="addNewCategory()">Add Category</button>
 
-        </div>
+    <h3>Add / Edit Content Block</h3>
+    <input type="text" id="newTitle" placeholder="Enter title">
+    <select id="categorySelect"></select>
+    <select id="newTags" multiple></select>
+    <textarea id="newMessage" placeholder="Enter content message"></textarea>
+    
+    <button id="addContentButton" onclick="addNewContent()">Add Content</button>
+</div>
+
 
         <!-- ✅ Viewer Section -->
         <div id="viewer" class="section" style="display:none;">

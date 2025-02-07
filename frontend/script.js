@@ -59,11 +59,77 @@ function displayContent(contentData) {
                 <p><strong>Category:</strong> ${item.category}</p>
                 <p><strong>Tags:</strong> ${tagsHTML}</p>
                 <p><strong>Message:</strong> ${item.message ? item.message : "No message available"}</p>
+                <button class="edit-content-btn" onclick="editContent('${item._id}', '${item.title}', '${item.category}', '${item.tags.join(",")}', '${item.message}')">✏️ Edit</button>
                 <button class="delete-content-btn" onclick="confirmDeleteContent('${item._id}')">🗑️ Delete</button>
             </div>
         `;
     });
 }
+
+
+function editContent(id, title, category, tags, message) {
+    // Ensure switching to Creator view
+    document.getElementById("creatorView").style.display = "block";
+    document.getElementById("viewerView").style.display = "none";
+
+    // Populate the form fields
+    document.getElementById("newTitle").value = title;
+    document.getElementById("categorySelect").value = category;
+    document.getElementById("newTags").value = tags.split(",");
+    document.getElementById("newMessage").value = message;
+
+    // Ensure the "Add Content" button is visible and change its function
+    const addButton = document.getElementById("addContentButton");
+    if (!addButton) {
+        console.error("Error: addContentButton not found!");
+        return;
+    }
+
+    addButton.textContent = "Update Content";
+    addButton.onclick = function() {
+        updateContent(id);
+    };
+}
+
+
+
+async function updateContent(contentId) {
+    const updatedTitle = document.getElementById("newTitle").value.trim();
+    const updatedCategory = document.getElementById("categorySelect").value.trim();
+    const updatedTags = document.getElementById("newTags").value.split(",").map(tag => tag.trim()).filter(tag => tag);
+    const updatedMessage = document.getElementById("newMessage").value.trim();
+
+    if (!updatedTitle || !updatedCategory || !updatedMessage) {
+        alert("Title, category, and message are required.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:5001/content/${contentId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                title: updatedTitle,
+                category: updatedCategory,
+                tags: updatedTags,
+                message: updatedMessage
+            })
+        });
+
+        if (response.ok) {
+            console.log("Content updated successfully.");
+            fetchContent(); // Refresh the content list
+            document.getElementById("addContentButton").textContent = "Add Content"; // Reset button text
+            document.getElementById("addContentButton").onclick = addNewContent; // Reset button action
+        } else {
+            console.error("Failed to update content.");
+        }
+    } catch (error) {
+        console.error("Error updating content:", error);
+    }
+}
+
+
 
 
 
@@ -311,7 +377,12 @@ async function deleteTag(tagId) {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    fetchTags();  // Populate the tag dropdown
-    populateCategories();  // Populate the category dropdown
-    fetchContent();  // Load existing content blocks
+    // Start in Viewer mode by default
+    document.getElementById("creator").style.display = "none";
+    document.getElementById("viewerView").style.display = "block";
+
+    fetchTags();  
+    populateCategories();  
+    fetchContent();
 });
+

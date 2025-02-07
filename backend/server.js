@@ -67,6 +67,30 @@ app.delete("/content/:id", async (req, res) => {
     }
 });
 
+//Edit Content Block
+app.put("/content/:id", async (req, res) => {
+    try {
+        const { title, category, tags, message } = req.body;
+
+        if (!title || !category || !message) {
+            return res.status(400).json({ error: "Title, category, and message are required." });
+        }
+
+        const updatedContent = await Content.findByIdAndUpdate(req.params.id, {
+            title, category, tags, message
+        }, { new: true });
+
+        if (!updatedContent) {
+            return res.status(404).json({ error: "Content not found" });
+        }
+
+        res.json(updatedContent);
+    } catch (error) {
+        console.error("Error updating content:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 
 // Define Category Schema
 const categorySchema = new mongoose.Schema({
