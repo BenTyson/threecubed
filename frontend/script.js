@@ -11,16 +11,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-function populateCategories() {
-	const categorySet = new Set(["All Categories"]);
-	contentData.forEach(item => categorySet.add(item.category));
-	
-	const categoryFilter = document.getElementById("categoryFilter");
-	categoryFilter.innerHTML = "";
-	categorySet.forEach(category => {
-		categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
-	});
+async function populateCategories() {
+    try {
+        const response = await fetch("http://localhost:5001/categories");
+        const categories = await response.json();
+
+        const categorySet = new Set(["All Categories"]);
+        categories.forEach(cat => categorySet.add(cat.category));
+
+        const categoryFilter = document.getElementById("categoryFilter");
+        categoryFilter.innerHTML = "";
+        categorySet.forEach(category => {
+            categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
+        });
+    } catch (error) {
+        console.error("Error fetching categories:", error);
+    }
 }
+
 
 async function fetchContent() {
     try {
@@ -34,15 +42,15 @@ async function fetchContent() {
 
 
 
-function displayContent(contentData) {
-    const contentList = document.getElementById("contentList");
-    contentList.innerHTML = ""; // Clear previous content
-
-    if (contentData.length === 0) {
-        contentList.innerHTML = "<p>No content available.</p>";
+function displayContent(contentData = []) {
+    if (!Array.isArray(contentData) || contentData.length === 0) {
+        document.getElementById("contentList").innerHTML = "<p>No content available.</p>";
         return;
     }
 
+    const contentList = document.getElementById("contentList");
+    contentList.innerHTML = "";
+    
     contentData.forEach(item => {
         const tagsHTML = item.tags.map(tag => `<span class='tag'>${tag}</span>`).join(" ");
         contentList.innerHTML += `
@@ -50,11 +58,11 @@ function displayContent(contentData) {
                 <h3>${item.title}</h3>
                 <p>Category: ${item.category}</p>
                 <p>Tags: ${tagsHTML}</p>
-                <button class="delete-content-btn" onclick="confirmDeleteContent('${item._id}')">🗑️ Delete</button>
             </div>
         `;
     });
 }
+
 
 
 // Fetch content on page load
