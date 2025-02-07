@@ -11,13 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-/*const contentData = [
-	{ title: "Article 1", category: "Tech", tags: ["JavaScript", "Web"] },
-	{ title: "Article 2", category: "Health", tags: ["Wellness", "Fitness"] },
-	{ title: "Article 3", category: "Tech", tags: ["AI", "Machine Learning"] },
-	{ title: "Article 4", category: "Lifestyle", tags: ["Travel", "Food"] }
-];*/
-
 function populateCategories() {
 	const categorySet = new Set(["All Categories"]);
 	contentData.forEach(item => categorySet.add(item.category));
@@ -39,6 +32,8 @@ async function fetchContent() {
     }
 }
 
+
+
 function displayContent(contentData) {
     const contentList = document.getElementById("contentList");
     contentList.innerHTML = ""; // Clear previous content
@@ -55,15 +50,43 @@ function displayContent(contentData) {
                 <h3>${item.title}</h3>
                 <p>Category: ${item.category}</p>
                 <p>Tags: ${tagsHTML}</p>
+                <button class="delete-content-btn" onclick="confirmDeleteContent('${item._id}')">🗑️ Delete</button>
             </div>
         `;
     });
 }
 
+
 // Fetch content on page load
 document.addEventListener("DOMContentLoaded", fetchContent);
 
 
+//delete content
+function confirmDeleteContent(contentId) {
+    if (confirm("Are you sure you want to permanently delete this content block?")) {
+        deleteContent(contentId);
+    }
+}
+
+async function deleteContent(contentId) {
+    try {
+        const response = await fetch(`http://localhost:5001/content/${contentId}`, {
+            method: "DELETE",
+        });
+
+        if (response.ok) {
+            console.log("Content block deleted successfully.");
+            fetchContent(); // Refresh content list after deletion
+        } else {
+            console.error("Failed to delete content.");
+        }
+    } catch (error) {
+        console.error("Error deleting content:", error);
+    }
+}
+
+
+//filter content
 function filterContent() {
 	const searchQuery = document.getElementById("search").value.toLowerCase();
 	const selectedCategory = document.getElementById("categoryFilter").value;
@@ -76,20 +99,52 @@ function filterContent() {
 	displayContent(filteredData);
 }
 
-function addNewContent() {
-	const newTitle = document.getElementById("newTitle").value.trim();
-	const newCategory = document.getElementById("newCategory").value.trim();
-	const newTags = document.getElementById("newTags").value.split(",").map(tag => tag.trim()).filter(tag => tag);
-	
-	if (newTitle && newCategory) {
-		contentData.push({ title: newTitle, category: newCategory, tags: newTags });
-		populateCategories();
-		displayContent();
-		document.getElementById("newTitle").value = "";
-		document.getElementById("newCategory").value = "";
-		document.getElementById("newTags").value = "";
-	}
+async function addNewContent() {
+    const newTitleElement = document.getElementById("newTitle");
+    const newCategoryElement = document.getElementById("categorySelect");
+    const newTagsElement = document.getElementById("newTags");
+
+    console.log("Title Field:", newTitleElement);
+    console.log("Category Field:", newCategoryElement);
+    console.log("Tags Field:", newTagsElement);
+
+    if (!newTitleElement || !newCategoryElement || !newTagsElement) {
+        console.error("Error: One or more input fields are missing.");
+        return;
+    }
+
+    const newTitle = newTitleElement.value.trim();
+    const newCategory = newCategoryElement.value.trim();
+    const newTags = newTagsElement.value.split(",").map(tag => tag.trim()).filter(tag => tag);
+
+    console.log("New Content:", { newTitle, newCategory, newTags }); // Debugging log
+
+    if (!newTitle || !newCategory) {
+        alert("Title and category are required.");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:5001/content", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title: newTitle, category: newCategory, tags: newTags })
+        });
+
+        if (response.ok) {
+            console.log("Content block added successfully.");
+            fetchContent();
+            newTitleElement.value = "";
+            newCategoryElement.value = "";
+            newTagsElement.value = "";
+        } else {
+            console.error("Failed to add content block.");
+        }
+    } catch (error) {
+        console.error("Error adding content block:", error);
+    }
 }
+
 
 
 async function addNewTag() {

@@ -38,6 +38,23 @@ app.post("/content", async (req, res) => {
     res.json(newContent);
 });
 
+//delete content
+app.delete("/content/:id", async (req, res) => {
+    console.log("Delete request received for content ID:", req.params.id); // Debugging log
+
+    try {
+        const deletedContent = await Content.findByIdAndDelete(req.params.id);
+        if (!deletedContent) {
+            return res.status(404).json({ error: "Content block not found" });
+        }
+        res.json({ message: "Content block deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting content:", error);
+        res.status(500).json({ error: "Error deleting content" });
+    }
+});
+
+
 // Define Tag Schema
 const tagSchema = new mongoose.Schema({
     tag: String,
