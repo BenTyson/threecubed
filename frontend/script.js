@@ -146,6 +146,60 @@ async function addNewContent() {
 }
 
 
+//categories
+async function addNewCategory() {
+    const newCategoryElement = document.getElementById("newCategoryInput");
+    if (!newCategoryElement) {
+        console.error("Category input field not found.");
+        return;
+    }
+
+    const newCategory = newCategoryElement.value.trim();
+    if (!newCategory) {
+        alert("Category name is required.");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:5001/categories", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ category: newCategory })
+        });
+
+        if (response.ok) {
+            console.log("Category added successfully.");
+            newCategoryElement.value = ""; // Clear input field
+            fetchCategories(); // Refresh category list
+        } else {
+            console.error("Failed to add category.");
+        }
+    } catch (error) {
+        console.error("Error adding category:", error);
+    }
+}
+
+
+async function fetchCategories() {
+    try {
+        const response = await fetch("http://localhost:5001/categories");
+        const categories = await response.json();
+        updateCategoryDropdown(categories);
+    } catch (error) {
+        console.error("Error fetching categories:", error);
+    }
+}
+
+function updateCategoryDropdown(categories) {
+    const categorySelect = document.getElementById("categorySelect");
+    if (!categorySelect) return;
+
+    categorySelect.innerHTML = "<option value=''>Select Category</option>";
+    categories.forEach(category => {
+        categorySelect.innerHTML += `<option value="${category.category}">${category.category}</option>`;
+    });
+}
+
 
 async function addNewTag() {
     console.log("addNewTag function triggered!"); // Debugging log

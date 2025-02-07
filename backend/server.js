@@ -7,13 +7,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
-
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("MongoDB connected"))
     .catch(err => console.error("MongoDB connection error:", err));
-
 
 // Define Content Schema
 const contentSchema = new mongoose.Schema({
@@ -38,9 +35,9 @@ app.post("/content", async (req, res) => {
     res.json(newContent);
 });
 
-//delete content
+// Delete content
 app.delete("/content/:id", async (req, res) => {
-    console.log("Delete request received for content ID:", req.params.id); // Debugging log
+    console.log("Delete request received for content ID:", req.params.id);
 
     try {
         const deletedContent = await Content.findByIdAndDelete(req.params.id);
@@ -54,6 +51,39 @@ app.delete("/content/:id", async (req, res) => {
     }
 });
 
+// Define Category Schema
+const categorySchema = new mongoose.Schema({
+    category: String,
+});
+
+const Category = mongoose.model("Category", categorySchema);
+
+// Fetch all categories
+app.get("/categories", async (req, res) => {
+    try {
+        const categories = await Category.find();
+        res.json(categories);
+    } catch (error) {
+        console.error("Error fetching categories:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// Add new category
+app.post("/categories", async (req, res) => {
+    try {
+        const { category } = req.body;
+        if (!category) {
+            return res.status(400).json({ error: "Category is required" });
+        }
+        const newCategory = new Category({ category });
+        await newCategory.save();
+        res.json(newCategory);
+    } catch (error) {
+        console.error("Error adding category:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
 
 // Define Tag Schema
 const tagSchema = new mongoose.Schema({
@@ -70,16 +100,16 @@ app.get("/tags", async (req, res) => {
 
 // Add new tag
 app.post("/tags", async (req, res) => {
-	console.log("Received new tag:", req.body); // Debugging log
+    console.log("Received new tag:", req.body);
     const { tag } = req.body;
     const newTag = new Tag({ tag });
     await newTag.save();
     res.json(newTag);
 });
 
-// delete tags
+// Delete tags
 app.delete("/tags/:id", async (req, res) => {
-    console.log("Delete request received for tag ID:", req.params.id); // Debugging log
+    console.log("Delete request received for tag ID:", req.params.id);
 
     try {
         const deletedTag = await Tag.findByIdAndDelete(req.params.id);
@@ -92,8 +122,6 @@ app.delete("/tags/:id", async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 });
-
-
 
 // Start Server
 const PORT = process.env.PORT || 5001;
