@@ -42,26 +42,29 @@ async function fetchContent() {
 
 
 
-function displayContent(contentData = []) {
+function displayContent(contentData) {
+    const contentList = document.getElementById("contentList");
+    contentList.innerHTML = "";
+
     if (!Array.isArray(contentData) || contentData.length === 0) {
-        document.getElementById("contentList").innerHTML = "<p>No content available.</p>";
+        contentList.innerHTML = "<p>No content available.</p>";
         return;
     }
 
-    const contentList = document.getElementById("contentList");
-    contentList.innerHTML = "";
-    
     contentData.forEach(item => {
         const tagsHTML = item.tags.map(tag => `<span class='tag'>${tag}</span>`).join(" ");
         contentList.innerHTML += `
             <div class="content-item">
                 <h3>${item.title}</h3>
-                <p>Category: ${item.category}</p>
-                <p>Tags: ${tagsHTML}</p>
+                <p><strong>Category:</strong> ${item.category}</p>
+                <p><strong>Tags:</strong> ${tagsHTML}</p>
+                <p><strong>Message:</strong> ${item.message ? item.message : "No message available"}</p>
             </div>
         `;
     });
 }
+
+
 
 
 
@@ -116,27 +119,13 @@ async function filterContent() {
 
 
 async function addNewContent() {
-    const newTitleElement = document.getElementById("newTitle");
-    const newCategoryElement = document.getElementById("categorySelect");
-    const newTagsElement = document.getElementById("newTags");
+    const newTitle = document.getElementById("newTitle").value.trim();
+    const newCategory = document.getElementById("categorySelect").value.trim();
+    const newTags = document.getElementById("newTags").value.split(",").map(tag => tag.trim()).filter(tag => tag);
+    const newMessage = document.getElementById("newMessage").value.trim();
 
-    console.log("Title Field:", newTitleElement);
-    console.log("Category Field:", newCategoryElement);
-    console.log("Tags Field:", newTagsElement);
-
-    if (!newTitleElement || !newCategoryElement || !newTagsElement) {
-        console.error("Error: One or more input fields are missing.");
-        return;
-    }
-
-    const newTitle = newTitleElement.value.trim();
-    const newCategory = newCategoryElement.value.trim();
-    const newTags = newTagsElement.value.split(",").map(tag => tag.trim()).filter(tag => tag);
-
-    console.log("New Content:", { newTitle, newCategory, newTags }); // Debugging log
-
-    if (!newTitle || !newCategory) {
-        alert("Title and category are required.");
+    if (!newTitle || !newCategory || !newMessage) {
+        alert("Title, category, and message are required.");
         return;
     }
 
@@ -144,15 +133,16 @@ async function addNewContent() {
         const response = await fetch("http://localhost:5001/content", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title: newTitle, category: newCategory, tags: newTags })
+            body: JSON.stringify({ title: newTitle, category: newCategory, tags: newTags, message: newMessage })
         });
 
         if (response.ok) {
             console.log("Content block added successfully.");
             fetchContent();
-            newTitleElement.value = "";
-            newCategoryElement.value = "";
-            newTagsElement.value = "";
+            document.getElementById("newTitle").value = "";
+            document.getElementById("categorySelect").value = "";
+            document.getElementById("newTags").value = "";
+            document.getElementById("newMessage").value = "";
         } else {
             console.error("Failed to add content block.");
         }
@@ -160,6 +150,8 @@ async function addNewContent() {
         console.error("Error adding content block:", error);
     }
 }
+
+
 
 
 //categories

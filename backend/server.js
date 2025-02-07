@@ -17,7 +17,9 @@ const contentSchema = new mongoose.Schema({
     title: String,
     category: String,
     tags: [String],
+    message: String // Added message field
 });
+
 
 const Content = mongoose.model("Content", contentSchema);
 
