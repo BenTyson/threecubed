@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
+
 // =====================================================
 //  📌 CONTENT MANAGEMENT
 // =====================================================
@@ -45,15 +46,17 @@ async function fetchContent() {
 // Display content blocks
 function displayContent(contentData) {
     const contentList = document.getElementById("contentList");
-    contentList.innerHTML = "";
+    contentList.innerHTML = ""; // ✅ Clear previous content
 
     if (!Array.isArray(contentData) || contentData.length === 0) {
         contentList.innerHTML = "<p>No content available.</p>";
         return;
     }
 
-    contentData.forEach(item => {
-        const tagsHTML = item.tags.map(tag => `<span class='badge bg-primary me-1'>${tag}</span>`).join(" ");
+    contentData.forEach(item => { // ✅ Define `item` properly
+        const tagsHTML = item.tags.map(tag => `
+            <span class="badge tag-filter bg-secondary me-1" data-tag="${tag}" onclick="toggleTagFilter('${tag}')">${tag}</span>
+        `).join(" ");
 
         contentList.innerHTML += `
             <div class="col-md-6 col-lg-4">
@@ -71,6 +74,7 @@ function displayContent(contentData) {
         `;
     });
 }
+
 
 
 // Add a new content block
@@ -422,19 +426,20 @@ async function fetchTags() {
             });
         }
 
-        // ✅ Update tag filters (Viewer Filter)
-		const tagFilters = document.getElementById("tagFilters");
-		if (tagFilters) {
-			tagFilters.innerHTML = "";
-			tags.forEach(tag => {
-				tagFilters.innerHTML += `
-					<div class="tag-item d-flex align-items-center">
-						<span class="badge bg-primary p-2">${tag.tag}</span> 
-					</div>
-				`;
-			});
-		}
-
+        // ✅ Update tag filters (Viewer Mode - Clickable Tags)
+        const tagFilters = document.getElementById("tagFilters");
+        if (tagFilters) {
+            tagFilters.innerHTML = "";
+            tags.forEach(tag => {
+                tagFilters.innerHTML += `
+                    <span class="badge tag-filter bg-secondary p-2 me-1" 
+                        data-tag="${tag.tag}" 
+                        onclick="toggleTagFilter(this, '${tag.tag}')">
+                        ${tag.tag}
+                    </span>
+                `;
+            });
+        }
 
         // ✅ Update multi-select dropdown in Creator Mode
         const tagDropdown = document.getElementById("newTags");
@@ -626,6 +631,30 @@ async function saveEditedTag() {
     }
 }
 
+const activeTags = new Set();
+
+function toggleTagFilter(element, tag) {
+    const tagLower = tag.toLowerCase();
+
+    if (activeTags.has(tagLower)) {
+        // ✅ Deactivate tag
+        activeTags.delete(tagLower);
+        element.classList.remove("bg-primary");
+        element.classList.add("bg-secondary");
+    } else {
+        // ✅ Activate tag
+        activeTags.add(tagLower);
+        element.classList.remove("bg-secondary");
+        element.classList.add("bg-primary");
+    }
+
+    console.log("🔄 Active Tags:", [...activeTags]); // ✅ Debugging log
+    filterContent(); // ✅ Apply updated filtering logic
+}
+
+
+
+
 
 
 
@@ -644,18 +673,26 @@ async function filterContent() {
         let contentData = await response.json(); // Fetch latest content
 
         // ✅ Enhanced Search: Match Title, Message, or Tags
-        contentData = contentData.filter(item => 
-            (selectedCategory === "All Categories" || item.category === selectedCategory) &&
-            (
+        contentData = contentData.filter(item => {
+            const matchesSearch = (
                 item.title.toLowerCase().includes(searchQuery) || 
                 item.message.toLowerCase().includes(searchQuery) || 
-                item.tags.some(tag => tag.toLowerCase().includes(searchQuery)) // ✅ Search inside tags
-            )
-        );
+                item.tags.some(tag => tag.toLowerCase().includes(searchQuery))
+            );
 
-        displayContent(contentData);
+            const matchesCategory = (selectedCategory === "All Categories" || item.category === selectedCategory);
+
+            const matchesActiveTags = (activeTags.size === 0 || item.tags.some(tag => activeTags.has(tag.toLowerCase())));
+
+            return matchesSearch && matchesCategory && matchesActiveTags;
+        });
+
+        displayContent(contentData); // ✅ Display filtered content
     } catch (error) {
         console.error("❌ Error filtering content:", error);
     }
 }
+
+
+
 
