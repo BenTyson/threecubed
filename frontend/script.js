@@ -436,10 +436,23 @@ async function fetchTags() {
             });
         }
 
+        // ✅ Update multi-select dropdown in Creator Mode
+        const tagDropdown = document.getElementById("newTags");
+        if (tagDropdown) {
+            tagDropdown.innerHTML = ""; // Clear previous options
+            tags.forEach(tag => {
+                const option = document.createElement("option");
+                option.value = tag.tag;
+                option.textContent = tag.tag;
+                tagDropdown.appendChild(option);
+            });
+        }
+
     } catch (error) {
         console.error("❌ Error fetching tags:", error);
     }
 }
+
 
 
 function displayTags(tags) {
