@@ -641,15 +641,21 @@ async function filterContent() {
 
     try {
         const response = await fetch("http://localhost:5001/content");
-        let contentData = await response.json();
+        let contentData = await response.json(); // Fetch latest content
 
+        // ✅ Enhanced Search: Match Title, Message, or Tags
         contentData = contentData.filter(item => 
             (selectedCategory === "All Categories" || item.category === selectedCategory) &&
-            item.title.toLowerCase().includes(searchQuery)
+            (
+                item.title.toLowerCase().includes(searchQuery) || 
+                item.message.toLowerCase().includes(searchQuery) || 
+                item.tags.some(tag => tag.toLowerCase().includes(searchQuery)) // ✅ Search inside tags
+            )
         );
 
         displayContent(contentData);
     } catch (error) {
-        console.error("Error filtering content:", error);
+        console.error("❌ Error filtering content:", error);
     }
 }
+
