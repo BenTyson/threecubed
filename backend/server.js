@@ -126,6 +126,23 @@ app.post("/categories", async (req, res) => {
     }
 });
 
+// Delete Category by ID
+app.delete("/categories/:id", async (req, res) => {
+    console.log("Delete request received for category ID:", req.params.id); // Debugging log
+
+    try {
+        const deletedCategory = await Category.findByIdAndDelete(req.params.id);
+        if (!deletedCategory) {
+            return res.status(404).json({ error: "Category not found" });
+        }
+        res.json({ message: "Category deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting category:", error);
+        res.status(500).json({ error: "Error deleting category" });
+    }
+});
+
+
 // Define Tag Schema
 const tagSchema = new mongoose.Schema({
     tag: String,

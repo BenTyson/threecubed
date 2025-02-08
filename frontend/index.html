@@ -29,14 +29,15 @@
 		<!-- ✅ Organizer Section -->
 		<div id="organizer" class="section" style="display:none;">
 		
-			<!-- ✅ Bootstrap Alert Container -->
-			<div id="alertContainer" class="alert alert-warning alert-dismissible fade d-none" role="alert">
-				<span id="alertMessage"></span>
-				<div class="mt-2">
-					<button id="confirmDeleteBtn" class="btn btn-danger btn-sm">Confirm</button>
-					<button id="cancelDeleteBtn" class="btn btn-secondary btn-sm">Cancel</button>
+			<!--  Alert Container -->
+			<div id="confirmDeleteAlert" class="alert alert-danger alert-dismissible fade show d-none" role="alert">
+				<p id="confirmDeleteMessage"></p>
+				<div class="d-flex justify-content-end">
+					<button id="confirmDeleteBtn" class="btn btn-danger btn-sm me-2">Confirm</button>
+					<button class="btn btn-secondary btn-sm" onclick="hideDeleteAlert()">Cancel</button>
 				</div>
 			</div>
+
 
 			
 			<h2 class="text-success">📂 Organizer View</h2>
@@ -50,7 +51,7 @@
 				</div>
 			</div>
 
-			<!-- ✅ Manage Tags -->
+			<!-- Manage Tags -->
 			<h3 class="text-secondary">Manage Tags</h3>
 			<div id="tagFilters" class="d-flex flex-wrap gap-2"></div>
 
@@ -58,7 +59,7 @@
 
 			<hr>
 
-			<!-- ✅ Add New Category -->
+			<!-- Add New Category -->
 			<div class="mb-3">
 				<label for="newCategoryInput" class="form-label">Add New Category</label>
 				<div class="input-group">
@@ -66,6 +67,11 @@
 					<button class="btn btn-success" onclick="addNewCategory()">Add Category</button>
 				</div>
 			</div>
+			
+			<!-- Existing Categories List -->
+			<h4 class="mt-3">Existing Categories</h4>
+			<ul id="categoryList" class="list-group"></ul> <!-- Dynamically Populated -->
+
 			
 			
 

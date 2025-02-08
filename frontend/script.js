@@ -188,24 +188,39 @@ async function populateCategories() {
         const categorySet = new Set(["All Categories"]);
         categories.forEach(cat => categorySet.add(cat.category));
 
-        // Update Viewer category dropdown
+        // ✅ Update Viewer category dropdown
         const categoryFilter = document.getElementById("categoryFilter");
         categoryFilter.innerHTML = "";
         categorySet.forEach(category => {
             categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
         });
 
-        // Update Creator category dropdown
+        // ✅ Update Creator category dropdown
         const categorySelect = document.getElementById("categorySelect");
         categorySelect.innerHTML = "<option value=''>Select Category</option>";
         categories.forEach(category => {
             categorySelect.innerHTML += `<option value="${category.category}">${category.category}</option>`;
         });
 
+        // ✅ Update Organizer category list
+        const categoryList = document.getElementById("categoryList");
+        categoryList.innerHTML = ""; // Clear previous categories
+
+        categories.forEach(category => {
+            const listItem = document.createElement("li");
+            listItem.className = "list-group-item d-flex justify-content-between align-items-center";
+            listItem.innerHTML = `
+                ${category.category}
+                <button class="btn btn-sm btn-danger" onclick="confirmDeleteCategory('${category._id}')">🗑️</button>
+            `;
+            categoryList.appendChild(listItem);
+        });
+
     } catch (error) {
         console.error("Error fetching categories:", error);
     }
 }
+
 
 
 async function fetchCategories() {
@@ -258,6 +273,50 @@ function updateCategoryDropdown(categories) {
         categorySelect.innerHTML += `<option value="${category.category}">${category.category}</option>`;
     });
 }
+
+function confirmDeleteCategory(categoryId) {
+    // Set the alert message
+    document.getElementById("confirmDeleteMessage").textContent =
+        "Are you sure you want to permanently delete this category?";
+
+    // Show the alert
+    const alertBox = document.getElementById("confirmDeleteAlert");
+    alertBox.classList.remove("d-none");
+
+    // Set the confirm button to trigger the delete function
+    const confirmButton = document.getElementById("confirmDeleteBtn");
+    confirmButton.onclick = function () {
+        deleteCategory(categoryId);
+        hideDeleteAlert(); // Hide alert after confirming
+    };
+}
+
+// ✅ Hide Delete Alert Box
+function hideDeleteAlert() {
+    document.getElementById("confirmDeleteAlert").classList.add("d-none");
+}
+
+
+async function deleteCategory(categoryId) {
+    console.log(`Attempting to delete category with ID: ${categoryId}`); // ✅ Debugging Log
+
+    try {
+        const response = await fetch(`http://localhost:5001/categories/${categoryId}`, {
+            method: "DELETE",
+        });
+
+        if (response.ok) {
+            console.log("✅ Category deleted successfully.");
+            populateCategories(); // Refresh category list after deletion
+        } else {
+            console.error("❌ Failed to delete category. Response:", await response.json());
+        }
+    } catch (error) {
+        console.error("❌ Error deleting category:", error);
+    }
+}
+
+
 
 // =====================================================
 //  📌 TAG MANAGEMENT
