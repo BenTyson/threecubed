@@ -53,7 +53,7 @@ function displayContent(contentData) {
         return;
     }
 
-    contentData.forEach(item => { // ✅ Define `item` properly
+    contentData.forEach(item => {
         const tagsHTML = item.tags.map(tag => `
             <span class="badge tag-filter bg-secondary me-1" data-tag="${tag}" onclick="toggleTagFilter('${tag}')">${tag}</span>
         `).join(" ");
@@ -63,11 +63,13 @@ function displayContent(contentData) {
                 <div class="card mb-3 shadow-sm">
                     <div class="card-body">
                         <h5 class="card-title">${item.title}</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">${item.category}</h6>
+                        <h6 class="card-subtitle mb-2 text-muted">${item.category} | ${item.messageType}</h6> <!-- ✅ Display Message Type -->
                         <p class="card-text">${item.message ? item.message : "No message available"}</p>
                         <div>${tagsHTML}</div>
-                        <button class="btn btn-warning btn-sm mt-2" onclick="editContent('${item._id}', '${item.title}', '${item.category}', '${item.tags.join(",")}', '${item.message}')">✏️ Edit</button>
-                        <button class="btn btn-danger btn-sm mt-2" onclick="confirmDeleteContent('${item._id}')">🗑️ Delete</button>
+                        <button class="btn btn-warning btn-sm mt-2" 
+                            onclick="editContent('${item._id}', '${item.title}', '${item.category}', '${item.tags.join(",")}', '${item.message}', '${item.messageType}')">✏️ Edit</button>
+                        <button class="btn btn-danger btn-sm mt-2" 
+                            onclick="confirmDeleteContent('${item._id}')">🗑️ Delete</button>
                     </div>
                 </div>
             </div>
@@ -77,11 +79,13 @@ function displayContent(contentData) {
 
 
 
+
 // Add a new content block
 async function addNewContent() {
     const newTitle = document.getElementById("newTitle").value.trim();
     const newCategory = document.getElementById("categorySelect").value.trim();
     const newMessage = document.getElementById("newMessage").value.trim();
+    const newMessageType = document.getElementById("messageTypeSelect").value; // ✅ New field
     const newTagsDropdown = document.getElementById("newTags");
     const newTags = Array.from(newTagsDropdown.selectedOptions).map(option => option.value);
 
@@ -94,37 +98,43 @@ async function addNewContent() {
         const response = await fetch("http://localhost:5001/content", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title: newTitle, category: newCategory, tags: newTags, message: newMessage })
+            body: JSON.stringify({ 
+                title: newTitle, 
+                category: newCategory, 
+                tags: newTags, 
+                message: newMessage, 
+                messageType: newMessageType // ✅ Include message type
+            })
         });
 
         if (response.ok) {
-            console.log("Content block added successfully.");
+            console.log("✅ Content block added successfully.");
             fetchContent();
         } else {
-            console.error("Failed to add content block.");
+            console.error("❌ Failed to add content block.");
         }
     } catch (error) {
-        console.error("Error adding content block:", error);
+        console.error("❌ Error adding content block:", error);
     }
 }
 
+
 // Edit existing content
-async function editContent(id, title, category, tags, message) {
+function editContent(id, title, category, tags, message, messageType) {
     showSection("creator");
 
     document.getElementById("newTitle").value = title;
     document.getElementById("categorySelect").value = category;
     document.getElementById("newMessage").value = message;
+    document.getElementById("messageTypeSelect").value = messageType; // ✅ Pre-fill Message Type
 
     // ✅ Ensure tags are properly pre-selected in the multi-select dropdown
-    await fetchTags(); // ✅ Ensure dropdown is fully populated before selecting tags
-
     const newTagsDropdown = document.getElementById("newTags");
     if (newTagsDropdown) {
-        const selectedTags = tags.split(",").map(tag => tag.trim()); // Convert to array
+        const selectedTags = tags.split(",").map(tag => tag.trim());
 
         Array.from(newTagsDropdown.options).forEach(option => {
-            option.selected = selectedTags.includes(option.value); // ✅ Pre-select existing tags
+            option.selected = selectedTags.includes(option.value);
         });
     }
 
@@ -137,30 +147,38 @@ async function editContent(id, title, category, tags, message) {
 
 
 
-// Update content
+
 async function updateContent(contentId) {
     const updatedTitle = document.getElementById("newTitle").value.trim();
     const updatedCategory = document.getElementById("categorySelect").value.trim();
-    const updatedTags = document.getElementById("newTags").value.split(",").map(tag => tag.trim());
+    const updatedTags = Array.from(document.getElementById("newTags").selectedOptions).map(option => option.value);
     const updatedMessage = document.getElementById("newMessage").value.trim();
+    const updatedMessageType = document.getElementById("messageTypeSelect").value; // ✅ Capture Message Type
 
     try {
         const response = await fetch(`http://localhost:5001/content/${contentId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title: updatedTitle, category: updatedCategory, tags: updatedTags, message: updatedMessage })
+            body: JSON.stringify({ 
+                title: updatedTitle, 
+                category: updatedCategory, 
+                tags: updatedTags, 
+                message: updatedMessage,
+                messageType: updatedMessageType // ✅ Update message type
+            })
         });
 
         if (response.ok) {
-            console.log("Content updated successfully.");
+            console.log("✅ Content updated successfully.");
             fetchContent();
         } else {
-            console.error("Failed to update content.");
+            console.error("❌ Failed to update content.");
         }
     } catch (error) {
-        console.error("Error updating content:", error);
+        console.error("❌ Error updating content:", error);
     }
 }
+
 
 
 //Delete Content
