@@ -1,35 +1,26 @@
+// =====================================================
+//  📌 PAGE LOAD & VIEW MANAGEMENT
+// =====================================================
+
+// Toggle between Creator & Viewer sections
 function showSection(section) {
     document.getElementById("creator").style.display = section === "creator" ? "block" : "none";
     document.getElementById("viewer").style.display = section === "viewer" ? "block" : "none";
 }
 
-// Set default view to "Viewer"
+// Ensure the app starts in Viewer mode
 document.addEventListener("DOMContentLoaded", () => {
-    showSection('viewer');
+    showSection("viewer");
+    fetchTags();
+    populateCategories();
+    fetchContent();
 });
 
+// =====================================================
+//  📌 CONTENT MANAGEMENT
+// =====================================================
 
-
-
-async function populateCategories() {
-    try {
-        const response = await fetch("http://localhost:5001/categories");
-        const categories = await response.json();
-
-        const categorySet = new Set(["All Categories"]);
-        categories.forEach(cat => categorySet.add(cat.category));
-
-        const categoryFilter = document.getElementById("categoryFilter");
-        categoryFilter.innerHTML = "";
-        categorySet.forEach(category => {
-            categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
-        });
-    } catch (error) {
-        console.error("Error fetching categories:", error);
-    }
-}
-
-
+// Fetch and display content blocks
 async function fetchContent() {
     try {
         const response = await fetch("http://localhost:5001/content");
@@ -40,8 +31,7 @@ async function fetchContent() {
     }
 }
 
-
-
+// Display content blocks
 function displayContent(contentData) {
     const contentList = document.getElementById("contentList");
     contentList.innerHTML = "";
@@ -66,147 +56,11 @@ function displayContent(contentData) {
     });
 }
 
-
-function editContent(id, title, category, tags, message) {
-    const creatorView = document.getElementById("creator");
-    const viewerView = document.getElementById("viewer"); // ✅ Ensure consistency
-
-    if (!creatorView) {
-        console.error("❌ Error: 'creator' view not found in HTML!");
-    }
-    if (!viewerView) {
-        console.error("❌ Error: 'viewer' not found in HTML!");
-    }
-    if (!creatorView || !viewerView) return;
-
-    // Switch views
-    creatorView.style.display = "block";
-    viewerView.style.display = "none";
-
-    // Populate the form
-    document.getElementById("newTitle").value = title;
-    document.getElementById("categorySelect").value = category;
-    document.getElementById("newTags").value = tags.split(",");
-    document.getElementById("newMessage").value = message;
-
-    // Change button function
-    const addButton = document.getElementById("addContentButton");
-    if (!addButton) {
-        console.error("❌ Error: addContentButton not found in HTML!");
-        return;
-    }
-
-    addButton.textContent = "Update Content";
-    addButton.onclick = function() {
-        updateContent(id);
-    };
-}
-
-
-
-
-
-async function updateContent(contentId) {
-    const updatedTitle = document.getElementById("newTitle").value.trim();
-    const updatedCategory = document.getElementById("categorySelect").value.trim();
-    const updatedTags = document.getElementById("newTags").value.split(",").map(tag => tag.trim()).filter(tag => tag);
-    const updatedMessage = document.getElementById("newMessage").value.trim();
-
-    if (!updatedTitle || !updatedCategory || !updatedMessage) {
-        alert("Title, category, and message are required.");
-        return;
-    }
-
-    try {
-        const response = await fetch(`http://localhost:5001/content/${contentId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                title: updatedTitle,
-                category: updatedCategory,
-                tags: updatedTags,
-                message: updatedMessage
-            })
-        });
-
-        if (response.ok) {
-            console.log("Content updated successfully.");
-            fetchContent(); // Refresh the content list
-            document.getElementById("addContentButton").textContent = "Add Content"; // Reset button text
-            document.getElementById("addContentButton").onclick = addNewContent; // Reset button action
-        } else {
-            console.error("Failed to update content.");
-        }
-    } catch (error) {
-        console.error("Error updating content:", error);
-    }
-}
-
-
-
-
-
-
-
-
-// Fetch content on page load
-document.addEventListener("DOMContentLoaded", fetchContent);
-
-
-//delete content
-function confirmDeleteContent(contentId) {
-    const confirmDelete = confirm("Are you sure you want to permanently delete this content block?");
-    if (confirmDelete) {
-        deleteContent(contentId);
-    }
-}
-
-async function deleteContent(contentId) {
-    try {
-        const response = await fetch(`http://localhost:5001/content/${contentId}`, {
-            method: "DELETE",
-        });
-
-        if (response.ok) {
-            console.log("Content block deleted successfully.");
-            fetchContent(); // Refresh content list after deletion
-        } else {
-            console.error("Failed to delete content block.");
-        }
-    } catch (error) {
-        console.error("Error deleting content block:", error);
-    }
-}
-
-
-
-//filter content
-async function filterContent() {
-    const searchQuery = document.getElementById("search").value.toLowerCase();
-    const selectedCategory = document.getElementById("categoryFilter").value;
-
-    try {
-        const response = await fetch("http://localhost:5001/content");
-        let contentData = await response.json(); // Fetch latest content from the backend
-
-        contentData = contentData.filter(item => 
-            (selectedCategory === "All Categories" || item.category === selectedCategory) &&
-            item.title.toLowerCase().includes(searchQuery)
-        );
-
-        displayContent(contentData);
-    } catch (error) {
-        console.error("Error filtering content:", error);
-    }
-}
-
-
+// Add a new content block
 async function addNewContent() {
     const newTitle = document.getElementById("newTitle").value.trim();
     const newCategory = document.getElementById("categorySelect").value.trim();
     const newMessage = document.getElementById("newMessage").value.trim();
-    
-    // Get selected tags as an array
     const newTagsDropdown = document.getElementById("newTags");
     const newTags = Array.from(newTagsDropdown.selectedOptions).map(option => option.value);
 
@@ -225,10 +79,6 @@ async function addNewContent() {
         if (response.ok) {
             console.log("Content block added successfully.");
             fetchContent();
-            document.getElementById("newTitle").value = "";
-            document.getElementById("categorySelect").value = "";
-            document.getElementById("newMessage").value = "";
-            newTagsDropdown.selectedIndex = -1; // Clear selection
         } else {
             console.error("Failed to add content block.");
         }
@@ -237,11 +87,120 @@ async function addNewContent() {
     }
 }
 
+// Edit existing content
+function editContent(id, title, category, tags, message) {
+    showSection("creator");
+
+    document.getElementById("newTitle").value = title;
+    document.getElementById("categorySelect").value = category;
+    document.getElementById("newTags").value = tags.split(",");
+    document.getElementById("newMessage").value = message;
+
+    const addButton = document.getElementById("addContentButton");
+    addButton.textContent = "Update Content";
+    addButton.onclick = function() {
+        updateContent(id);
+    };
+}
+
+// Update content
+async function updateContent(contentId) {
+    const updatedTitle = document.getElementById("newTitle").value.trim();
+    const updatedCategory = document.getElementById("categorySelect").value.trim();
+    const updatedTags = document.getElementById("newTags").value.split(",").map(tag => tag.trim());
+    const updatedMessage = document.getElementById("newMessage").value.trim();
+
+    try {
+        const response = await fetch(`http://localhost:5001/content/${contentId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title: updatedTitle, category: updatedCategory, tags: updatedTags, message: updatedMessage })
+        });
+
+        if (response.ok) {
+            console.log("Content updated successfully.");
+            fetchContent();
+        } else {
+            console.error("Failed to update content.");
+        }
+    } catch (error) {
+        console.error("Error updating content:", error);
+    }
+}
+
+
+//Delete Content
+async function deleteContent(contentId) {
+    try {
+        const response = await fetch(`http://localhost:5001/content/${contentId}`, {
+            method: "DELETE",
+        });
+
+        if (response.ok) {
+            console.log("Content block deleted successfully.");
+            fetchContent(); // Refresh content list after deletion
+        } else {
+            console.error("Failed to delete content block.");
+        }
+    } catch (error) {
+        console.error("Error deleting content block:", error);
+    }
+}
+
+
+// Confirm Delete Content
+function confirmDeleteContent(contentId) {
+    const confirmDelete = confirm("Are you sure you want to permanently delete this content block?");
+    if (confirmDelete) {
+        deleteContent(contentId);
+    }
+}
+
+
+// =====================================================
+//  📌 CATEGORY MANAGEMENT
+// =====================================================
 
 
 
+async function populateCategories() {
+    try {
+        const response = await fetch("http://localhost:5001/categories");
+        const categories = await response.json();
 
-//categories
+        const categorySet = new Set(["All Categories"]);
+        categories.forEach(cat => categorySet.add(cat.category));
+
+        // Update Viewer category dropdown
+        const categoryFilter = document.getElementById("categoryFilter");
+        categoryFilter.innerHTML = "";
+        categorySet.forEach(category => {
+            categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
+        });
+
+        // Update Creator category dropdown
+        const categorySelect = document.getElementById("categorySelect");
+        categorySelect.innerHTML = "<option value=''>Select Category</option>";
+        categories.forEach(category => {
+            categorySelect.innerHTML += `<option value="${category.category}">${category.category}</option>`;
+        });
+
+    } catch (error) {
+        console.error("Error fetching categories:", error);
+    }
+}
+
+
+async function fetchCategories() {
+    try {
+        const response = await fetch("http://localhost:5001/categories");
+        const categories = await response.json();
+        updateCategoryDropdown(categories);
+    } catch (error) {
+        console.error("Error fetching categories:", error);
+    }
+}
+
 async function addNewCategory() {
     const newCategoryElement = document.getElementById("newCategoryInput");
     if (!newCategoryElement) {
@@ -265,7 +224,7 @@ async function addNewCategory() {
         if (response.ok) {
             console.log("Category added successfully.");
             newCategoryElement.value = ""; // Clear input field
-            fetchCategories(); // Refresh category list
+            populateCategories(); // Refresh categories
         } else {
             console.error("Failed to add category.");
         }
@@ -275,63 +234,24 @@ async function addNewCategory() {
 }
 
 
-async function fetchCategories() {
-    try {
-        const response = await fetch("http://localhost:5001/categories");
-        const categories = await response.json();
-        updateCategoryDropdown(categories);
-    } catch (error) {
-        console.error("Error fetching categories:", error);
-    }
-}
-
 function updateCategoryDropdown(categories) {
     const categorySelect = document.getElementById("categorySelect");
-    if (!categorySelect) return;
-
     categorySelect.innerHTML = "<option value=''>Select Category</option>";
     categories.forEach(category => {
         categorySelect.innerHTML += `<option value="${category.category}">${category.category}</option>`;
     });
 }
 
-// Fetch categories when the page loads
-document.addEventListener("DOMContentLoaded", fetchCategories);
-
-
-
-async function addNewTag() {
-    console.log("addNewTag function triggered!"); // Debugging log
-
-    const newTagInput = document.getElementById("newTagInput");
-    const newTag = newTagInput.value.trim();
-
-    if (newTag) {
-        try {
-            const response = await fetch("http://localhost:5001/tags", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ tag: newTag }),
-            });
-
-            const result = await response.json();
-            console.log("Tag added:", result);
-
-            fetchTags(); // Refresh the tag list on frontend
-        } catch (error) {
-            console.error("Error adding tag:", error);
-        }
-
-        newTagInput.value = ""; // Clear input field
-    }
-}
-
+// =====================================================
+//  📌 TAG MANAGEMENT
+// =====================================================
 
 async function fetchTags() {
     try {
         const response = await fetch("http://localhost:5001/tags");
         const tags = await response.json();
 
+        // Find the multi-select dropdown
         const tagsDropdown = document.getElementById("newTags");
         tagsDropdown.innerHTML = ""; // Clear previous options
 
@@ -341,70 +261,44 @@ async function fetchTags() {
             option.textContent = tag.tag;
             tagsDropdown.appendChild(option);
         });
+
     } catch (error) {
         console.error("Error fetching tags:", error);
     }
 }
 
-
 function displayTags(tags) {
     const tagFilters = document.getElementById("tagFilters");
-    tagFilters.innerHTML = ""; // Clear previous tags
-
+    tagFilters.innerHTML = "";
     tags.forEach(tag => {
-        const tagElement = document.createElement("div");
-        tagElement.classList.add("tag-item");
-        tagElement.innerHTML = `
-            <span class="tag">${tag.tag}</span>
-            <button class="delete-tag-btn" onclick="confirmDeleteTag('${tag._id}')">🗑️</button>
+        tagFilters.innerHTML += `
+            <div class="tag-item">
+                <span class="tag">${tag.tag}</span>
+                <button class="delete-tag-btn" onclick="confirmDeleteTag('${tag._id}')">🗑️</button>
+            </div>
         `;
-        tagFilters.appendChild(tagElement);
     });
 }
 
-function confirmDeleteTag(tagId) {
-    if (confirm("Are you sure you want to permanently delete this tag?")) {
-        deleteTag(tagId);
-    }
-}
+// =====================================================
+//  📌 FILTERING & SEARCH
+// =====================================================
 
-async function deleteTag(tagId) {
-    console.log("Attempting to delete tag with ID:", tagId); // Debugging log
+async function filterContent() {
+    const searchQuery = document.getElementById("search").value.toLowerCase();
+    const selectedCategory = document.getElementById("categoryFilter").value;
 
     try {
-        const response = await fetch(`http://localhost:5001/tags/${tagId}`, {
-            method: "DELETE",
-        });
+        const response = await fetch("http://localhost:5001/content");
+        let contentData = await response.json();
 
-        if (response.ok) {
-            console.log("Tag deleted successfully.");
-            fetchTags(); // Refresh tags after deletion
-        } else {
-            console.error("Failed to delete tag.");
-        }
+        contentData = contentData.filter(item => 
+            (selectedCategory === "All Categories" || item.category === selectedCategory) &&
+            item.title.toLowerCase().includes(searchQuery)
+        );
+
+        displayContent(contentData);
     } catch (error) {
-        console.error("Error deleting tag:", error);
+        console.error("Error filtering content:", error);
     }
 }
-
-
-
-document.addEventListener("DOMContentLoaded", () => {
-    const creatorView = document.getElementById("creator");
-    const viewerView = document.getElementById("viewerView");
-
-    if (!creatorView || !viewerView) {
-        console.error("Error: One or both views (creator/viewer) not found!");
-        return;
-    }
-
-    // Start in Viewer mode by default
-    creatorView.style.display = "none";
-    viewerView.style.display = "block";
-
-    fetchTags();
-    populateCategories();
-    fetchContent();
-});
-
-
