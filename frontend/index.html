@@ -4,59 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Content Organizer</title>
-    <link rel="stylesheet" href="style.css">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="xxstyle.css">
     <script defer src="script.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Content Organizer</h1>
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Content Organizer</h1>
 
         <!-- Navigation Tabs -->
-        <div class="tabs">
-            <button onclick="showSection('creator')">Creator</button>
-            <button onclick="showSection('viewer')">Viewer</button>
+        <ul class="nav nav-tabs justify-content-center mb-4">
+            <li class="nav-item">
+                <button class="nav-link active" onclick="showSection('creator')">Creator</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" onclick="showSection('viewer')">Viewer</button>
+            </li>
+        </ul>
+
+        <!-- ✅ Creator Section -->
+        <div id="creator" class="section">
+            <h2 class="text-primary">📌 Creator View</h2>
+
+            <!-- Add New Tag -->
+            <div class="mb-3">
+                <label for="newTagInput" class="form-label">Add New Tag</label>
+                <div class="input-group">
+                    <input type="text" id="newTagInput" class="form-control" placeholder="Enter new tag">
+                    <button class="btn btn-primary" onclick="addNewTag()">Add Tag</button>
+                </div>
+            </div>
+
+            <!-- Manage Tags -->
+            <h3 class="text-secondary">Manage Tags</h3>
+            <div id="tagFilters" class="d-flex flex-wrap gap-2"></div>
+
+            <!-- Add New Category -->
+            <div class="mb-3">
+                <label for="newCategoryInput" class="form-label">Add New Category</label>
+                <div class="input-group">
+                    <input type="text" id="newCategoryInput" class="form-control" placeholder="Enter new category">
+                    <button class="btn btn-success" onclick="addNewCategory()">Add Category</button>
+                </div>
+            </div>
+
+            <!-- Add/Edit Content Block -->
+            <h3 class="text-info">Add / Edit Content Block</h3>
+            <div class="mb-3">
+                <label for="newTitle" class="form-label">Title</label>
+                <input type="text" id="newTitle" class="form-control" placeholder="Enter title">
+            </div>
+
+            <div class="mb-3">
+                <label for="categorySelect" class="form-label">Category</label>
+                <select id="categorySelect" class="form-select"></select>
+            </div>
+
+            <div class="mb-3">
+                <label for="newTags" class="form-label">Select Tags</label>
+                <select id="newTags" class="form-select" multiple></select>
+            </div>
+
+            <div class="mb-3">
+                <label for="newMessage" class="form-label">Content Message</label>
+                <textarea id="newMessage" class="form-control" placeholder="Enter content message" rows="3"></textarea>
+            </div>
+
+            <button id="addContentButton" class="btn btn-primary w-100" onclick="addNewContent()">Add Content</button>
         </div>
-
-       <!-- ✅ Creator Section -->
-<div id="creator" class="section">
-    <h2>📌 Creator View</h2>
-
-    <h3>Add New Tag</h3>
-    <input type="text" id="newTagInput" placeholder="Enter new tag">
-    <button onclick="addNewTag()">Add Tag</button>
-
-    <h3>Manage Tags</h3>
-    <div id="tagFilters"></div>  <!-- Moved inside Creator View -->
-
-    <h3>Add New Category</h3>
-    <input type="text" id="newCategoryInput" placeholder="Enter new category">
-    <button onclick="addNewCategory()">Add Category</button>
-
-    <h3>Add / Edit Content Block</h3>
-    <input type="text" id="newTitle" placeholder="Enter title">
-    <select id="categorySelect"></select>
-    <select id="newTags" multiple></select>
-    <textarea id="newMessage" placeholder="Enter content message"></textarea>
-    
-    <button id="addContentButton" onclick="addNewContent()">Add Content</button>
-</div>
-
 
         <!-- ✅ Viewer Section -->
         <div id="viewer" class="section" style="display:none;">
-            <h2>🔍 Viewer View</h2>
+            <h2 class="text-warning">🔍 Viewer View</h2>
 
-            <h3>Filter Content</h3>
-            <input type="text" id="search" placeholder="Search content..." onkeyup="filterContent()">
-            <select id="categoryFilter" onchange="filterContent()">
-                <option value="all">All Categories</option>
-            </select>
-            <div id="tagFilters"></div>
+            <!-- Filter Content -->
+            <h3 class="text-muted">Filter Content</h3>
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <input type="text" id="search" class="form-control" placeholder="Search content..." onkeyup="filterContent()">
+                </div>
+                <div class="col-md-6">
+                    <select id="categoryFilter" class="form-select" onchange="filterContent()">
+                        <option value="all">All Categories</option>
+                    </select>
+                </div>
+            </div>
+            <div id="tagFilters" class="d-flex flex-wrap gap-2 mt-3"></div>
 
-            <h3>📌 Content Blocks</h3>
-            <div id="contentList" class="content-list"></div>
+            <!-- Content Blocks -->
+            <h3 class="mt-4">📌 Content Blocks</h3>
+            <div id="contentList" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"></div>
         </div>
     </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

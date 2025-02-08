@@ -42,19 +42,25 @@ function displayContent(contentData) {
     }
 
     contentData.forEach(item => {
-        const tagsHTML = item.tags.map(tag => `<span class='tag'>${tag}</span>`).join(" ");
+        const tagsHTML = item.tags.map(tag => `<span class='badge bg-primary me-1'>${tag}</span>`).join(" ");
+
         contentList.innerHTML += `
-            <div class="content-item">
-                <h3>${item.title}</h3>
-                <p><strong>Category:</strong> ${item.category}</p>
-                <p><strong>Tags:</strong> ${tagsHTML}</p>
-                <p><strong>Message:</strong> ${item.message ? item.message : "No message available"}</p>
-                <button class="edit-content-btn" onclick="editContent('${item._id}', '${item.title}', '${item.category}', '${item.tags.join(",")}', '${item.message}')">✏️ Edit</button>
-                <button class="delete-content-btn" onclick="confirmDeleteContent('${item._id}')">🗑️ Delete</button>
+            <div class="col-md-6 col-lg-4">
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">${item.title}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">${item.category}</h6>
+                        <p class="card-text">${item.message ? item.message : "No message available"}</p>
+                        <div>${tagsHTML}</div>
+                        <button class="btn btn-warning btn-sm mt-2" onclick="editContent('${item._id}', '${item.title}', '${item.category}', '${item.tags.join(",")}', '${item.message}')">✏️ Edit</button>
+                        <button class="btn btn-danger btn-sm mt-2" onclick="confirmDeleteContent('${item._id}')">🗑️ Delete</button>
+                    </div>
+                </div>
             </div>
         `;
     });
 }
+
 
 // Add a new content block
 async function addNewContent() {
@@ -281,13 +287,19 @@ function displayTags(tags) {
 }
 
 async function addNewTag() {
-    console.log("addNewTag function triggered!"); // Debugging log
+    console.log("🛠️ addNewTag function triggered!"); // Debugging log
 
     const newTagInput = document.getElementById("newTagInput");
-    const newTag = newTagInput.value.trim();
+    const newTagsDropdown = document.getElementById("newTags"); // ✅ This must exist!
 
+    if (!newTagsDropdown) {
+        console.error("❌ Error: Could not find 'newTags' element in DOM!");
+        return;
+    }
+
+    const newTag = newTagInput.value.trim();
     if (!newTag) {
-        alert("Please enter a tag name.");
+        alert("Please enter a tag.");
         return;
     }
 
@@ -299,16 +311,18 @@ async function addNewTag() {
         });
 
         if (response.ok) {
-            console.log("Tag added successfully.");
-            newTagInput.value = ""; // Clear input field
-            fetchTags(); // Refresh the tag list in the dropdown
+            console.log("✅ Tag added successfully!");
+            fetchTags(); // Refresh dropdown list
         } else {
-            console.error("Failed to add tag.");
+            console.error("❌ Failed to add tag.");
         }
     } catch (error) {
-        console.error("Error adding tag:", error);
+        console.error("❌ Error adding tag:", error);
     }
+
+    newTagInput.value = ""; // Clear input field
 }
+
 
 
 // =====================================================
