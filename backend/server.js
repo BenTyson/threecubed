@@ -165,6 +165,23 @@ app.post("/tags", async (req, res) => {
     res.json(newTag);
 });
 
+
+// Update Tag
+app.put("/tags/:id", async (req, res) => {
+    const { tag } = req.body;
+    try {
+        const updatedTag = await Tag.findByIdAndUpdate(req.params.id, { tag }, { new: true });
+        if (!updatedTag) {
+            return res.status(404).json({ error: "Tag not found" });
+        }
+        res.json(updatedTag);
+    } catch (error) {
+        console.error("Error updating tag:", error);
+        res.status(500).json({ error: "Error updating tag" });
+    }
+});
+
+
 // Delete tags
 app.delete("/tags/:id", async (req, res) => {
     console.log("Delete request received for tag ID:", req.params.id);

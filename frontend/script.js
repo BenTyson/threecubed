@@ -291,7 +291,7 @@ function confirmDeleteCategory(categoryId) {
     };
 }
 
-// ✅ Hide Delete Alert Box
+//Hide Delete Alert Box
 function hideDeleteAlert() {
     document.getElementById("confirmDeleteAlert").classList.add("d-none");
 }
@@ -327,50 +327,77 @@ async function fetchTags() {
         const response = await fetch("http://localhost:5001/tags");
         const tags = await response.json();
 
-        // ✅ Update tag list (simple display)
+        console.log("✅ Fetching tags:", tags); // Debugging log
+
+        // ✅ Update tag list (Organizer View)
         const tagList = document.getElementById("tagList");
         if (tagList) {
             tagList.innerHTML = "";
             tags.forEach(tag => {
                 const li = document.createElement("li");
-                li.classList.add("list-group-item");
-                li.textContent = tag.tag;
+                li.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+
+                li.innerHTML = `
+                    <span>${tag.tag}</span>
+                    <div>
+                        <button class="btn btn-sm btn-warning me-2" onclick="openEditTagModal('${tag._id}', '${tag.tag}')">✏️</button>
+                        <button class="btn btn-sm btn-danger" onclick="confirmDeleteTag('${tag._id}')">🗑️</button>
+                    </div>
+                `;
+
                 tagList.appendChild(li);
             });
         }
 
-        // ✅ Update tag filters (delete buttons)
+        // ✅ Update tag filters (Viewer Filter)
         const tagFilters = document.getElementById("tagFilters");
         if (tagFilters) {
             tagFilters.innerHTML = "";
             tags.forEach(tag => {
                 tagFilters.innerHTML += `
-                    <div class="tag-item">
-                        <span class="tag">${tag.tag}</span>
-                        <button class="delete-tag-btn btn btn-sm btn-danger" onclick="confirmDeleteTag('${tag._id}')">🗑️</button>
+                    <div class="tag-item d-flex align-items-center">
+                        <span class="badge bg-primary p-2">${tag.tag}</span>
+                        <button class="btn btn-sm btn-danger ms-2" onclick="confirmDeleteTag('${tag._id}')">🗑️</button>
                     </div>
                 `;
             });
         }
 
     } catch (error) {
-        console.error("Error fetching tags:", error);
+        console.error("❌ Error fetching tags:", error);
     }
 }
 
 
 function displayTags(tags) {
-    const tagFilters = document.getElementById("tagFilters");
-    tagFilters.innerHTML = "";
+    const tagList = document.getElementById("tagList");
+
+    if (!tagList) {
+        console.error("❌ ERROR: 'tagList' element not found in HTML!");
+        return;
+    }
+    
+    tagList.innerHTML = ""; // Clear previous list
+
+    console.log("✅ Populating tags:", tags); // Debugging log
+
     tags.forEach(tag => {
-        tagFilters.innerHTML += `
-            <div class="tag-item">
-                <span class="tag">${tag.tag}</span>
-                <button class="delete-tag-btn" onclick="confirmDeleteTag('${tag._id}')">🗑️</button>
+        const listItem = document.createElement("li");
+        listItem.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+
+        listItem.innerHTML = `
+            <span>${tag.tag}</span>
+            <div>
+                <button class="btn btn-sm btn-warning me-2" onclick="openEditTagModal('${tag._id}', '${tag.tag}')">✏️ Edit</button>
+                <button class="btn btn-sm btn-danger" onclick="confirmDeleteTag('${tag._id}')">🗑️ Delete</button>
             </div>
         `;
+
+        console.log(`✅ Tag added: ${tag.tag}`); // Debugging log
+        tagList.appendChild(listItem);
     });
 }
+
 
 async function addNewTag() {
     console.log("🛠️ addNewTag function triggered!"); // Debugging log
@@ -409,39 +436,39 @@ async function addNewTag() {
     newTagInput.value = ""; // Clear input field
 }
 
-// Show a Bootstrap-styled alert with Confirm & Cancel buttons
+// Delete alert box
 function confirmDeleteTag(tagId) {
-    const alertContainer = document.getElementById("alertContainer");
-    const alertMessage = document.getElementById("alertMessage");
+    const alertContainer = document.getElementById("confirmDeleteAlert");
+    const alertMessage = document.getElementById("confirmDeleteMessage");
     const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
-    const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
 
-    // ✅ Check if elements exist
-    if (!alertContainer || !alertMessage || !confirmDeleteBtn || !cancelDeleteBtn) {
+    // ✅ Ensure all elements exist before proceeding
+    if (!alertContainer || !alertMessage || !confirmDeleteBtn) {
         console.error("❌ Error: Bootstrap alert elements not found in DOM!");
         return;
     }
 
-    // Set message dynamically
+    // ✅ Set the delete message dynamically
     alertMessage.innerHTML = `Are you sure you want to delete this tag? <strong>This action is permanent!</strong>`;
 
-    // Show the alert
+    // ✅ Show the alert box
     alertContainer.classList.remove("d-none");
     alertContainer.classList.add("show");
 
-    // ✅ Handle Confirm Click
+    // ✅ Set Confirm button action
     confirmDeleteBtn.onclick = function () {
-        deleteTag(tagId); // Proceed with deletion
-        alertContainer.classList.add("d-none"); // Hide the alert after deleting
-    };
-
-    // ✅ Handle Cancel Click
-    cancelDeleteBtn.onclick = function () {
-        alertContainer.classList.add("d-none"); // Hide alert without deleting
+        deleteTag(tagId);  // ✅ Proceed with deletion
+        hideDeleteAlert(); // ✅ Hide alert after confirming
     };
 }
 
-
+// Hide the Delete Alert Box
+function hideDeleteAlert() {
+    const alertContainer = document.getElementById("confirmDeleteAlert");
+    if (alertContainer) {
+        alertContainer.classList.add("d-none");
+    }
+}
 
 
 // Delete the tag from the database
@@ -463,6 +490,57 @@ async function deleteTag(tagId) {
         console.error("Error deleting tag:", error);
     }
 }
+
+// Open the Edit Tag Modal & Populate Input Field
+function openEditTagModal(tagId, currentTagName) {
+    const editTagInput = document.getElementById("editTagInput");
+    const editTagId = document.getElementById("editTagId");
+    const editTagModal = new bootstrap.Modal(document.getElementById("editTagModal"));
+
+    if (!editTagInput || !editTagId || !editTagModal) {
+        console.error("❌ Error: Edit modal elements not found in DOM!");
+        return;
+    }
+
+    // ✅ Populate input fields
+    editTagInput.value = currentTagName;
+    editTagId.value = tagId;
+
+    // ✅ Show the Bootstrap modal
+    editTagModal.show();
+}
+
+// Save the Edited Tag Name
+async function saveEditedTag() {
+    const tagId = document.getElementById("editTagId").value.trim();
+    const newTagName = document.getElementById("editTagInput").value.trim();
+    const editTagModal = bootstrap.Modal.getInstance(document.getElementById("editTagModal"));
+
+    if (!tagId || !newTagName) {
+        alert("Please enter a valid tag name.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:5001/tags/${tagId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tag: newTagName }),
+        });
+
+        if (response.ok) {
+            console.log("✅ Tag updated successfully!");
+            fetchTags(); // ✅ Refresh tag list
+            editTagModal.hide(); // ✅ Close the modal
+        } else {
+            console.error("❌ Failed to update tag.");
+        }
+    } catch (error) {
+        console.error("❌ Error updating tag:", error);
+    }
+}
+
+
 
 
 
