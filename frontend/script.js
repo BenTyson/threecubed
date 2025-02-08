@@ -2,11 +2,17 @@
 //  📌 PAGE LOAD & VIEW MANAGEMENT
 // =====================================================
 
-// Toggle between Creator & Viewer sections
+// Toggle between Creator & Viewer & Organizer sections
 function showSection(section) {
     document.getElementById("creator").style.display = section === "creator" ? "block" : "none";
+    document.getElementById("organizer").style.display = section === "organizer" ? "block" : "none"; // New tab
     document.getElementById("viewer").style.display = section === "viewer" ? "block" : "none";
+
+    // Update Bootstrap active state for tabs
+    document.querySelectorAll(".nav-link").forEach(btn => btn.classList.remove("active"));
+    document.querySelector(`[onclick="showSection('${section}')"]`).classList.add("active");
 }
+
 
 // Ensure the app starts in Viewer mode
 document.addEventListener("DOMContentLoaded", () => {
