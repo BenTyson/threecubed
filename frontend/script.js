@@ -325,7 +325,8 @@ async function deleteCategory(categoryId) {
 
         if (response.ok) {
             console.log("✅ Category deleted successfully.");
-            populateCategories(); // ✅ Refresh category list after deletion
+            populateCategories(); // ✅ Refresh category list
+            fetchContent(); // ✅ Refresh Viewer Mode Content Blocks
         } else {
             console.error("❌ Failed to delete category. Response:", await response.json());
         }
@@ -333,6 +334,7 @@ async function deleteCategory(categoryId) {
         console.error("❌ Error deleting category:", error);
     }
 }
+
 
 
 
@@ -369,6 +371,7 @@ async function saveEditedCategory() {
         if (response.ok) {
             console.log("✅ Category updated successfully.");
             populateCategories(); // ✅ Refresh category list
+            fetchContent(); // ✅ Refresh Viewer Mode Content Blocks
             hideEditCategoryModal(); // ✅ Close modal
         } else {
             const errorMessage = await response.text();
@@ -378,6 +381,8 @@ async function saveEditedCategory() {
         console.error("❌ Error updating category:", error);
     }
 }
+
+
 
 function hideEditCategoryModal() {
     console.log("🔄 Closing Edit Category Modal..."); // ✅ Debugging log
@@ -572,15 +577,17 @@ async function deleteTag(tagId) {
         });
 
         if (response.ok) {
-            console.log("Tag deleted successfully.");
-            fetchTags(); // Refresh tags after deletion
+            console.log("✅ Tag deleted successfully!");
+            fetchTags(); // ✅ Refresh tag lists
+            fetchContent(); // ✅ Refresh Viewer Mode Content Blocks
         } else {
-            console.error("Failed to delete tag.");
+            console.error("❌ Failed to delete tag.");
         }
     } catch (error) {
-        console.error("Error deleting tag:", error);
+        console.error("❌ Error deleting tag:", error);
     }
 }
+
 
 // Open the Edit Tag Modal & Populate Input Field
 function openEditTagModal(tagId, currentTagName) {
@@ -621,7 +628,8 @@ async function saveEditedTag() {
 
         if (response.ok) {
             console.log("✅ Tag updated successfully!");
-            fetchTags(); // ✅ Refresh tag list
+            fetchTags(); // ✅ Refresh tags in Organizer & Viewer
+            fetchContent(); // ✅ Refresh Viewer Mode Content Blocks
             editTagModal.hide(); // ✅ Close the modal
         } else {
             console.error("❌ Failed to update tag.");
@@ -630,6 +638,8 @@ async function saveEditedTag() {
         console.error("❌ Error updating tag:", error);
     }
 }
+
+
 
 const activeTags = new Set();
 
