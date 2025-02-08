@@ -210,8 +210,11 @@ async function populateCategories() {
             const listItem = document.createElement("li");
             listItem.className = "list-group-item d-flex justify-content-between align-items-center";
             listItem.innerHTML = `
-                ${category.category}
-                <button class="btn btn-sm btn-danger" onclick="confirmDeleteCategory('${category._id}')">🗑️</button>
+                <span>${category.category}</span>
+                <div>
+                    <button class="btn btn-sm btn-warning me-2" onclick="openEditCategoryModal('${category._id}', '${category.category}')">✏️</button>
+                    <button class="btn btn-sm btn-danger" onclick="confirmDeleteCategory('${category._id}')">🗑️</button>
+                </div>
             `;
             categoryList.appendChild(listItem);
         });
@@ -220,6 +223,7 @@ async function populateCategories() {
         console.error("Error fetching categories:", error);
     }
 }
+
 
 
 
@@ -275,21 +279,31 @@ function updateCategoryDropdown(categories) {
 }
 
 function confirmDeleteCategory(categoryId) {
-    // Set the alert message
-    document.getElementById("confirmDeleteMessage").textContent =
-        "Are you sure you want to permanently delete this category?";
+    console.log("🛠️ Confirm Delete Category Triggered! ID:", categoryId); // Debugging log
 
-    // Show the alert
+    // ✅ Ensure alert box elements exist
     const alertBox = document.getElementById("confirmDeleteAlert");
+    const alertMessage = document.getElementById("confirmDeleteMessage");
+    const confirmButton = document.getElementById("confirmDeleteBtn");
+
+    if (!alertBox || !alertMessage || !confirmButton) {
+        console.error("❌ Error: Bootstrap alert elements not found in DOM!");
+        return;
+    }
+
+    // ✅ Set alert message dynamically
+    alertMessage.textContent = "Are you sure you want to delete this category? This action is permanent.";
+
+    // ✅ Show the Bootstrap-styled alert
     alertBox.classList.remove("d-none");
 
-    // Set the confirm button to trigger the delete function
-    const confirmButton = document.getElementById("confirmDeleteBtn");
+    // ✅ Set the confirm button to trigger deletion
     confirmButton.onclick = function () {
         deleteCategory(categoryId);
-        hideDeleteAlert(); // Hide alert after confirming
+        hideDeleteAlert(); // ✅ Hide alert after confirming
     };
 }
+
 
 //Hide Delete Alert Box
 function hideDeleteAlert() {
@@ -298,7 +312,7 @@ function hideDeleteAlert() {
 
 
 async function deleteCategory(categoryId) {
-    console.log(`Attempting to delete category with ID: ${categoryId}`); // ✅ Debugging Log
+    console.log(`🗑️ Attempting to delete category with ID: ${categoryId}`); // ✅ Debugging Log
 
     try {
         const response = await fetch(`http://localhost:5001/categories/${categoryId}`, {
@@ -307,7 +321,7 @@ async function deleteCategory(categoryId) {
 
         if (response.ok) {
             console.log("✅ Category deleted successfully.");
-            populateCategories(); // Refresh category list after deletion
+            populateCategories(); // ✅ Refresh category list after deletion
         } else {
             console.error("❌ Failed to delete category. Response:", await response.json());
         }
@@ -315,6 +329,65 @@ async function deleteCategory(categoryId) {
         console.error("❌ Error deleting category:", error);
     }
 }
+
+
+
+function openEditCategoryModal(categoryId, categoryName) {
+    console.log("📝 Opening Edit Modal for:", categoryId, "→", categoryName); // ✅ Debugging Log
+
+    document.getElementById("editCategoryId").value = categoryId;
+    document.getElementById("editCategoryInput").value = categoryName;
+
+    // ✅ Open Bootstrap modal
+    const editCategoryModal = new bootstrap.Modal(document.getElementById("editCategoryModal"));
+    editCategoryModal.show();
+}
+
+
+async function saveEditedCategory() {
+    const categoryId = document.getElementById("editCategoryId").value;
+    const updatedCategory = document.getElementById("editCategoryInput").value.trim();
+
+    console.log("🛠️ Attempting to update category:", categoryId, "→", updatedCategory); // ✅ Debugging log
+
+    if (!updatedCategory) {
+        alert("Category name cannot be empty.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:5001/categories/${categoryId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ category: updatedCategory })
+        });
+
+        if (response.ok) {
+            console.log("✅ Category updated successfully.");
+            populateCategories(); // ✅ Refresh category list
+            hideEditCategoryModal(); // ✅ Close modal
+        } else {
+            const errorMessage = await response.text();
+            console.error("❌ Failed to update category. Server Response:", errorMessage);
+        }
+    } catch (error) {
+        console.error("❌ Error updating category:", error);
+    }
+}
+
+function hideEditCategoryModal() {
+    console.log("🔄 Closing Edit Category Modal..."); // ✅ Debugging log
+    const editCategoryModal = bootstrap.Modal.getInstance(document.getElementById("editCategoryModal"));
+    if (editCategoryModal) {
+        editCategoryModal.hide();
+    } else {
+        console.error("❌ Failed to close modal: Bootstrap instance not found!");
+    }
+}
+
+
+
+
 
 
 

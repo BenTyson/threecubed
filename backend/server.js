@@ -126,6 +126,24 @@ app.post("/categories", async (req, res) => {
     }
 });
 
+//edit categories
+app.put("/categories/:id", async (req, res) => {
+    try {
+        const { category } = req.body;
+        const updatedCategory = await Category.findByIdAndUpdate(req.params.id, { category }, { new: true });
+
+        if (!updatedCategory) {
+            return res.status(404).json({ error: "Category not found" });
+        }
+
+        res.json(updatedCategory);
+    } catch (error) {
+        console.error("Error updating category:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
 // Delete Category by ID
 app.delete("/categories/:id", async (req, res) => {
     console.log("Delete request received for category ID:", req.params.id); // Debugging log
