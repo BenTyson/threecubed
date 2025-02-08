@@ -423,18 +423,18 @@ async function fetchTags() {
         }
 
         // ✅ Update tag filters (Viewer Filter)
-        const tagFilters = document.getElementById("tagFilters");
-        if (tagFilters) {
-            tagFilters.innerHTML = "";
-            tags.forEach(tag => {
-                tagFilters.innerHTML += `
-                    <div class="tag-item d-flex align-items-center">
-                        <span class="badge bg-primary p-2">${tag.tag}</span>
-                        <button class="btn btn-sm btn-danger ms-2" onclick="confirmDeleteTag('${tag._id}')">🗑️</button>
-                    </div>
-                `;
-            });
-        }
+		const tagFilters = document.getElementById("tagFilters");
+		if (tagFilters) {
+			tagFilters.innerHTML = "";
+			tags.forEach(tag => {
+				tagFilters.innerHTML += `
+					<div class="tag-item d-flex align-items-center">
+						<span class="badge bg-primary p-2">${tag.tag}</span> 
+					</div>
+				`;
+			});
+		}
+
 
         // ✅ Update multi-select dropdown in Creator Mode
         const tagDropdown = document.getElementById("newTags");
