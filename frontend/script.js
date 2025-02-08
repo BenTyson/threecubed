@@ -109,13 +109,24 @@ async function addNewContent() {
 }
 
 // Edit existing content
-function editContent(id, title, category, tags, message) {
+async function editContent(id, title, category, tags, message) {
     showSection("creator");
 
     document.getElementById("newTitle").value = title;
     document.getElementById("categorySelect").value = category;
-    document.getElementById("newTags").value = tags.split(",");
     document.getElementById("newMessage").value = message;
+
+    // ✅ Ensure tags are properly pre-selected in the multi-select dropdown
+    await fetchTags(); // ✅ Ensure dropdown is fully populated before selecting tags
+
+    const newTagsDropdown = document.getElementById("newTags");
+    if (newTagsDropdown) {
+        const selectedTags = tags.split(",").map(tag => tag.trim()); // Convert to array
+
+        Array.from(newTagsDropdown.options).forEach(option => {
+            option.selected = selectedTags.includes(option.value); // ✅ Pre-select existing tags
+        });
+    }
 
     const addButton = document.getElementById("addContentButton");
     addButton.textContent = "Update Content";
@@ -123,6 +134,8 @@ function editContent(id, title, category, tags, message) {
         updateContent(id);
     };
 }
+
+
 
 // Update content
 async function updateContent(contentId) {
