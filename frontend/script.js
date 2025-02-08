@@ -280,6 +280,37 @@ function displayTags(tags) {
     });
 }
 
+async function addNewTag() {
+    console.log("addNewTag function triggered!"); // Debugging log
+
+    const newTagInput = document.getElementById("newTagInput");
+    const newTag = newTagInput.value.trim();
+
+    if (!newTag) {
+        alert("Please enter a tag name.");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:5001/tags", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tag: newTag }),
+        });
+
+        if (response.ok) {
+            console.log("Tag added successfully.");
+            newTagInput.value = ""; // Clear input field
+            fetchTags(); // Refresh the tag list in the dropdown
+        } else {
+            console.error("Failed to add tag.");
+        }
+    } catch (error) {
+        console.error("Error adding tag:", error);
+    }
+}
+
+
 // =====================================================
 //  📌 FILTERING & SEARCH
 // =====================================================
