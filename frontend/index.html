@@ -28,6 +28,17 @@
 
 		<!-- ✅ Organizer Section -->
 		<div id="organizer" class="section" style="display:none;">
+		
+			<!-- ✅ Bootstrap Alert Container -->
+			<div id="alertContainer" class="alert alert-warning alert-dismissible fade d-none" role="alert">
+				<span id="alertMessage"></span>
+				<div class="mt-2">
+					<button id="confirmDeleteBtn" class="btn btn-danger btn-sm">Confirm</button>
+					<button id="cancelDeleteBtn" class="btn btn-secondary btn-sm">Cancel</button>
+				</div>
+			</div>
+
+			
 			<h2 class="text-success">📂 Organizer View</h2>
 
 			<!-- Add New Tag -->
@@ -39,19 +50,27 @@
 				</div>
 			</div>
 
-			<!-- Manage Tags -->
+			<!-- ✅ Manage Tags -->
 			<h3 class="text-secondary">Manage Tags</h3>
 			<div id="tagFilters" class="d-flex flex-wrap gap-2"></div>
+
+
+
+			<hr>
+
+			<!-- ✅ Add New Category -->
+			<div class="mb-3">
+				<label for="newCategoryInput" class="form-label">Add New Category</label>
+				<div class="input-group">
+					<input type="text" id="newCategoryInput" class="form-control" placeholder="Enter new category">
+					<button class="btn btn-success" onclick="addNewCategory()">Add Category</button>
+				</div>
+			</div>
 			
-			<!-- Add New Category -->
-            <div class="mb-3">
-                <label for="newCategoryInput" class="form-label">Add New Category</label>
-                <div class="input-group">
-                    <input type="text" id="newCategoryInput" class="form-control" placeholder="Enter new category">
-                    <button class="btn btn-success" onclick="addNewCategory()">Add Category</button>
-                </div>
-            </div>
+			
+
 		</div>
+
 
 
         <!-- ✅ Creator Section -->
@@ -76,9 +95,10 @@
             </div>
 
             <div class="mb-3">
-                <label for="newMessage" class="form-label">Content Message</label>
-                <textarea id="newMessage" class="form-control" placeholder="Enter content message" rows="3"></textarea>
-            </div>
+				<label for="newMessage" class="form-label">Content Message</label>
+				<textarea id="newMessage" class="form-control form-control-lg" placeholder="Enter content message" rows="6" style="resize:vertical;"></textarea>
+			</div>
+
 
             <button id="addContentButton" class="btn btn-primary w-100" onclick="addNewContent()">Add Content</button>
         </div>

@@ -5,22 +5,27 @@
 // Toggle between Creator & Viewer & Organizer sections
 function showSection(section) {
     document.getElementById("creator").style.display = section === "creator" ? "block" : "none";
-    document.getElementById("organizer").style.display = section === "organizer" ? "block" : "none"; // New tab
+    document.getElementById("organizer").style.display = section === "organizer" ? "block" : "none";
     document.getElementById("viewer").style.display = section === "viewer" ? "block" : "none";
+
+    // ✅ If switching to Organizer or Creator, refresh the tag list
+    if (section === "organizer" || section === "creator") {
+        fetchTags();  // ✅ Ensure tags are up-to-date in both views
+    }
 
     // Update Bootstrap active state for tabs
     document.querySelectorAll(".nav-link").forEach(btn => btn.classList.remove("active"));
     document.querySelector(`[onclick="showSection('${section}')"]`).classList.add("active");
 }
 
-
 // Ensure the app starts in Viewer mode
 document.addEventListener("DOMContentLoaded", () => {
     showSection("viewer");
-    fetchTags();
+    fetchTags();  // ✅ Preload tags at startup
     populateCategories();
     fetchContent();
 });
+
 
 // =====================================================
 //  📌 CONTENT MANAGEMENT
@@ -263,21 +268,37 @@ async function fetchTags() {
         const response = await fetch("http://localhost:5001/tags");
         const tags = await response.json();
 
-        // Find the multi-select dropdown
-        const tagsDropdown = document.getElementById("newTags");
-        tagsDropdown.innerHTML = ""; // Clear previous options
+        // ✅ Update tag list (simple display)
+        const tagList = document.getElementById("tagList");
+        if (tagList) {
+            tagList.innerHTML = "";
+            tags.forEach(tag => {
+                const li = document.createElement("li");
+                li.classList.add("list-group-item");
+                li.textContent = tag.tag;
+                tagList.appendChild(li);
+            });
+        }
 
-        tags.forEach(tag => {
-            const option = document.createElement("option");
-            option.value = tag.tag;
-            option.textContent = tag.tag;
-            tagsDropdown.appendChild(option);
-        });
+        // ✅ Update tag filters (delete buttons)
+        const tagFilters = document.getElementById("tagFilters");
+        if (tagFilters) {
+            tagFilters.innerHTML = "";
+            tags.forEach(tag => {
+                tagFilters.innerHTML += `
+                    <div class="tag-item">
+                        <span class="tag">${tag.tag}</span>
+                        <button class="delete-tag-btn btn btn-sm btn-danger" onclick="confirmDeleteTag('${tag._id}')">🗑️</button>
+                    </div>
+                `;
+            });
+        }
 
     } catch (error) {
         console.error("Error fetching tags:", error);
     }
 }
+
 
 function displayTags(tags) {
     const tagFilters = document.getElementById("tagFilters");
@@ -328,6 +349,62 @@ async function addNewTag() {
 
     newTagInput.value = ""; // Clear input field
 }
+
+// Show a Bootstrap-styled alert with Confirm & Cancel buttons
+function confirmDeleteTag(tagId) {
+    const alertContainer = document.getElementById("alertContainer");
+    const alertMessage = document.getElementById("alertMessage");
+    const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+    const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
+
+    // ✅ Check if elements exist
+    if (!alertContainer || !alertMessage || !confirmDeleteBtn || !cancelDeleteBtn) {
+        console.error("❌ Error: Bootstrap alert elements not found in DOM!");
+        return;
+    }
+
+    // Set message dynamically
+    alertMessage.innerHTML = `Are you sure you want to delete this tag? <strong>This action is permanent!</strong>`;
+
+    // Show the alert
+    alertContainer.classList.remove("d-none");
+    alertContainer.classList.add("show");
+
+    // ✅ Handle Confirm Click
+    confirmDeleteBtn.onclick = function () {
+        deleteTag(tagId); // Proceed with deletion
+        alertContainer.classList.add("d-none"); // Hide the alert after deleting
+    };
+
+    // ✅ Handle Cancel Click
+    cancelDeleteBtn.onclick = function () {
+        alertContainer.classList.add("d-none"); // Hide alert without deleting
+    };
+}
+
+
+
+
+// Delete the tag from the database
+async function deleteTag(tagId) {
+    console.log("Attempting to delete tag with ID:", tagId); // Debugging log
+
+    try {
+        const response = await fetch(`http://localhost:5001/tags/${tagId}`, {
+            method: "DELETE",
+        });
+
+        if (response.ok) {
+            console.log("Tag deleted successfully.");
+            fetchTags(); // Refresh tags after deletion
+        } else {
+            console.error("Failed to delete tag.");
+        }
+    } catch (error) {
+        console.error("Error deleting tag:", error);
+    }
+}
+
 
 
 
