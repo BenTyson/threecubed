@@ -54,6 +54,10 @@ function displayContent(contentData) {
     }
 
     contentData.forEach(item => {
+        const maxWords = 50;
+        const words = item.message ? item.message.split(/\s+/) : [];
+        const truncatedMessage = words.length > maxWords ? words.slice(0, maxWords).join(" ") + "..." : item.message;
+
         const tagsHTML = item.tags.map(tag => `
             <span class="badge tag-filter bg-secondary me-1" data-tag="${tag}" onclick="toggleTagFilter('${tag}')">${tag}</span>
         `).join(" ");
@@ -64,21 +68,17 @@ function displayContent(contentData) {
                     <div class="card-body">
                         <p class="head2">${item.title}</p>
                         <h6 class="card-subtitle mb-2 text-muted">${item.category} | ${item.messageType}</h6> <!-- ✅ Display Message Type -->
-                        <p class="card-text">${item.message ? item.message : "No message available"}</p>
-                        <div>${tagsHTML}</div>
+                        <p class="card-text" id="message-${item._id}">${truncatedMessage}</p>
+
+                        ${words.length > maxWords ? 
+                            `<button class="btn btn-outline-dark btn-sm mt-2" onclick="expandMessage('${item._id}')">Read More</button>` 
+                            : ""}
+
+                        <div class="mt-2">${tagsHTML}</div> <!-- ✅ Tags moved below Read More -->
 
                         <button class="btn btn-edit btn-sm mt-2" 
-						onclick="editContent(
-							'${item._id}', 
-							'${item.title?.replace(/'/g, "\\'") || ''}', 
-							'${item.category?.replace(/'/g, "\\'") || ''}', 
-							'${(item.tags || []).join(',').replace(/'/g, "\\'")}', 
-							'${item.message?.replace(/'/g, "\\'") || ''}', 
-							'${item.messageType?.replace(/'/g, "\\'") || ''}'
-						)">
-						✏️
-					</button>
-
+                            onclick="editContent('${item._id}', '${item.title}', '${item.category}', '${item.tags.join(",")}', '${item.message}', '${item.messageType}')">✏️</button>
+                        
                         <button class="btn btn-danger btn-sm mt-2" 
                             onclick="confirmDeleteContent('${item._id}')">🗑️</button>
                     </div>
@@ -92,12 +92,13 @@ function displayContent(contentData) {
 
 
 
+
 // Add a new content block
 async function addNewContent() {
     const newTitle = document.getElementById("newTitle").value.trim();
     const newCategory = document.getElementById("categorySelect").value.trim();
     const newMessage = document.getElementById("newMessage").value.trim();
-    const newMessageType = document.getElementById("messageTypeSelect").value;
+    const newMessageType = document.getElementById("messageTypeSelect").value; // ✅ Capture Message Type
     const newTagsDropdown = document.getElementById("newTags");
     const newTags = Array.from(newTagsDropdown.selectedOptions).map(option => option.value);
     const originalPost = document.getElementById("originalPostSelect").value; // ✅ Get Selected Post
@@ -107,18 +108,23 @@ async function addNewContent() {
         return;
     }
 
+    // ✅ Log data before sending request
+    const contentData = { 
+        title: newTitle, 
+        category: newCategory, 
+        tags: newTags, 
+        message: newMessage, 
+        messageType: newMessageType,  // ✅ Ensure this is logged
+        originalPost: originalPost 
+    };
+
+    console.log("📤 Sending Content Data:", contentData); // ✅ Debugging Log
+
     try {
         const response = await fetch("http://localhost:5001/content", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                title: newTitle, 
-                category: newCategory, 
-                tags: newTags, 
-                message: newMessage, 
-                messageType: newMessageType,
-                originalPost: originalPost // ✅ Save original post
-            })
+            body: JSON.stringify(contentData)
         });
 
         if (response.ok) {
@@ -131,6 +137,7 @@ async function addNewContent() {
         console.error("❌ Error adding content block:", error);
     }
 }
+
 
 
 
@@ -388,24 +395,15 @@ async function deleteCategory(categoryId) {
 
 
 function openEditCategoryModal(categoryId, categoryName) {
-    console.log("📝 Opening Edit Modal for:", categoryId, "→", categoryName); // Debugging Log
+    console.log("📝 Opening Edit Modal for:", categoryId, "→", categoryName); // ✅ Debugging Log
 
-    const editCategoryId = document.getElementById("editCategoryId");
-    const editCategoryInput = document.getElementById("editCategoryInput");
-
-    if (!editCategoryId || !editCategoryInput) {
-        console.error("❌ Error: Edit category modal elements not found!");
-        return;
-    }
-
-    editCategoryId.value = categoryId;
-    editCategoryInput.value = categoryName;
+    document.getElementById("editCategoryId").value = categoryId;
+    document.getElementById("editCategoryInput").value = categoryName;
 
     // ✅ Open Bootstrap modal
     const editCategoryModal = new bootstrap.Modal(document.getElementById("editCategoryModal"));
     editCategoryModal.show();
 }
-
 
 
 async function saveEditedCategory() {
