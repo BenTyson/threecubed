@@ -1,40 +1,120 @@
-body {
-	font-family: Arial, sans-serif;
-	margin: 20px;
-	padding: 0;
-	background-color: #f8f9fa;
+    /* Global Styles */
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f8f9fa;
+        color: #333;
+    }
+    h1, h2, h3, h4, h5 {
+        font-weight: 600;
+        color: #222;
+    }
+    .container {
+        max-width: 900px;
+    }
+    
+    .head1 {
+    font-size: 1.3em;
+    text-transform: uppercase; /* All caps */
+    letter-spacing: 1.4px; /* Spacing between letters */
+    font-weight: bold; /* Make it stand out */
+    color: #222; /* Dark gray for monochrome theme */
+	}
+	
+	.head2 {
+    font-size: .9em;
+    text-transform: uppercase; /* All caps */
+    letter-spacing: 1px; /* Spacing between letters */
+    font-weight: bold; /* Make it stand out */
+    color: #444; /* Dark gray for monochrome theme */
+	}
+
+
+    /* Minimalist Buttons */
+    .btn {
+        border-radius: 6px;
+        transition: all 0.2s ease-in-out;
+    }
+    .btn:hover {
+        opacity: 0.8;
+    }
+    .btn-primary {
+        background-color: #444;
+        border: none;
+    }
+    .btn-secondary {
+        background-color: #777;
+        border: none;
+    }
+    .btn-danger {
+        background-color: #7a0012;
+        border: none;
+    }
+    
+    .btn-edit {
+    background-color: #333; /* Dark gray */
+    color: #fff; /* White text */
+    border: none;
+    xxpadding: 6px 12px;
+    xxfont-size: 14px;
+    xxborder-radius: 4px;
+    xxtransition: all 0.2s ease-in-out;
 }
-.container {
-	max-width: 800px;
-	margin: auto;
-	background: white;
-	padding: 20px;
-	border-radius: 8px;
-	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-input, select {
-	width: 100%;
-	padding: 10px;
-	margin: 10px 0;
-	border: 1px solid #ccc;
-	border-radius: 5px;
-}
-.content-list {
-	margin-top: 20px;
-}
-.content-item {
-	padding: 10px;
-	border: 1px solid #ddd;
-	margin: 5px 0;
-	border-radius: 5px;
-	background: #fff;
-}
-.tag {
-	display: inline-block;
-	padding: 5px 10px;
-	margin: 5px;
-	background-color: #007bff;
-	color: white;
-	border-radius: 5px;
-	cursor: pointer;
-}
+
+	.btn-edit:hover {
+		background-color: #555; /* Slightly lighter gray */
+	}
+
+
+    /* Monochrome Navigation */
+    .nav-tabs .nav-link {
+        color: #555;
+        border: none;
+        padding: 10px 15px;
+        transition: background 0.3s ease-in-out;
+    }
+    .nav-tabs .nav-link.active {
+        background: #333;
+        color: #fff;
+    }
+
+    /* Minimalist Input Fields */
+    .form-control {
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+    }
+    .form-select {
+        border-radius: 6px;
+        background-color: #fff;
+    }
+
+    /* Minimalist Tags & Filters */
+    .tag-item {
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 5px;
+        background: #ccc;
+        font-size: 0.9rem;
+        transition: background 0.2s;
+    }
+    .tag-item.active {
+        background: #444;
+        color: #fff;
+    }
+
+    /* Card Styling */
+    .card {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0px 2px 10px rgba(0,0,0,0.05);
+        transition: transform 0.2s ease-in-out;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    /* Minimalist Modals */
+    .modal-content {
+        border-radius: 8px;
+        border: none;
+    }

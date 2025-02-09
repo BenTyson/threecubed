@@ -6,131 +6,10 @@
     <title>JR Prudence</title>
 
     <!-- Bootstrap CSS -->
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
     <script defer src="script.js"></script>
-    
-    <style>
-    /* Global Styles */
-    body {
-        font-family: 'Inter', sans-serif;
-        background-color: #f8f9fa;
-        color: #333;
-    }
-    h1, h2, h3, h4, h5 {
-        font-weight: 600;
-        color: #222;
-    }
-    .container {
-        max-width: 900px;
-    }
-    
-    .head1 {
-    font-size: 1.3em;
-    text-transform: uppercase; /* All caps */
-    letter-spacing: 1.4px; /* Spacing between letters */
-    font-weight: bold; /* Make it stand out */
-    color: #222; /* Dark gray for monochrome theme */
-	}
-	
-	.head2 {
-    font-size: .9em;
-    text-transform: uppercase; /* All caps */
-    letter-spacing: 1px; /* Spacing between letters */
-    font-weight: bold; /* Make it stand out */
-    color: #444; /* Dark gray for monochrome theme */
-	}
-
-
-    /* Minimalist Buttons */
-    .btn {
-        border-radius: 6px;
-        transition: all 0.2s ease-in-out;
-    }
-    .btn:hover {
-        opacity: 0.8;
-    }
-    .btn-primary {
-        background-color: #444;
-        border: none;
-    }
-    .btn-secondary {
-        background-color: #777;
-        border: none;
-    }
-    .btn-danger {
-        background-color: #7a0012;
-        border: none;
-    }
-    
-    .btn-edit {
-    background-color: #333; /* Dark gray */
-    color: #fff; /* White text */
-    border: none;
-    xxpadding: 6px 12px;
-    xxfont-size: 14px;
-    xxborder-radius: 4px;
-    xxtransition: all 0.2s ease-in-out;
-}
-
-	.btn-edit:hover {
-		background-color: #555; /* Slightly lighter gray */
-	}
-
-
-    /* Monochrome Navigation */
-    .nav-tabs .nav-link {
-        color: #555;
-        border: none;
-        padding: 10px 15px;
-        transition: background 0.3s ease-in-out;
-    }
-    .nav-tabs .nav-link.active {
-        background: #333;
-        color: #fff;
-    }
-
-    /* Minimalist Input Fields */
-    .form-control {
-        border-radius: 6px;
-        border: 1px solid #ccc;
-        background-color: #fff;
-    }
-    .form-select {
-        border-radius: 6px;
-        background-color: #fff;
-    }
-
-    /* Minimalist Tags & Filters */
-    .tag-item {
-        cursor: pointer;
-        padding: 5px 10px;
-        border-radius: 5px;
-        background: #ccc;
-        font-size: 0.9rem;
-        transition: background 0.2s;
-    }
-    .tag-item.active {
-        background: #444;
-        color: #fff;
-    }
-
-    /* Card Styling */
-    .card {
-        border: none;
-        border-radius: 8px;
-        box-shadow: 0px 2px 10px rgba(0,0,0,0.05);
-        transition: transform 0.2s ease-in-out;
-    }
-    .card:hover {
-        transform: translateY(-5px);
-    }
-
-    /* Minimalist Modals */
-    .modal-content {
-        border-radius: 8px;
-        border: none;
-    }
-</style>
 
 </head>
 <body>
@@ -165,7 +44,7 @@
             <!-- Add New Category -->
             <p class="head1">Categories</p>
             <div class="mb-3">
-                <p class="head2">Add New Categories</p>
+                <span class="head2">Add New Categories</span><br/>
                 <div class="input-group">
                     <input type="text" id="newCategoryInput" class="form-control" placeholder="Enter new category">
                     <button class="btn btn-dark" onclick="addNewCategory()">Add</button>
@@ -173,15 +52,15 @@
             </div>
 
             <!-- Existing Categories List -->
-            <p class="head2">Existing Categories</p>
+            <span class="head2">Existing Categories</span><br/>
             <ul id="categoryList" class="list-group"></ul> <!-- Dynamically Populated -->
 
-			<hr><br/><br/>
+			<br/><hr><br/>
 
             <!-- Add New Tag -->
             <p class="head1">Tags</p>
             <div class="mb-3">
-                <p class="head2">Add New Tag</p>
+                <span class="head2">Add New Tag</span><br/>
                 <div class="input-group">
                     <input type="text" id="newTagInput" class="form-control" placeholder="Enter new tag">
                     <button class="btn btn-dark" onclick="addNewTag()">Add</button>
@@ -189,7 +68,7 @@
             </div>
 
             <!-- Manage Tags -->
-			<p class="head2">Existing Tags</p>
+			<span class="head2">Existing Tags</span><br/>
             <ul id="tagList" class="list-group"></ul> <!-- Tags dynamically populated -->
 
             <!-- Bootstrap Modal for Editing Tags -->
@@ -234,7 +113,7 @@
 			</div>
 
             
-            <hr><br/>
+            <br/><hr><br/>
             
             <!-- ✅ Original Post Section -->
 			<p class="head1">Original Posts</p>
