@@ -62,14 +62,14 @@ function displayContent(contentData) {
             <div class="col-md-6 col-lg-4">
                 <div class="card mb-3 shadow-sm">
                     <div class="card-body">
-                        <h5 class="card-title">${item.title}</h5>
+                        <p class="head2">${item.title}</p>
                         <h6 class="card-subtitle mb-2 text-muted">${item.category} | ${item.messageType}</h6> <!-- ✅ Display Message Type -->
                         <p class="card-text">${item.message ? item.message : "No message available"}</p>
                         <div>${tagsHTML}</div>
                         <button class="btn btn-edit btn-sm mt-2" 
-                            onclick="editContent('${item._id}', '${item.title}', '${item.category}', '${item.tags.join(",")}', '${item.message}', '${item.messageType}')">✏️ Edit</button>
+                            onclick="editContent('${item._id}', '${item.title}', '${item.category}', '${item.tags.join(",")}', '${item.message}', '${item.messageType}')">✏️</button>
                         <button class="btn btn-danger btn-sm mt-2" 
-                            onclick="confirmDeleteContent('${item._id}')">🗑️ Delete</button>
+                            onclick="confirmDeleteContent('${item._id}')">🗑️</button>
                     </div>
                 </div>
             </div>
