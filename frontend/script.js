@@ -66,8 +66,19 @@ function displayContent(contentData) {
                         <h6 class="card-subtitle mb-2 text-muted">${item.category} | ${item.messageType}</h6> <!-- ✅ Display Message Type -->
                         <p class="card-text">${item.message ? item.message : "No message available"}</p>
                         <div>${tagsHTML}</div>
+
                         <button class="btn btn-edit btn-sm mt-2" 
-                            onclick="editContent('${item._id}', '${item.title}', '${item.category}', '${item.tags.join(",")}', '${item.message}', '${item.messageType}')">✏️</button>
+						onclick="editContent(
+							'${item._id}', 
+							'${item.title?.replace(/'/g, "\\'") || ''}', 
+							'${item.category?.replace(/'/g, "\\'") || ''}', 
+							'${(item.tags || []).join(',').replace(/'/g, "\\'")}', 
+							'${item.message?.replace(/'/g, "\\'") || ''}', 
+							'${item.messageType?.replace(/'/g, "\\'") || ''}'
+						)">
+						✏️
+					</button>
+
                         <button class="btn btn-danger btn-sm mt-2" 
                             onclick="confirmDeleteContent('${item._id}')">🗑️</button>
                     </div>
@@ -76,6 +87,7 @@ function displayContent(contentData) {
         `;
     });
 }
+
 
 
 
