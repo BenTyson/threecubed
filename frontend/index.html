@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Content Organizer</title>
+    <title>JR Prudence</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -23,6 +23,23 @@
     .container {
         max-width: 900px;
     }
+    
+    .head1 {
+    font-size: 1.3em;
+    text-transform: uppercase; /* All caps */
+    letter-spacing: 1.4px; /* Spacing between letters */
+    font-weight: bold; /* Make it stand out */
+    color: #222; /* Dark gray for monochrome theme */
+	}
+	
+	.head2 {
+    font-size: .9em;
+    text-transform: uppercase; /* All caps */
+    letter-spacing: 1px; /* Spacing between letters */
+    font-weight: bold; /* Make it stand out */
+    color: #444; /* Dark gray for monochrome theme */
+	}
+
 
     /* Minimalist Buttons */
     .btn {
@@ -41,9 +58,24 @@
         border: none;
     }
     .btn-danger {
-        background-color: #d9534f;
+        background-color: #7a0012;
         border: none;
     }
+    
+    .btn-edit {
+    background-color: #333; /* Dark gray */
+    color: #fff; /* White text */
+    border: none;
+    xxpadding: 6px 12px;
+    xxfont-size: 14px;
+    xxborder-radius: 4px;
+    xxtransition: all 0.2s ease-in-out;
+}
+
+	.btn-edit:hover {
+		background-color: #555; /* Slightly lighter gray */
+	}
+
 
     /* Monochrome Navigation */
     .nav-tabs .nav-link {
@@ -128,12 +160,28 @@
                     <button class="btn btn-secondary btn-sm" onclick="hideDeleteAlert()">Cancel</button>
                 </div>
             </div>
+            
+            
+            <!-- Add New Category -->
+            <p class="head1">Categories</p>
+            <div class="mb-3">
+                <p class="head2">Add New Categories</p>
+                <div class="input-group">
+                    <input type="text" id="newCategoryInput" class="form-control" placeholder="Enter new category">
+                    <button class="btn btn-dark" onclick="addNewCategory()">Add</button>
+                </div>
+            </div>
 
-            <h2>📂 Organizer View</h2>
+            <!-- Existing Categories List -->
+            <p class="head2">Existing Categories</p>
+            <ul id="categoryList" class="list-group"></ul> <!-- Dynamically Populated -->
+
+			<hr><br/><br/>
 
             <!-- Add New Tag -->
+            <p class="head1">Tags</p>
             <div class="mb-3">
-                <label for="newTagInput" class="form-label">Add New Tag</label>
+                <p class="head2">Add New Tag</p>
                 <div class="input-group">
                     <input type="text" id="newTagInput" class="form-control" placeholder="Enter new tag">
                     <button class="btn btn-dark" onclick="addNewTag()">Add</button>
@@ -141,7 +189,7 @@
             </div>
 
             <!-- Manage Tags -->
-            <h3>Manage Tags</h3>
+			<p class="head2">Existing Tags</p>
             <ul id="tagList" class="list-group"></ul> <!-- Tags dynamically populated -->
 
             <!-- Bootstrap Modal for Editing Tags -->
@@ -164,35 +212,24 @@
                 </div>
             </div>
 
-            <hr>
+            
 
-            <!-- Add New Category -->
-            <div class="mb-3">
-                <label for="newCategoryInput" class="form-label">Add New Category</label>
-                <div class="input-group">
-                    <input type="text" id="newCategoryInput" class="form-control" placeholder="Enter new category">
-                    <button class="btn btn-dark" onclick="addNewCategory()">Add</button>
-                </div>
-            </div>
-
-            <!-- Existing Categories List -->
-            <h4>Existing Categories</h4>
-            <ul id="categoryList" class="list-group"></ul> <!-- Dynamically Populated -->
+            
         </div>
 
         <!-- ✅ Creator Section -->
         <div id="creator" class="section">
-            <h2>📌 Creator View</h2>
 
+			<p class="head1">Content creator</p>			
             <!-- Add/Edit Content Block -->
-            <h3>Add / Edit Content Block</h3>
+            
             <div class="mb-3">
-                <label for="newTitle" class="form-label">Title</label>
+                <span class="head2">Title</span><br/>
                 <input type="text" id="newTitle" class="form-control" placeholder="Enter title">
             </div>
 
             <div class="mb-3">
-                <label for="messageTypeSelect" class="form-label">Message Type</label>
+                <span class="head2">Type</span><br/>
                 <select id="messageTypeSelect" class="form-select">
                     <option value="Q&A">Q&A</option>
                     <option value="3-3-3 Speaks">3-3-3 Speaks</option>
@@ -202,29 +239,27 @@
             </div>
 
             <div class="mb-3">
-                <label for="categorySelect" class="form-label">Category</label>
+                <span class="head2">Category</span><br/>
                 <select id="categorySelect" class="form-select"></select>
             </div>
 
             <div class="mb-3">
-                <label for="newTags" class="form-label">Select Tags</label>
+                <span class="head2">Tags</span><br/>
                 <select id="newTags" class="form-select" multiple></select>
             </div>
 
             <div class="mb-3">
-                <label for="newMessage" class="form-label">Content Message</label>
+                <span class="head2">Message</span><br/>
                 <textarea id="newMessage" class="form-control" placeholder="Enter content message" rows="6" style="resize:vertical;"></textarea>
             </div>
 
-            <button id="addContentButton" class="btn btn-dark w-100" onclick="addNewContent()">Save Content</button>
+            <button id="addContentButton" class="btn btn-dark w-100" onclick="addNewContent()">Save Content</button><br/><br/>
         </div>
 
         <!-- ✅ Viewer Section -->
         <div id="viewer" class="section" style="display:none;">
-            <h2>🔍 Viewer View</h2>
-
             <!-- Filter Content -->
-            <h3>Filter Content</h3>
+            <span class="head2">Search + Filter</span><br/>
             <div class="row g-2">
                 <div class="col-md-6">
                     <input type="text" id="search" class="form-control" placeholder="Search..." onkeyup="filterContent()">
@@ -236,9 +271,11 @@
                 </div>
             </div>
             <div id="tagFilters" class="d-flex flex-wrap gap-2 mt-3"></div>
+            
+            <hr><br/>
 
             <!-- Content Blocks -->
-            <h3 class="mt-4">📌 Content Blocks</h3>
+
             <div id="contentList" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"></div>
         </div>
     </div>

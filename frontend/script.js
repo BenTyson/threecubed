@@ -66,7 +66,7 @@ function displayContent(contentData) {
                         <h6 class="card-subtitle mb-2 text-muted">${item.category} | ${item.messageType}</h6> <!-- ✅ Display Message Type -->
                         <p class="card-text">${item.message ? item.message : "No message available"}</p>
                         <div>${tagsHTML}</div>
-                        <button class="btn btn-warning btn-sm mt-2" 
+                        <button class="btn btn-edit btn-sm mt-2" 
                             onclick="editContent('${item._id}', '${item.title}', '${item.category}', '${item.tags.join(",")}', '${item.message}', '${item.messageType}')">✏️ Edit</button>
                         <button class="btn btn-danger btn-sm mt-2" 
                             onclick="confirmDeleteContent('${item._id}')">🗑️ Delete</button>
@@ -247,7 +247,7 @@ async function populateCategories() {
             listItem.innerHTML = `
                 <span>${category.category}</span>
                 <div>
-                    <button class="btn btn-sm btn-warning me-2" onclick="openEditCategoryModal('${category._id}', '${category.category}')">✏️</button>
+                    <button class="btn btn-sm btn-edit xxme-2" onclick="openEditCategoryModal('${category._id}', '${category.category}')">✏️</button>
                     <button class="btn btn-sm btn-danger" onclick="confirmDeleteCategory('${category._id}')">🗑️</button>
                 </div>
             `;
@@ -453,7 +453,7 @@ async function fetchTags() {
                 li.innerHTML = `
                     <span>${tag.tag}</span>
                     <div>
-                        <button class="btn btn-sm btn-warning me-2" onclick="openEditTagModal('${tag._id}', '${tag.tag}')">✏️</button>
+                        <button class="btn btn-sm btn-edit me-2" onclick="openEditTagModal('${tag._id}', '${tag.tag}')">✏️</button>
                         <button class="btn btn-sm btn-danger" onclick="confirmDeleteTag('${tag._id}')">🗑️</button>
                     </div>
                 `;
@@ -515,7 +515,7 @@ function displayTags(tags) {
         listItem.innerHTML = `
             <span>${tag.tag}</span>
             <div>
-                <button class="btn btn-sm btn-warning me-2" onclick="openEditTagModal('${tag._id}', '${tag.tag}')">✏️ Edit</button>
+                <button class="btn btn-sm btn-edit me-2" onclick="openEditTagModal('${tag._id}', '${tag.tag}')">✏️ Edit</button>
                 <button class="btn btn-sm btn-danger" onclick="confirmDeleteTag('${tag._id}')">🗑️ Delete</button>
             </div>
         `;
