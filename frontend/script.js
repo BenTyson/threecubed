@@ -85,9 +85,10 @@ async function addNewContent() {
     const newTitle = document.getElementById("newTitle").value.trim();
     const newCategory = document.getElementById("categorySelect").value.trim();
     const newMessage = document.getElementById("newMessage").value.trim();
-    const newMessageType = document.getElementById("messageTypeSelect").value; // ✅ New field
+    const newMessageType = document.getElementById("messageTypeSelect").value;
     const newTagsDropdown = document.getElementById("newTags");
     const newTags = Array.from(newTagsDropdown.selectedOptions).map(option => option.value);
+    const originalPost = document.getElementById("originalPostSelect").value; // ✅ Get Selected Post
 
     if (!newTitle || !newCategory || !newMessage) {
         alert("Title, category, and message are required.");
@@ -103,7 +104,8 @@ async function addNewContent() {
                 category: newCategory, 
                 tags: newTags, 
                 message: newMessage, 
-                messageType: newMessageType // ✅ Include message type
+                messageType: newMessageType,
+                originalPost: originalPost // ✅ Save original post
             })
         });
 
@@ -119,16 +121,19 @@ async function addNewContent() {
 }
 
 
+
 // Edit existing content
-function editContent(id, title, category, tags, message, messageType) {
+async function editContent(id, title, category, tags, message, originalPost) {
     showSection("creator");
 
     document.getElementById("newTitle").value = title;
     document.getElementById("categorySelect").value = category;
     document.getElementById("newMessage").value = message;
-    document.getElementById("messageTypeSelect").value = messageType; // ✅ Pre-fill Message Type
 
-    // ✅ Ensure tags are properly pre-selected in the multi-select dropdown
+    await fetchOriginalPosts(); // ✅ Ensure dropdown is fully populated
+
+    document.getElementById("originalPostSelect").value = originalPost || ""; // ✅ Pre-select post
+
     const newTagsDropdown = document.getElementById("newTags");
     if (newTagsDropdown) {
         const selectedTags = tags.split(",").map(tag => tag.trim());
@@ -144,6 +149,7 @@ function editContent(id, title, category, tags, message, messageType) {
         updateContent(id);
     };
 }
+
 
 
 
@@ -370,15 +376,24 @@ async function deleteCategory(categoryId) {
 
 
 function openEditCategoryModal(categoryId, categoryName) {
-    console.log("📝 Opening Edit Modal for:", categoryId, "→", categoryName); // ✅ Debugging Log
+    console.log("📝 Opening Edit Modal for:", categoryId, "→", categoryName); // Debugging Log
 
-    document.getElementById("editCategoryId").value = categoryId;
-    document.getElementById("editCategoryInput").value = categoryName;
+    const editCategoryId = document.getElementById("editCategoryId");
+    const editCategoryInput = document.getElementById("editCategoryInput");
+
+    if (!editCategoryId || !editCategoryInput) {
+        console.error("❌ Error: Edit category modal elements not found!");
+        return;
+    }
+
+    editCategoryId.value = categoryId;
+    editCategoryInput.value = categoryName;
 
     // ✅ Open Bootstrap modal
     const editCategoryModal = new bootstrap.Modal(document.getElementById("editCategoryModal"));
     editCategoryModal.show();
 }
+
 
 
 async function saveEditedCategory() {
@@ -696,8 +711,92 @@ function toggleTagFilter(element, tag) {
 
 
 
+// =====================================================
+//  📌 ORIGINAL POST
+// =====================================================
 
+async function addNewOriginalPost() {
+    const postInput = document.getElementById("newOriginalPostInput");
+    const postURL = postInput.value.trim();
 
+    if (!postURL) {
+        alert("Please enter a valid URL.");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:5001/original-posts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: postURL })
+        });
+
+        if (response.ok) {
+            console.log("✅ Original post added successfully!");
+            postInput.value = ""; // Clear input field
+            fetchOriginalPosts(); // Refresh list
+        } else {
+            console.error("❌ Failed to add original post.");
+        }
+    } catch (error) {
+        console.error("❌ Error adding original post:", error);
+    }
+}
+
+async function fetchOriginalPosts() {
+    try {
+        const response = await fetch("http://localhost:5001/original-posts");
+        const posts = await response.json();
+
+        // ✅ Update Organizer View List
+        const postList = document.getElementById("originalPostList");
+        if (postList) {
+            postList.innerHTML = "";
+            posts.forEach(post => {
+                const li = document.createElement("li");
+                li.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+
+                li.innerHTML = `
+                    <a href="${post.url}" target="_blank">${post.url}</a>
+                    <button class="btn btn-edit btn-sm" onclick="deleteOriginalPost('${post._id}')">Delete</button>
+                `;
+
+                postList.appendChild(li);
+            });
+        }
+
+        // ✅ Update Creator Dropdown
+        const postDropdown = document.getElementById("originalPostSelect");
+        if (postDropdown) {
+            postDropdown.innerHTML = `<option value="">Select a post</option>`; // Reset options
+            posts.forEach(post => {
+                const option = document.createElement("option");
+                option.value = post.url;
+                option.textContent = post.url;
+                postDropdown.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error("❌ Error fetching original posts:", error);
+    }
+}
+
+async function deleteOriginalPost(postId) {
+    try {
+        const response = await fetch(`http://localhost:5001/original-posts/${postId}`, {
+            method: "DELETE",
+        });
+
+        if (response.ok) {
+            console.log("✅ Original post deleted successfully!");
+            fetchOriginalPosts(); // Refresh list
+        } else {
+            console.error("❌ Failed to delete original post.");
+        }
+    } catch (error) {
+        console.error("❌ Error deleting original post:", error);
+    }
+}
 
 
 

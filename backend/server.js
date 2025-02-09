@@ -9,75 +9,64 @@ app.use(express.json());
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("MongoDB connected"))
-    .catch(err => console.error("MongoDB connection error:", err));
+    .then(() => console.log("✅ MongoDB connected"))
+    .catch(err => console.error("❌ MongoDB connection error:", err));
+
+
+// =====================================================
+//  📌 CONTENT SCHEMA & ROUTES
+// =====================================================
 
 // Define Content Schema
 const contentSchema = new mongoose.Schema({
-    title: String,
-    category: String,
+    title: { type: String, required: true },
+    category: { type: String, required: true },
     tags: [String],
-    message: { type: String, required: true } // Ensure this field exists
+    message: { type: String, required: true },
+    messageType: { type: String, required: true },
+    originalPost: { type: String } // ✅ New: Stores the selected original post URL
 });
-
-
 
 const Content = mongoose.model("Content", contentSchema);
 
 // Fetch all content
 app.get("/content", async (req, res) => {
-    const content = await Content.find();
-    res.json(content);
+    try {
+        const content = await Content.find();
+        res.json(content);
+    } catch (error) {
+        console.error("❌ Error fetching content:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
 });
 
 // Add new content block
 app.post("/content", async (req, res) => {
     try {
-        console.log("Received request body:", req.body); // Debugging Log
-
-        const { title, category, tags, message } = req.body;
-
+        const { title, category, tags, message, messageType, originalPost } = req.body;
         if (!title || !category || !message) {
             return res.status(400).json({ error: "Title, category, and message are required." });
         }
 
-        const newContent = new Content({ title, category, tags, message });
+        const newContent = new Content({ title, category, tags, message, messageType, originalPost });
         await newContent.save();
         res.json(newContent);
     } catch (error) {
-        console.error("Error adding content:", error);
+        console.error("❌ Error adding content:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
 
-
-// Delete content
-app.delete("/content/:id", async (req, res) => {
-    console.log("Delete request received for content ID:", req.params.id); // Debugging log
-
-    try {
-        const deletedContent = await Content.findByIdAndDelete(req.params.id);
-        if (!deletedContent) {
-            return res.status(404).json({ error: "Content block not found" });
-        }
-        res.json({ message: "Content block deleted successfully" });
-    } catch (error) {
-        console.error("Error deleting content:", error);
-        res.status(500).json({ error: "Error deleting content" });
-    }
-});
-
-//Edit Content Block
+// Edit content block
 app.put("/content/:id", async (req, res) => {
     try {
-        const { title, category, tags, message } = req.body;
-
+        const { title, category, tags, message, messageType, originalPost } = req.body;
         if (!title || !category || !message) {
             return res.status(400).json({ error: "Title, category, and message are required." });
         }
 
         const updatedContent = await Content.findByIdAndUpdate(req.params.id, {
-            title, category, tags, message
+            title, category, tags, message, messageType, originalPost
         }, { new: true });
 
         if (!updatedContent) {
@@ -86,17 +75,31 @@ app.put("/content/:id", async (req, res) => {
 
         res.json(updatedContent);
     } catch (error) {
-        console.error("Error updating content:", error);
+        console.error("❌ Error updating content:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// Delete content
+app.delete("/content/:id", async (req, res) => {
+    try {
+        const deletedContent = await Content.findByIdAndDelete(req.params.id);
+        if (!deletedContent) {
+            return res.status(404).json({ error: "Content block not found" });
+        }
+        res.json({ message: "✅ Content block deleted successfully" });
+    } catch (error) {
+        console.error("❌ Error deleting content:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
 
 
-// Define Category Schema
-const categorySchema = new mongoose.Schema({
-    category: String,
-});
+// =====================================================
+//  📌 CATEGORY SCHEMA & ROUTES
+// =====================================================
 
+const categorySchema = new mongoose.Schema({ category: String });
 const Category = mongoose.model("Category", categorySchema);
 
 // Fetch all categories
@@ -105,7 +108,7 @@ app.get("/categories", async (req, res) => {
         const categories = await Category.find();
         res.json(categories);
     } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("❌ Error fetching categories:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
@@ -121,101 +124,112 @@ app.post("/categories", async (req, res) => {
         await newCategory.save();
         res.json(newCategory);
     } catch (error) {
-        console.error("Error adding category:", error);
+        console.error("❌ Error adding category:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
 
-//edit categories
+// Edit category
 app.put("/categories/:id", async (req, res) => {
     try {
         const { category } = req.body;
         const updatedCategory = await Category.findByIdAndUpdate(req.params.id, { category }, { new: true });
-
         if (!updatedCategory) {
             return res.status(404).json({ error: "Category not found" });
         }
-
         res.json(updatedCategory);
     } catch (error) {
-        console.error("Error updating category:", error);
+        console.error("❌ Error updating category:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
 
-
-// Delete Category by ID
+// Delete category
 app.delete("/categories/:id", async (req, res) => {
-    console.log("Delete request received for category ID:", req.params.id); // Debugging log
-
     try {
         const deletedCategory = await Category.findByIdAndDelete(req.params.id);
         if (!deletedCategory) {
             return res.status(404).json({ error: "Category not found" });
         }
-        res.json({ message: "Category deleted successfully" });
+        res.json({ message: "✅ Category deleted successfully" });
     } catch (error) {
-        console.error("Error deleting category:", error);
-        res.status(500).json({ error: "Error deleting category" });
+        console.error("❌ Error deleting category:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 
 
-// Define Tag Schema
-const tagSchema = new mongoose.Schema({
-    tag: String,
-});
+// =====================================================
+//  📌 TAG SCHEMA & ROUTES
+// =====================================================
 
+const tagSchema = new mongoose.Schema({ tag: String });
 const Tag = mongoose.model("Tag", tagSchema);
 
 // Fetch all tags
 app.get("/tags", async (req, res) => {
-    const tags = await Tag.find();
-    res.json(tags);
+    try {
+        const tags = await Tag.find();
+        res.json(tags);
+    } catch (error) {
+        console.error("❌ Error fetching tags:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
 });
 
 // Add new tag
 app.post("/tags", async (req, res) => {
-    console.log("Received new tag:", req.body);
-    const { tag } = req.body;
-    const newTag = new Tag({ tag });
-    await newTag.save();
-    res.json(newTag);
+    try {
+        const { tag } = req.body;
+        const newTag = new Tag({ tag });
+        await newTag.save();
+        res.json(newTag);
+    } catch (error) {
+        console.error("❌ Error adding tag:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
 });
 
-
-// Update Tag
+// Edit tag
 app.put("/tags/:id", async (req, res) => {
-    const { tag } = req.body;
     try {
+        const { tag } = req.body;
         const updatedTag = await Tag.findByIdAndUpdate(req.params.id, { tag }, { new: true });
         if (!updatedTag) {
             return res.status(404).json({ error: "Tag not found" });
         }
         res.json(updatedTag);
     } catch (error) {
-        console.error("Error updating tag:", error);
-        res.status(500).json({ error: "Error updating tag" });
-    }
-});
-
-
-// Delete tags
-app.delete("/tags/:id", async (req, res) => {
-    console.log("Delete request received for tag ID:", req.params.id);
-
-    try {
-        const deletedTag = await Tag.findByIdAndDelete(req.params.id);
-        if (!deletedTag) {
-            return res.status(404).json({ error: "Tag not found in database" });
-        }
-        res.json({ message: "Tag deleted successfully" });
-    } catch (error) {
-        console.error("Error deleting tag:", error);
+        console.error("❌ Error updating tag:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
 
+// Delete tag
+app.delete("/tags/:id", async (req, res) => {
+    try {
+        const deletedTag = await Tag.findByIdAndDelete(req.params.id);
+        if (!deletedTag) {
+            return res.status(404).json({ error: "Tag not found" });
+        }
+        res.json({ message: "✅ Tag deleted successfully" });
+    } catch (error) {
+        console.error("❌ Error deleting tag:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// =====================================================
+//  📌 ORIGINAL POST ROUTES (NEW FEATURE)
+// =====================================================
+
+const originalPostSchema = new mongoose.Schema({ url: { type: String, required: true, unique: true } });
+const OriginalPost = mongoose.model("OriginalPost", originalPostSchema);
+
+app.get("/original-posts", async (req, res) => res.json(await OriginalPost.find()));
+app.post("/original-posts", async (req, res) => res.json(await new OriginalPost(req.body).save()));
+app.delete("/original-posts/:id", async (req, res) => res.json(await OriginalPost.findByIdAndDelete(req.params.id)));
+
 // Start Server
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

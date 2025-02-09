@@ -211,6 +211,45 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Bootstrap Modal for Editing Categories -->
+			<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="editCategoryModalLabel">Edit Category</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+						</div>
+						<div class="modal-body">
+							<input type="hidden" id="editCategoryId"> <!-- Store category ID -->
+							<label for="editCategoryInput" class="form-label">New Category Name</label>
+							<input type="text" id="editCategoryInput" class="form-control" placeholder="Enter new category name">
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+							<button type="button" class="btn btn-dark" onclick="saveEditedCategory()">Save</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+            
+            <hr><br/>
+            
+            <!-- ✅ Original Post Section -->
+			<p class="head1">Original Posts</p>
+
+			<div class="mb-3">
+				<p class="head2">Post URL</p>
+				<div class="input-group">
+					<input type="url" id="newOriginalPostInput" class="form-control" placeholder="Enter post URL">
+					<button class="btn btn-dark" onclick="addNewOriginalPost()">Add</button>
+				</div>
+			</div>
+
+			<!-- ✅ List of Existing Original Posts -->
+			<p class="head2">Existing Posts</p>
+			<ul id="originalPostList" class="list-group"></ul> <!-- Dynamically Populated -->
 
             
 
@@ -237,6 +276,14 @@
                     <option value="Misc">Misc</option>
                 </select>
             </div>
+            
+            <div class="mb-3">
+				<span class="head2">Original Post</span><br/>
+				<select id="originalPostSelect" class="form-select">
+					<option value="">Select a post</option>
+				</select>
+			</div>
+
 
             <div class="mb-3">
                 <span class="head2">Category</span><br/>
