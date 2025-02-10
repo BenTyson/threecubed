@@ -32,16 +32,19 @@ document.addEventListener("DOMContentLoaded", () => {
 //  📌 CONTENT MANAGEMENT
 // =====================================================
 
+let contentData = []; // Declare globally
+
 // Fetch and display content blocks
 async function fetchContent() {
     try {
         const response = await fetch("http://localhost:5001/content");
-        const content = await response.json();
-        displayContent(content);
+        contentData = await response.json();  // ✅ Update global contentData
+        displayContent(contentData);         // ✅ Pass the updated data
     } catch (error) {
         console.error("Error fetching content:", error);
     }
 }
+
 
 // Display content blocks
 function displayContent(contentData) {
@@ -87,6 +90,31 @@ function displayContent(contentData) {
         `;
     });
 }
+
+
+// Function to Open Full-Screen Modal with Full Content
+function expandMessage(contentId) {
+    // Get the content block data
+    const content = contentData.find(item => item._id === contentId);
+    if (!content) return;
+
+    // Populate modal fields
+    document.getElementById("modalTitle").textContent = content.title;
+    document.getElementById("modalCategory").textContent = content.category;
+    document.getElementById("modalMessageType").textContent = content.messageType;
+    document.getElementById("modalMessage").textContent = content.message;
+
+    // Populate tags
+    const modalTags = document.getElementById("modalTags");
+    modalTags.innerHTML = content.tags.map(tag => `
+        <span class="badge bg-secondary me-1">${tag}</span>
+    `).join(" ");
+
+    // Show the Bootstrap Modal
+    const contentModal = new bootstrap.Modal(document.getElementById("contentModal"));
+    contentModal.show();
+}
+
 
 
 
