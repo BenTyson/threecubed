@@ -14,18 +14,19 @@
 </head>
 <body>
     <div class="container mt-4">
-        <h1 class="text-center mb-4">JR Prudence</h1>
+        <h1 class="text-center mb-4 head1">JR PRUDENCE</h1>
 
         <!-- Navigation Tabs -->
         <ul class="nav nav-tabs justify-content-center mb-4">
-            <li class="nav-item">
-                <button class="nav-link active" onclick="showSection('creator')">Creator</button>
+       		<li class="nav-item">
+                <button class="nav-link" onclick="showSection('organizer')">Organize</button> <!-- New Tab -->
             </li>
             <li class="nav-item">
-                <button class="nav-link" onclick="showSection('organizer')">Organizer</button> <!-- New Tab -->
+                <button class="nav-link active" onclick="showSection('creator')">Create</button>
             </li>
+            
             <li class="nav-item">
-                <button class="nav-link" onclick="showSection('viewer')">Viewer</button>
+                <button class="nav-link" onclick="showSection('viewer')">View</button>
             </li>
         </ul>
 
@@ -176,7 +177,7 @@
 
             <div class="mb-3">
                 <span class="head2">Message</span><br/>
-                <textarea id="newMessage" class="form-control" placeholder="Enter content message" rows="6" style="resize:vertical;"></textarea>
+                <textarea id="newMessage" class="form-control" placeholder="The Message" rows="15" style="resize:vertical;"></textarea>
             </div>
 
             <button id="addContentButton" class="btn btn-dark w-100" onclick="addNewContent()">Save Content</button><br/><br/>
@@ -202,7 +203,8 @@
 
             <!-- Content Blocks -->
 
-            <div id="contentList" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"></div>
+            <div id="contentList" class="row row-cols-1 g-4"></div>
+
             
             
             <!-- Full-Screen Modal for Viewing Full Content -->

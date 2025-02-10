@@ -66,7 +66,7 @@ function displayContent(contentData) {
         `).join(" ");
 
         contentList.innerHTML += `
-            <div class="col-md-6 col-lg-4">
+            <div class="col-12">
                 <div class="card mb-3 shadow-sm">
                     <div class="card-body">
                         <p class="head2">${item.title}</p>
