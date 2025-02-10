@@ -18,13 +18,23 @@ function showSection(section) {
     document.querySelector(`[onclick="showSection('${section}')"]`).classList.add("active");
 }
 
-// Ensure the app starts in Viewer mode
+// ✅ Declare Quill globally
+let quill;
+
+// Ensure the app starts in Viewer mode and loads necessary data
 document.addEventListener("DOMContentLoaded", () => {
     showSection("viewer");
-    fetchTags();  // ✅ Preload tags at startup
+    fetchTags();  
     populateCategories();
     fetchContent();
+
+    // ✅ Initialize Quill Editor
+    quill = new Quill("#newMessage", {
+        theme: "snow",
+        modules: { toolbar: "#toolbar" }
+    });
 });
+
 
 
 
@@ -71,7 +81,8 @@ function displayContent(contentData) {
                     <div class="card-body">
                         <p class="head2">${item.title}</p>
                         <h6 class="card-subtitle mb-2 text-muted">${item.category} | ${item.messageType}</h6> <!-- ✅ Display Message Type -->
-                        <p class="card-text" id="message-${item._id}">${truncatedMessage}</p>
+                        <div class="card-text" id="message-${item._id}">${truncatedMessage}</div>
+
 
                         ${words.length > maxWords ? 
                             `<button class="btn btn-outline-dark btn-sm mt-2" onclick="expandMessage('${item._id}')">Read More</button>` 
@@ -102,7 +113,8 @@ function expandMessage(contentId) {
     document.getElementById("modalTitle").textContent = content.title;
     document.getElementById("modalCategory").textContent = content.category;
     document.getElementById("modalMessageType").textContent = content.messageType;
-    document.getElementById("modalMessage").textContent = content.message;
+    document.getElementById("modalMessage").innerHTML = content.message;
+
 
     // Populate tags
     const modalTags = document.getElementById("modalTags");
@@ -125,7 +137,7 @@ function expandMessage(contentId) {
 async function addNewContent() {
     const newTitle = document.getElementById("newTitle").value.trim();
     const newCategory = document.getElementById("categorySelect").value.trim();
-    const newMessage = document.getElementById("newMessage").value.trim();
+    const newMessage = quill.root.innerHTML.trim();
     const newMessageType = document.getElementById("messageTypeSelect").value; // ✅ Capture Message Type
     const newTagsDropdown = document.getElementById("newTags");
     const newTags = Array.from(newTagsDropdown.selectedOptions).map(option => option.value);
