@@ -199,7 +199,7 @@ async function addNewContent() {
         originalPost: originalPost 
     };
 
-    console.log("📤 Sending Content Data:", contentData); // ✅ Debugging Log
+    console.log("📤 Sending Content Data:", contentData);
 
     try {
         const response = await fetch("/content", {
@@ -208,15 +208,16 @@ async function addNewContent() {
             body: JSON.stringify(contentData)
         });
 
-        const textResponse = await response.text();  // ✅ Log raw response
-        console.log("📥 Raw Server Response:", textResponse); // Debugging log
+        const textResponse = await response.text();
+        console.log("📥 Raw Server Response:", textResponse);
 
-        const jsonResponse = JSON.parse(textResponse); // ✅ Parse JSON manually
+        const jsonResponse = JSON.parse(textResponse);
         console.log("✅ Parsed JSON:", jsonResponse);
 
         if (response.ok) {
             console.log("✅ Content block added successfully.");
             fetchContent();
+            showSuccessModal();  // ✅ Show success modal instead of inline alert
         } else {
             console.error("❌ Failed to add content block.");
         }
@@ -224,6 +225,13 @@ async function addNewContent() {
         console.error("❌ Error adding content block:", error);
     }
 }
+
+function showSuccessModal() {
+    const successModal = new bootstrap.Modal(document.getElementById("successModal"));
+    successModal.show();
+}
+
+
 
 
 
