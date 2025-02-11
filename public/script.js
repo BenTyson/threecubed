@@ -99,17 +99,20 @@ function displayContent(contentData) {
             <div class="card mb-3 shadow-sm">
                 <div class="card-body">
                     <p class="head2">${item.title}</p>
-                    <h6 class="card-subtitle mb-2 text-muted">${item.category} | ${item.messageType}</h6> 
+                    
                     <div class="card-text">${truncatedMessage}</div>
 
                     ${words.length > maxWords ? 
                         `<button class="btn btn-outline-dark btn-sm mt-2 read-more-btn">Read More</button>` 
-                        : ""}
+                        : ""}<br/><br/>
 
-                    <div class="mt-2">${tagsHTML}</div> 
+                    <p><span class="head3">Category:</span> <span class="head4">${item.category}</span><br/><span class="head3">Message Type:</span> <span class="head4">${item.messageType}</span> <br/>
+                    <span class="head3">Tags:</span> <span class="head4">${item.tags}</span><br/>
+                    
 
-                    <button class="btn btn-edit btn-sm mt-2 edit-btn">✏️</button>
-                    <button class="btn btn-danger btn-sm mt-2 delete-btn">🗑️</button>
+                    <button class="btn btn-edit btn-sm mt-2 edit-btn"><span class="material-icons icon-small">edit</span>
+</button>
+                    <button class="btn btn-danger btn-sm mt-2 delete-btn"><span class="material-icons icon-small">delete</span></button>
                 </div>
             </div>
         `;
@@ -358,8 +361,8 @@ async function populateCategories() {
             listItem.innerHTML = `
                 <span>${category.category}</span>
                 <div>
-                    <button class="btn btn-sm btn-edit xxme-2" onclick="openEditCategoryModal('${category._id}', '${category.category}')">✏️</button>
-                    <button class="btn btn-sm btn-danger" onclick="confirmDeleteCategory('${category._id}')">🗑️</button>
+                    <button class="btn btn-sm btn-edit xxme-2" onclick="openEditCategoryModal('${category._id}', '${category.category}')"><span class="material-icons icon-small">edit</span></button>
+                    <button class="btn btn-sm btn-danger" onclick="confirmDeleteCategory('${category._id}')"><span class="material-icons icon-small">delete</span></button>
                 </div>
             `;
             categoryList.appendChild(listItem);
@@ -564,8 +567,8 @@ async function fetchTags() {
                 li.innerHTML = `
                     <span>${tag.tag}</span>
                     <div>
-                        <button class="btn btn-sm btn-edit me-2" onclick="openEditTagModal('${tag._id}', '${tag.tag}')">✏️</button>
-                        <button class="btn btn-sm btn-danger" onclick="confirmDeleteTag('${tag._id}')">🗑️</button>
+                        <button class="btn btn-sm btn-edit me-2" onclick="openEditTagModal('${tag._id}', '${tag.tag}')"><span class="material-icons icon-small">edit</span></button>
+                        <button class="btn btn-sm btn-danger" onclick="confirmDeleteTag('${tag._id}')"><span class="material-icons icon-small">delete</span></button>
                     </div>
                 `;
 
@@ -867,7 +870,7 @@ async function fetchOriginalPosts() {
                         <strong>${post.title}</strong><br/>
                         <a href="${post.url}" target="_blank">${post.url}</a>
                     </div>
-                    <button class="btn btn-edit btn-sm" onclick="deleteOriginalPost('${post._id}')">Delete</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteOriginalPost('${post._id}')"><span class="material-icons icon-small">delete</span></button>
                 `;
 
                 postList.appendChild(li);

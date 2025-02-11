@@ -28,6 +28,40 @@ font-weight: bold; /* Make it stand out */
 color: #444; /* Dark gray for monochrome theme */
 }
 
+.head3 {
+font-size: .6em;
+text-transform: uppercase; /* All caps */
+letter-spacing: 1px; /* Spacing between letters */
+font-weight: bold; /* Make it stand out */
+color: #444; /* Dark gray for monochrome theme */
+}
+
+.head4 {
+font-size: .6em;
+text-transform: uppercase; /* All caps */
+letter-spacing: 1px; /* Spacing between letters */
+color: #555; /* Dark gray for monochrome theme */
+font-weight: normal;
+}
+
+/*icons*/
+.icon-small {
+    font-size: 16px;
+    padding: 4px 3px 2px 3px !important;
+}
+
+.icon-medium {
+    font-size: 24px; /* Default Material Icon size */
+}
+
+.icon-large {
+    font-size: 36px;
+}
+
+.icon-xlarge {
+    font-size: 48px;
+}
+
 
 /* Minimalist Buttons */
 .btn {

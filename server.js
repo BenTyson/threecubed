@@ -22,26 +22,35 @@ app.use(
                 defaultSrc: ["'self'"],
                 scriptSrc: [
                     "'self'",
-                    "'unsafe-inline'",  // ⚠️ Allows inline scripts (Not recommended)
-                    "'unsafe-eval'",
+                    "'unsafe-inline'",  // ✅ Allows inline scripts
+                    "'unsafe-eval'",   // ✅ Needed for some libraries
                     "https://cdn.quilljs.com",
                     "https://cdn.jsdelivr.net"
                 ],
-                scriptSrcAttr: ["'unsafe-inline'"],  // ⚠️ Allows `onclick="..."` in HTML
+                scriptSrcAttr: ["'unsafe-inline'"], // ✅ Allows inline event handlers
                 styleSrc: [
                     "'self'",
                     "'unsafe-inline'",
                     "https://cdn.quilljs.com",
-                    "https://cdn.jsdelivr.net"
+                    "https://cdn.jsdelivr.net",
+                    "https://fonts.googleapis.com"
                 ],
-                fontSrc: ["'self'", "data:", "https://cdn.jsdelivr.net"],
-                connectSrc: ["'self'", "https://cdn.quilljs.com"],
+                fontSrc: [
+                    "'self'",
+                    "data:",
+                    "https://cdn.jsdelivr.net",
+                    "https://fonts.gstatic.com"
+                ],
+                connectSrc: ["'self'", "https://cdn.quilljs.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
                 imgSrc: ["'self'", "data:"],
                 frameSrc: ["'self'"],
             },
         },
     })
 );
+
+
+
 
 
 // ✅ Debugging Middleware
