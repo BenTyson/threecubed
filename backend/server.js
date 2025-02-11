@@ -1,16 +1,66 @@
-require("dotenv").config();
+require("dotenv").config({
+    path: process.env.NODE_ENV === "production" ? ".env.production" : ".env.development"
+});
+
+console.log("🔍 Checking environment variables...");
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("MONGO_URI_DEV:", process.env.MONGO_URI_DEV ? "✅ Loaded" : "❌ Not Loaded");
+console.log("MONGO_URI_PROD:", process.env.MONGO_URI_PROD ? "✅ Loaded" : "❌ Not Loaded");
+
+// 🌍 Choose MongoDB URI based on environment
+const mongoURI = process.env.NODE_ENV === "production"
+    ? process.env.MONGO_URI_PROD
+    : process.env.MONGO_URI_DEV;
+
+console.log("Using MongoDB URI:", mongoURI || "❌ Undefined"); // Debugging log
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const helmet = require("helmet");
+const compression = require("compression");
 
 const app = express();
 app.use(cors());
+app.use(helmet());
+app.use(compression());
 app.use(express.json());
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("✅ MongoDB connected"))
-    .catch(err => console.error("❌ MongoDB connection error:", err));
+if (process.env.NODE_ENV === "production") {
+    const morgan = require("morgan");
+    app.use(morgan("combined"));
+}
+
+mongoose.connect(mongoURI, {})
+
+
+
+.then(() => console.log(`✅ Connected to MongoDB (${process.env.NODE_ENV})`))
+.catch(err => console.error("❌ MongoDB connection error:", err));
+
+
+
+// 🚀 Start Server
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+
+
+
+console.log("🔍 Checking environment variables...");
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("MONGO_URI_DEV:", process.env.MONGO_URI_DEV ? "✅ Loaded" : "❌ Not Loaded");
+console.log("MONGO_URI_PROD:", process.env.MONGO_URI_PROD ? "✅ Loaded" : "❌ Not Loaded");
+console.log("Using MongoDB URI:", mongoURI);
+
+
+
+
+
+
+
+
+
 
 
 // =====================================================
@@ -274,6 +324,4 @@ app.delete("/original-posts/:id", async (req, res) => {
 });
 
 
-// Start Server
-const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
