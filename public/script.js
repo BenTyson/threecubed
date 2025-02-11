@@ -60,7 +60,7 @@ let contentData = []; // Declare globally
 // Fetch and display content blocks
 async function fetchContent() {
     try {
-        const response = await fetch("http://localhost:5001/content");
+        const response = await fetch("/content");
         contentData = await response.json();  // ✅ Update global contentData
         displayContent(contentData);         // ✅ Pass the updated data
     } catch (error) {
@@ -84,36 +84,66 @@ function displayContent(contentData) {
         const words = item.message ? item.message.split(/\s+/) : [];
         const truncatedMessage = words.length > maxWords ? words.slice(0, maxWords).join(" ") + "..." : item.message;
 
+        // ✅ Safely encode message to prevent breaking attributes
+        const safeMessage = encodeURIComponent(item.message);
+
         const tagsHTML = item.tags.map(tag => `
             <span class="badge tag-filter bg-secondary me-1" data-tag="${tag}" onclick="toggleTagFilter('${tag}')">${tag}</span>
         `).join(" ");
 
-        contentList.innerHTML += `
-            <div class="col-12">
-                <div class="card mb-3 shadow-sm">
-                    <div class="card-body">
-                        <p class="head2">${item.title}</p>
-                        <h6 class="card-subtitle mb-2 text-muted">${item.category} | ${item.messageType}</h6> <!-- ✅ Display Message Type -->
-                        <div class="card-text" id="message-${item._id}">${truncatedMessage}</div>
+        // ✅ Create the card element dynamically
+        const card = document.createElement("div");
+        card.classList.add("col-12");
 
+        card.innerHTML = `
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <p class="head2">${item.title}</p>
+                    <h6 class="card-subtitle mb-2 text-muted">${item.category} | ${item.messageType}</h6> 
+                    <div class="card-text">${truncatedMessage}</div>
 
-                        ${words.length > maxWords ? 
-                            `<button class="btn btn-outline-dark btn-sm mt-2" onclick="expandMessage('${item._id}')">Read More</button>` 
-                            : ""}
+                    ${words.length > maxWords ? 
+                        `<button class="btn btn-outline-dark btn-sm mt-2 read-more-btn">Read More</button>` 
+                        : ""}
 
-                        <div class="mt-2">${tagsHTML}</div> <!-- ✅ Tags moved below Read More -->
+                    <div class="mt-2">${tagsHTML}</div> 
 
-                        <button class="btn btn-edit btn-sm mt-2" 
-                            onclick="editContent('${item._id}', '${item.title}', '${item.category}', '${item.tags.join(",")}', '${item.message}', '${item.messageType}')">✏️</button>
-                        
-                        <button class="btn btn-danger btn-sm mt-2" 
-                            onclick="confirmDeleteContent('${item._id}')">🗑️</button>
-                    </div>
+                    <button class="btn btn-edit btn-sm mt-2 edit-btn">✏️</button>
+                    <button class="btn btn-danger btn-sm mt-2 delete-btn">🗑️</button>
                 </div>
             </div>
         `;
+
+        // ✅ Attach event listeners dynamically
+        card.querySelector(".edit-btn").addEventListener("click", () => {
+            editContent(
+                item._id, 
+                item.title, 
+                item.category, 
+                JSON.stringify(item.tags), // ✅ Convert tags array to string
+                decodeURIComponent(safeMessage), 
+                item.messageType
+            );
+        });
+
+        card.querySelector(".delete-btn").addEventListener("click", () => {
+            confirmDeleteContent(item._id);
+        });
+
+        // ✅ Attach event listener for Read More if applicable
+        const readMoreBtn = card.querySelector(".read-more-btn");
+        if (readMoreBtn) {
+            readMoreBtn.addEventListener("click", () => expandMessage(item._id));
+        }
+
+        // ✅ Append the card to the content list
+        contentList.appendChild(card);
     });
 }
+
+
+
+
 
 
 // Function to Open Full-Screen Modal with Full Content
@@ -142,10 +172,6 @@ function expandMessage(contentId) {
 
 
 
-
-
-
-
 // Add a new content block
 async function addNewContent() {
     const newTitle = document.getElementById("newTitle").value.trim();
@@ -154,36 +180,38 @@ async function addNewContent() {
     const newMessageType = document.getElementById("messageTypeSelect").value;
     const newTagsDropdown = document.getElementById("newTags");
     const newTags = Array.from(newTagsDropdown.selectedOptions).map(option => option.value);
-    const selectedPostId = document.getElementById("originalPostSelect").value; // ✅ Get Selected Post ID
+    const originalPost = document.getElementById("originalPostSelect").value;
 
     if (!newTitle || !newCategory || !newMessage) {
         alert("Title, category, and message are required.");
         return;
     }
 
+    const contentData = { 
+        title: newTitle, 
+        category: newCategory, 
+        tags: newTags, 
+        message: newMessage, 
+        messageType: newMessageType, 
+        originalPost: originalPost 
+    };
+
+    console.log("📤 Sending Content Data:", contentData); // ✅ Debugging Log
+
     try {
-        const response = await fetch("http://localhost:5001/original-posts/" + selectedPostId);
-        const postData = await response.json(); // Fetch post details
-        const selectedPostTitle = postData.title; // ✅ Get Post Title
-
-        const contentData = { 
-            title: newTitle, 
-            category: newCategory, 
-            tags: newTags, 
-            message: newMessage, 
-            messageType: newMessageType,
-            originalPost: { id: selectedPostId, title: selectedPostTitle } // ✅ Store ID + Title
-        };
-
-        console.log("📤 Sending Content Data:", contentData); // ✅ Debugging Log
-
-        const postResponse = await fetch("http://localhost:5001/content", {
+        const response = await fetch("/content", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(contentData)
         });
 
-        if (postResponse.ok) {
+        const textResponse = await response.text();  // ✅ Log raw response
+        console.log("📥 Raw Server Response:", textResponse); // Debugging log
+
+        const jsonResponse = JSON.parse(textResponse); // ✅ Parse JSON manually
+        console.log("✅ Parsed JSON:", jsonResponse);
+
+        if (response.ok) {
             console.log("✅ Content block added successfully.");
             fetchContent();
         } else {
@@ -196,40 +224,36 @@ async function addNewContent() {
 
 
 
-
-
 // Edit existing content
-async function editContent(id, title, category, tags, message, messageType, originalPost) {
+async function editContent(id, title, category, tags, encodedMessage, messageType, originalPost) {
     showSection("creator");
 
     document.getElementById("newTitle").value = title;
     document.getElementById("categorySelect").value = category;
     document.getElementById("messageTypeSelect").value = messageType;
-    quill.root.innerHTML = message; // ✅ Populate Quill with existing message
+    
+    // ✅ Decode the message properly to prevent syntax errors
+    const message = decodeURIComponent(encodedMessage);
+    quill.root.innerHTML = message; 
 
-    await fetchOriginalPosts(); // ✅ Ensure dropdown is fully populated
-    document.getElementById("originalPostSelect").value = originalPost || ""; // ✅ Pre-select post
+    await fetchOriginalPosts();
+    document.getElementById("originalPostSelect").value = originalPost || "";
 
-    // ✅ Fix: Pre-select existing tags in multi-select
+    // ✅ Pre-select existing tags in multi-select
     const newTagsDropdown = document.getElementById("newTags");
     if (newTagsDropdown) {
         const selectedTags = tags.split(",").map(tag => tag.trim());
-
         Array.from(newTagsDropdown.options).forEach(option => {
             option.selected = selectedTags.includes(option.value);
         });
     }
 
-    // ✅ Ensure update button is set correctly
     const addButton = document.getElementById("addContentButton");
     addButton.textContent = "Update Content";
     addButton.onclick = function () {
         updateContent(id);
     };
 }
-
-
-
 
 
 
@@ -243,7 +267,7 @@ async function updateContent(contentId) {
     const updatedMessageType = document.getElementById("messageTypeSelect").value; // ✅ Capture Message Type
 
     try {
-        const response = await fetch(`http://localhost:5001/content/${contentId}`, {
+        const response = await fetch(`/content/${contentId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ 
@@ -271,7 +295,7 @@ async function updateContent(contentId) {
 //Delete Content
 async function deleteContent(contentId) {
     try {
-        const response = await fetch(`http://localhost:5001/content/${contentId}`, {
+        const response = await fetch(`/content/${contentId}`, {
             method: "DELETE",
         });
 
@@ -304,7 +328,7 @@ function confirmDeleteContent(contentId) {
 
 async function populateCategories() {
     try {
-        const response = await fetch("http://localhost:5001/categories");
+        const response = await fetch("/categories");
         const categories = await response.json();
 
         const categorySet = new Set(["All Categories"]);
@@ -351,7 +375,7 @@ async function populateCategories() {
 
 async function fetchCategories() {
     try {
-        const response = await fetch("http://localhost:5001/categories");
+        const response = await fetch("/categories");
         const categories = await response.json();
         updateCategoryDropdown(categories);
     } catch (error) {
@@ -373,7 +397,7 @@ async function addNewCategory() {
     }
 
     try {
-        const response = await fetch("http://localhost:5001/categories", {
+        const response = await fetch("/categories", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ category: newCategory })
@@ -437,7 +461,7 @@ async function deleteCategory(categoryId) {
     console.log(`🗑️ Attempting to delete category with ID: ${categoryId}`); // ✅ Debugging Log
 
     try {
-        const response = await fetch(`http://localhost:5001/categories/${categoryId}`, {
+        const response = await fetch(`/categories/${categoryId}`, {
             method: "DELETE",
         });
 
@@ -480,7 +504,7 @@ async function saveEditedCategory() {
     }
 
     try {
-        const response = await fetch(`http://localhost:5001/categories/${categoryId}`, {
+        const response = await fetch(`/categories/${categoryId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ category: updatedCategory })
@@ -524,7 +548,7 @@ function hideEditCategoryModal() {
 
 async function fetchTags() {
     try {
-        const response = await fetch("http://localhost:5001/tags");
+        const response = await fetch("/tags");
         const tags = await response.json();
 
         console.log("✅ Fetching tags:", tags); // Debugging log
@@ -631,7 +655,7 @@ async function addNewTag() {
     }
 
     try {
-        const response = await fetch("http://localhost:5001/tags", {
+        const response = await fetch("/tags", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ tag: newTag }),
@@ -690,7 +714,7 @@ async function deleteTag(tagId) {
     console.log("Attempting to delete tag with ID:", tagId); // Debugging log
 
     try {
-        const response = await fetch(`http://localhost:5001/tags/${tagId}`, {
+        const response = await fetch(`tags/${tagId}`, {
             method: "DELETE",
         });
 
@@ -738,7 +762,7 @@ async function saveEditedTag() {
     }
 
     try {
-        const response = await fetch(`http://localhost:5001/tags/${tagId}`, {
+        const response = await fetch(`/tags/${tagId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ tag: newTagName }),
@@ -800,7 +824,7 @@ async function addNewOriginalPost() {
     }
 
     try {
-        const response = await fetch("http://localhost:5001/original-posts", {
+        const response = await fetch("/original-posts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ title: postTitle, url: postURL }) // ✅ Ensure title is sent
@@ -823,7 +847,7 @@ async function addNewOriginalPost() {
 
 async function fetchOriginalPosts() {
     try {
-        const response = await fetch("http://localhost:5001/original-posts"); // ✅ Fetch posts from backend
+        const response = await fetch("/original-posts"); // ✅ Fetch posts from backend
         const posts = await response.json();
 
         console.log("📥 Fetched Posts:", posts); // ✅ Debugging log
@@ -872,7 +896,7 @@ async function fetchOriginalPosts() {
 
 async function deleteOriginalPost(postId) {
     try {
-        const response = await fetch(`http://localhost:5001/original-posts/${postId}`, {
+        const response = await fetch(`/original-posts/${postId}`, {
             method: "DELETE",
         });
 
@@ -898,7 +922,7 @@ async function filterContent() {
     const selectedCategory = document.getElementById("categoryFilter").value;
 
     try {
-        const response = await fetch("http://localhost:5001/content");
+        const response = await fetch("/content");
         let contentData = await response.json(); // Fetch latest content
 
         // ✅ Enhanced Search: Match Title, Message, or Tags

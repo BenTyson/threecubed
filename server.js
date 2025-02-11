@@ -2,56 +2,122 @@ require("dotenv").config({
     path: process.env.NODE_ENV === "production" ? ".env.production" : ".env.development"
 });
 
-console.log("🔍 Checking environment variables...");
-console.log("NODE_ENV:", process.env.NODE_ENV);
-console.log("MONGO_URI_DEV:", process.env.MONGO_URI_DEV ? "✅ Loaded" : "❌ Not Loaded");
-console.log("MONGO_URI_PROD:", process.env.MONGO_URI_PROD ? "✅ Loaded" : "❌ Not Loaded");
-
-// 🌍 Choose MongoDB URI based on environment
-const mongoURI = process.env.NODE_ENV === "production"
-    ? process.env.MONGO_URI_PROD
-    : process.env.MONGO_URI_DEV;
-
-console.log("Using MongoDB URI:", mongoURI || "❌ Undefined"); // Debugging log
-
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");
 const compression = require("compression");
+const path = require("path");
 
 const app = express();
 app.use(cors());
-app.use(helmet());
 app.use(compression());
 app.use(express.json());
 
-if (process.env.NODE_ENV === "production") {
-    const morgan = require("morgan");
-    app.use(morgan("combined"));
-}
+// ✅ Security Headers
+app.use(
+    helmet({
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: [
+                    "'self'",
+                    "'unsafe-inline'",  // ⚠️ Allows inline scripts (Not recommended)
+                    "'unsafe-eval'",
+                    "https://cdn.quilljs.com",
+                    "https://cdn.jsdelivr.net"
+                ],
+                scriptSrcAttr: ["'unsafe-inline'"],  // ⚠️ Allows `onclick="..."` in HTML
+                styleSrc: [
+                    "'self'",
+                    "'unsafe-inline'",
+                    "https://cdn.quilljs.com",
+                    "https://cdn.jsdelivr.net"
+                ],
+                fontSrc: ["'self'", "data:", "https://cdn.jsdelivr.net"],
+                connectSrc: ["'self'", "https://cdn.quilljs.com"],
+                imgSrc: ["'self'", "data:"],
+                frameSrc: ["'self'"],
+            },
+        },
+    })
+);
 
-mongoose.connect(mongoURI, {})
 
+// ✅ Debugging Middleware
+app.use((req, res, next) => {
+    console.log(`🔍 Incoming Request: ${req.method} ${req.url}`);
+    next();
+});
 
+// ✅ Load Environment Variables
+console.log("🔍 Checking environment variables...");
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("MONGO_URI_DEV:", process.env.MONGO_URI_DEV ? "✅ Loaded" : "❌ Not Loaded");
+console.log("MONGO_URI_PROD:", process.env.MONGO_URI_PROD ? "✅ Loaded" : "❌ Not Loaded");
 
+// 🌍 Choose MongoDB URI
+const mongoURI = process.env.NODE_ENV === "production"
+    ? process.env.MONGO_URI_PROD
+    : process.env.MONGO_URI_DEV;
+
+console.log("Using MongoDB URI:", mongoURI || "❌ Undefined");
+
+// ✅ Connect to MongoDB
+mongoose.connect(mongoURI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
 .then(() => console.log(`✅ Connected to MongoDB (${process.env.NODE_ENV})`))
 .catch(err => console.error("❌ MongoDB connection error:", err));
 
 
 
-// 🚀 Start Server
-const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
 
 
 
-console.log("🔍 Checking environment variables...");
-console.log("NODE_ENV:", process.env.NODE_ENV);
-console.log("MONGO_URI_DEV:", process.env.MONGO_URI_DEV ? "✅ Loaded" : "❌ Not Loaded");
-console.log("MONGO_URI_PROD:", process.env.MONGO_URI_PROD ? "✅ Loaded" : "❌ Not Loaded");
-console.log("Using MongoDB URI:", mongoURI);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -322,6 +388,33 @@ app.delete("/original-posts/:id", async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 });
+
+
+
+
+
+
+
+
+
+
+// =====================================================
+// ✅ **SERVE FRONTEND FILES (MUST COME AFTER API ROUTES)**
+// =====================================================
+
+// ✅ Serve frontend files from 'public' directory
+app.use(express.static(path.join(__dirname, "public")));
+
+// ✅ SPA Fallback (Ensure API requests are not overridden)
+app.get("*", (req, res) => {
+    if (!req.url.startsWith("/api") && !req.url.startsWith("/tags") && !req.url.startsWith("/content") && !req.url.startsWith("/categories") && !req.url.startsWith("/original-posts")) {
+        res.sendFile(path.join(__dirname, "public", "index.html"));
+    }
+});
+
+// 🚀 Start Server
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
 
 
