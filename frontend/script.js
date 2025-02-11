@@ -18,7 +18,6 @@ function showSection(section) {
     document.querySelector(`[onclick="showSection('${section}')"]`).classList.add("active");
 }
 
-// ✅ Declare Quill globally
 let quill;
 
 // Ensure the app starts in Viewer mode and loads necessary data
@@ -34,6 +33,19 @@ document.addEventListener("DOMContentLoaded", () => {
         modules: { toolbar: "#toolbar" }
     });
 });
+
+if (window.MutationObserver) {
+    const observer = new MutationObserver(() => {
+        console.log("Mutation observed (instead of deprecated event)");
+    });
+
+    observer.observe(document, {
+        childList: true,
+        subtree: true
+    });
+} else {
+    console.warn("Your browser doesn't support MutationObserver.");
+}
 
 
 
@@ -183,25 +195,31 @@ async function addNewContent() {
 
 // Edit existing content
 async function editContent(id, title, category, tags, message, originalPost) {
-    showSection("creator");
+    showSection("creator"); // Switch to Creator Mode
 
     document.getElementById("newTitle").value = title;
     document.getElementById("categorySelect").value = category;
-    document.getElementById("newMessage").value = message;
+
+    // ✅ Set the Quill editor's content properly
+    if (quill) {
+        quill.root.innerHTML = message; // ✅ Use Quill API instead of .value
+    } else {
+        console.error("❌ Quill is not initialized!");
+    }
 
     await fetchOriginalPosts(); // ✅ Ensure dropdown is fully populated
+    document.getElementById("originalPostSelect").value = originalPost || "";
 
-    document.getElementById("originalPostSelect").value = originalPost || ""; // ✅ Pre-select post
-
+    // ✅ Set tags properly
     const newTagsDropdown = document.getElementById("newTags");
     if (newTagsDropdown) {
         const selectedTags = tags.split(",").map(tag => tag.trim());
-
         Array.from(newTagsDropdown.options).forEach(option => {
             option.selected = selectedTags.includes(option.value);
         });
     }
 
+    // ✅ Update the "Save" button to trigger update instead of new content creation
     const addButton = document.getElementById("addContentButton");
     addButton.textContent = "Update Content";
     addButton.onclick = function() {
@@ -213,11 +231,13 @@ async function editContent(id, title, category, tags, message, originalPost) {
 
 
 
+
 async function updateContent(contentId) {
     const updatedTitle = document.getElementById("newTitle").value.trim();
     const updatedCategory = document.getElementById("categorySelect").value.trim();
     const updatedTags = Array.from(document.getElementById("newTags").selectedOptions).map(option => option.value);
-    const updatedMessage = document.getElementById("newMessage").value.trim();
+    const updatedMessage = quill.root.innerHTML.trim(); // ✅ Fetch message from Quill
+
     const updatedMessageType = document.getElementById("messageTypeSelect").value; // ✅ Capture Message Type
 
     try {
