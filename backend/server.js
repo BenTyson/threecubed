@@ -220,15 +220,59 @@ app.delete("/tags/:id", async (req, res) => {
 });
 
 // =====================================================
-//  📌 ORIGINAL POST ROUTES (NEW FEATURE)
+//  📌 ORIGINAL POST ROUTES (UPDATED)
 // =====================================================
 
-const originalPostSchema = new mongoose.Schema({ url: { type: String, required: true, unique: true } });
+const originalPostSchema = new mongoose.Schema({
+    title: { type: String, required: true }, // ✅ Ensures Post Title is required
+    url: { type: String, required: true, unique: true } // ✅ Ensures URL is required & unique
+});
 const OriginalPost = mongoose.model("OriginalPost", originalPostSchema);
 
-app.get("/original-posts", async (req, res) => res.json(await OriginalPost.find()));
-app.post("/original-posts", async (req, res) => res.json(await new OriginalPost(req.body).save()));
-app.delete("/original-posts/:id", async (req, res) => res.json(await OriginalPost.findByIdAndDelete(req.params.id)));
+// ✅ Fetch all original posts (returns both title & URL)
+app.get("/original-posts", async (req, res) => {
+    try {
+        const posts = await OriginalPost.find({}, "title url"); // ✅ Only return `title` and `url`
+        res.json(posts);
+    } catch (error) {
+        console.error("❌ Error fetching original posts:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ✅ Add a new original post (requires both title & URL)
+app.post("/original-posts", async (req, res) => {
+    try {
+        const { title, url } = req.body;
+
+        if (!title || !url) {
+            return res.status(400).json({ error: "Both Post Title and URL are required." });
+        }
+
+        const newPost = new OriginalPost({ title, url });
+        await newPost.save();
+
+        res.json({ message: "✅ Original post added successfully!", post: newPost });
+    } catch (error) {
+        console.error("❌ Error adding original post:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ✅ Delete an original post by ID
+app.delete("/original-posts/:id", async (req, res) => {
+    try {
+        const deletedPost = await OriginalPost.findByIdAndDelete(req.params.id);
+        if (!deletedPost) {
+            return res.status(404).json({ error: "Post not found" });
+        }
+        res.json({ message: "✅ Original post deleted successfully" });
+    } catch (error) {
+        console.error("❌ Error deleting original post:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 
 // Start Server
 const PORT = process.env.PORT || 5001;

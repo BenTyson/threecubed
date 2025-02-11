@@ -150,36 +150,39 @@ async function addNewContent() {
     const newTitle = document.getElementById("newTitle").value.trim();
     const newCategory = document.getElementById("categorySelect").value.trim();
     const newMessage = quill.root.innerHTML.trim();
-    const newMessageType = document.getElementById("messageTypeSelect").value; // ✅ Capture Message Type
+    const newMessageType = document.getElementById("messageTypeSelect").value;
     const newTagsDropdown = document.getElementById("newTags");
     const newTags = Array.from(newTagsDropdown.selectedOptions).map(option => option.value);
-    const originalPost = document.getElementById("originalPostSelect").value; // ✅ Get Selected Post
+    const selectedPostId = document.getElementById("originalPostSelect").value; // ✅ Get Selected Post ID
 
     if (!newTitle || !newCategory || !newMessage) {
         alert("Title, category, and message are required.");
         return;
     }
 
-    // ✅ Log data before sending request
-    const contentData = { 
-        title: newTitle, 
-        category: newCategory, 
-        tags: newTags, 
-        message: newMessage, 
-        messageType: newMessageType,  // ✅ Ensure this is logged
-        originalPost: originalPost 
-    };
-
-    console.log("📤 Sending Content Data:", contentData); // ✅ Debugging Log
-
     try {
-        const response = await fetch("http://localhost:5001/content", {
+        const response = await fetch("http://localhost:5001/original-posts/" + selectedPostId);
+        const postData = await response.json(); // Fetch post details
+        const selectedPostTitle = postData.title; // ✅ Get Post Title
+
+        const contentData = { 
+            title: newTitle, 
+            category: newCategory, 
+            tags: newTags, 
+            message: newMessage, 
+            messageType: newMessageType,
+            originalPost: { id: selectedPostId, title: selectedPostTitle } // ✅ Store ID + Title
+        };
+
+        console.log("📤 Sending Content Data:", contentData); // ✅ Debugging Log
+
+        const postResponse = await fetch("http://localhost:5001/content", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(contentData)
         });
 
-        if (response.ok) {
+        if (postResponse.ok) {
             console.log("✅ Content block added successfully.");
             fetchContent();
         } else {
@@ -189,6 +192,7 @@ async function addNewContent() {
         console.error("❌ Error adding content block:", error);
     }
 }
+
 
 
 
@@ -783,11 +787,14 @@ function toggleTagFilter(element, tag) {
 // =====================================================
 
 async function addNewOriginalPost() {
-    const postInput = document.getElementById("newOriginalPostInput");
-    const postURL = postInput.value.trim();
+    const postTitleInput = document.getElementById("newOriginalPostTitle");
+    const postUrlInput = document.getElementById("newOriginalPostInput");
 
-    if (!postURL) {
-        alert("Please enter a valid URL.");
+    const postTitle = postTitleInput.value.trim();
+    const postURL = postUrlInput.value.trim();
+
+    if (!postTitle || !postURL) {
+        alert("Both Post Title and URL are required.");
         return;
     }
 
@@ -795,12 +802,13 @@ async function addNewOriginalPost() {
         const response = await fetch("http://localhost:5001/original-posts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url: postURL })
+            body: JSON.stringify({ title: postTitle, url: postURL }) // ✅ Ensure title is sent
         });
 
         if (response.ok) {
             console.log("✅ Original post added successfully!");
-            postInput.value = ""; // Clear input field
+            postTitleInput.value = ""; // Clear input field
+            postUrlInput.value = ""; // Clear input field
             fetchOriginalPosts(); // Refresh list
         } else {
             console.error("❌ Failed to add original post.");
@@ -810,43 +818,41 @@ async function addNewOriginalPost() {
     }
 }
 
+
+
 async function fetchOriginalPosts() {
     try {
         const response = await fetch("http://localhost:5001/original-posts");
         const posts = await response.json();
 
-        // ✅ Update Organizer View List
+        console.log("📥 Fetched Posts:", posts); // ✅ Debugging log
+
         const postList = document.getElementById("originalPostList");
         if (postList) {
             postList.innerHTML = "";
             posts.forEach(post => {
+                console.log("🔹 Post Object:", post); // ✅ Debugging log
+
                 const li = document.createElement("li");
                 li.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
 
                 li.innerHTML = `
-                    <a href="${post.url}" target="_blank">${post.url}</a>
+                    <div>
+                        <strong>${post.title ? post.title : "No Title Found"}</strong><br/>
+                        <a href="${post.url}" target="_blank">${post.url}</a>
+                    </div>
                     <button class="btn btn-edit btn-sm" onclick="deleteOriginalPost('${post._id}')">Delete</button>
                 `;
 
                 postList.appendChild(li);
             });
         }
-
-        // ✅ Update Creator Dropdown
-        const postDropdown = document.getElementById("originalPostSelect");
-        if (postDropdown) {
-            postDropdown.innerHTML = `<option value="">Select a post</option>`; // Reset options
-            posts.forEach(post => {
-                const option = document.createElement("option");
-                option.value = post.url;
-                option.textContent = post.url;
-                postDropdown.appendChild(option);
-            });
-        }
     } catch (error) {
         console.error("❌ Error fetching original posts:", error);
     }
 }
+
+
 
 async function deleteOriginalPost(postId) {
     try {
