@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchTags();  
     populateCategories();
     fetchContent();
+    fetchOriginalPosts();
 
     // ✅ Initialize Quill Editor
     quill = new Quill("#newMessage", {
@@ -822,11 +823,12 @@ async function addNewOriginalPost() {
 
 async function fetchOriginalPosts() {
     try {
-        const response = await fetch("http://localhost:5001/original-posts");
+        const response = await fetch("http://localhost:5001/original-posts"); // ✅ Fetch posts from backend
         const posts = await response.json();
 
         console.log("📥 Fetched Posts:", posts); // ✅ Debugging log
 
+        // ✅ Update Organizer View List
         const postList = document.getElementById("originalPostList");
         if (postList) {
             postList.innerHTML = "";
@@ -838,7 +840,7 @@ async function fetchOriginalPosts() {
 
                 li.innerHTML = `
                     <div>
-                        <strong>${post.title ? post.title : "No Title Found"}</strong><br/>
+                        <strong>${post.title}</strong><br/>
                         <a href="${post.url}" target="_blank">${post.url}</a>
                     </div>
                     <button class="btn btn-edit btn-sm" onclick="deleteOriginalPost('${post._id}')">Delete</button>
@@ -847,10 +849,24 @@ async function fetchOriginalPosts() {
                 postList.appendChild(li);
             });
         }
+
+        // ✅ Update "Original Post" dropdown in Creator View (Show Titles Only)
+        const postDropdown = document.getElementById("originalPostSelect");
+        if (postDropdown) {
+            postDropdown.innerHTML = `<option value="">Select a post</option>`; // ✅ Reset options
+
+            posts.forEach(post => {
+                const option = document.createElement("option");
+                option.value = post.url; // ✅ Store URL (so it gets saved correctly)
+                option.textContent = post.title; // ✅ Display only the Title
+                postDropdown.appendChild(option);
+            });
+        }
     } catch (error) {
         console.error("❌ Error fetching original posts:", error);
     }
 }
+
 
 
 
