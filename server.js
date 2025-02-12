@@ -365,6 +365,35 @@ app.get("/original-posts", async (req, res) => {
     }
 });
 
+
+// ✅ Update an original post by ID
+app.put("/original-posts/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, url } = req.body;
+
+        if (!title || !url) {
+            return res.status(400).json({ error: "Both Title and URL are required." });
+        }
+
+        const updatedPost = await OriginalPost.findByIdAndUpdate(
+            id,
+            { title, url },
+            { new: true } // ✅ Return the updated post
+        );
+
+        if (!updatedPost) {
+            return res.status(404).json({ error: "Post not found" });
+        }
+
+        res.json({ message: "✅ Original post updated successfully!", post: updatedPost });
+    } catch (error) {
+        console.error("❌ Error updating original post:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
 // ✅ Add a new original post (requires both title & URL)
 app.post("/original-posts", async (req, res) => {
     try {
@@ -397,6 +426,7 @@ app.delete("/original-posts/:id", async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 });
+
 
 
 

@@ -907,23 +907,17 @@ async function fetchOriginalPosts() {
                         <strong>${post.title}</strong><br/>
                         <a href="${post.url}" target="_blank">${post.url}</a>
                     </div>
-                    <button class="btn btn-danger btn-sm" onclick="deleteOriginalPost('${post._id}')"><span class="material-icons icon-small">delete</span></button>
+                    <div>
+                        <button class="btn btn-sm btn-edit xxme-2" onclick="openEditOriginalPostModal('${post._id}', '${post.title}', '${post.url}')">
+                            <span class="material-icons icon-small">edit</span>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="confirmDeleteOriginalPost('${post._id}')">
+                            <span class="material-icons icon-small">delete</span>
+                        </button>
+                    </div>
                 `;
 
                 postList.appendChild(li);
-            });
-        }
-
-        // ✅ Update "Original Post" dropdown in Creator View (Show Titles Only)
-        const postDropdown = document.getElementById("originalPostSelect");
-        if (postDropdown) {
-            postDropdown.innerHTML = `<option value="">Select a post</option>`; // ✅ Reset options
-
-            posts.forEach(post => {
-                const option = document.createElement("option");
-                option.value = post.url; // ✅ Store URL (so it gets saved correctly)
-                option.textContent = post.title; // ✅ Display only the Title
-                postDropdown.appendChild(option);
             });
         }
     } catch (error) {
@@ -932,9 +926,58 @@ async function fetchOriginalPosts() {
 }
 
 
+function openEditOriginalPostModal(postId, postTitle, postUrl) {
+    console.log("📝 Opening Edit Modal for:", postId, "→", postTitle, postUrl);
+
+    // ✅ Populate the modal fields
+    document.getElementById("editOriginalPostId").value = postId;
+    document.getElementById("editOriginalPostTitle").value = postTitle;
+    document.getElementById("editOriginalPostUrl").value = postUrl;
+
+    // ✅ Show Bootstrap modal
+    const editPostModal = new bootstrap.Modal(document.getElementById("editOriginalPostModal"));
+    editPostModal.show();
+}
+
+async function saveEditedOriginalPost() {
+    const postId = document.getElementById("editOriginalPostId").value;
+    const updatedTitle = document.getElementById("editOriginalPostTitle").value.trim();
+    const updatedUrl = document.getElementById("editOriginalPostUrl").value.trim();
+
+    console.log("🛠️ Attempting to update post:", postId, "→", updatedTitle, updatedUrl);
+
+    if (!updatedTitle || !updatedUrl) {
+        alert("Both Post Title and URL are required.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/original-posts/${postId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title: updatedTitle, url: updatedUrl })
+        });
+
+        if (response.ok) {
+            console.log("✅ Original post updated successfully!");
+            fetchOriginalPosts(); // ✅ Refresh list
+            const modal = bootstrap.Modal.getInstance(document.getElementById("editOriginalPostModal"));
+            modal.hide(); // ✅ Close modal
+        } else {
+            const errorMessage = await response.text();
+            console.error("❌ Failed to update original post. Server Response:", errorMessage);
+        }
+    } catch (error) {
+        console.error("❌ Error updating original post:", error);
+    }
+}
 
 
+
+// ✅ Delete the original post from the database
 async function deleteOriginalPost(postId) {
+    console.log("🗑️ Attempting to delete original post with ID:", postId); // ✅ Debugging log
+
     try {
         const response = await fetch(`/original-posts/${postId}`, {
             method: "DELETE",
@@ -942,7 +985,7 @@ async function deleteOriginalPost(postId) {
 
         if (response.ok) {
             console.log("✅ Original post deleted successfully!");
-            fetchOriginalPosts(); // Refresh list
+            fetchOriginalPosts(); // ✅ Refresh list
         } else {
             console.error("❌ Failed to delete original post.");
         }
@@ -950,6 +993,39 @@ async function deleteOriginalPost(postId) {
         console.error("❌ Error deleting original post:", error);
     }
 }
+
+function confirmDeleteOriginalPost(postId) {
+    console.log("🛠️ Confirm Delete Triggered! ID:", postId);
+
+    const deleteModal = new bootstrap.Modal(document.getElementById("confirmDeleteOriginalPostModal"));
+    const confirmButton = document.getElementById("confirmDeleteOriginalPostBtn");
+
+    if (!deleteModal || !confirmButton) {
+        console.error("❌ Error: Modal elements not found in DOM!");
+        return;
+    }
+
+    confirmButton.onclick = async function () {
+        try {
+            const response = await fetch(`/original-posts/${postId}`, { method: "DELETE" });
+
+            if (response.ok) {
+                console.log("✅ Original post deleted successfully!");
+                fetchOriginalPosts(); // Refresh the post list
+                deleteModal.hide(); // Close the modal only after successful deletion
+            } else {
+                console.error("❌ Failed to delete original post.");
+            }
+        } catch (error) {
+            console.error("❌ Error deleting original post:", error);
+        }
+    };
+
+    deleteModal.show();
+}
+
+
+
 
 
 
