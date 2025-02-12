@@ -106,8 +106,9 @@ function displayContent(contentData) {
                         `<button class="btn btn-outline-dark btn-sm mt-2 read-more-btn">Read More</button>` 
                         : ""}<br/><br/>
 
-                    <p><span class="head3">Category:</span> <span class="head4">${item.category}</span><br/><span class="head3">Message Type:</span> <span class="head4">${item.messageType}</span> <br/>
-                    <span class="head3">Tags:</span> <span class="head4">${item.tags}</span><br/>
+                    <p><span class="head3">Category:</span> <span class="head4">${item.category}</span><br/>
+                    <span class="head3">Message Type:</span> <span class="head4">${item.messageType}</span> <br/>
+                    <span class="head3">Tags:</span> <span class="head4">${item.tags}</span></p>
                     
 
                     <button class="btn btn-edit btn-sm mt-2 edit-btn"><span class="material-icons icon-small">edit</span>
@@ -150,28 +151,62 @@ function displayContent(contentData) {
 
 
 // Function to Open Full-Screen Modal with Full Content
-function expandMessage(contentId) {
+async function expandMessage(contentId) {
     // Get the content block data
     const content = contentData.find(item => item._id === contentId);
     if (!content) return;
 
-    // Populate modal fields
-    document.getElementById("modalTitle").textContent = content.title;
-    document.getElementById("modalCategory").textContent = content.category;
-    document.getElementById("modalMessageType").textContent = content.messageType;
-    document.getElementById("modalMessage").innerHTML = content.message;
+    const words = content.message ? content.message.split(/\s+/) : [];
+    const safeMessage = encodeURIComponent(content.message);
 
-
-    // Populate tags
-    const modalTags = document.getElementById("modalTags");
-    modalTags.innerHTML = content.tags.map(tag => `
-        <span class="badge bg-secondary me-1">${tag}</span>
+    // ✅ Format tags consistently
+    const tagsHTML = content.tags.map(tag => `
+        <span class="badge tag-filter bg-secondary me-1">${tag}</span>
     `).join(" ");
+
+    // ✅ Handle Original Post (If available)
+    let originalPostHTML = `<span class="text-muted">None</span>`; // Default if no original post
+
+    if (content.originalPost) {
+        try {
+            // Fetch the list of original posts to find the title associated with the stored URL
+            const response = await fetch("/original-posts");
+            const originalPosts = await response.json();
+
+            // Find the matching original post based on the URL
+            const matchedPost = originalPosts.find(post => post.url === content.originalPost);
+
+            if (matchedPost) {
+                // Display the actual title as a clickable link
+                originalPostHTML = `
+                    <a href="${matchedPost.url}" target="_blank" class="head4">${matchedPost.title}</a>
+                `;
+            }
+        } catch (error) {
+            console.error("❌ Error fetching original posts:", error);
+        }
+    }
+
+    // ✅ Populate modal fields
+    document.getElementById("modalTitle").textContent = content.title;
+
+    const modalBody = document.getElementById("modalMessage");
+    modalBody.innerHTML = `
+        <p class="card-text">${content.message}</p>
+        <br/>
+        <p><span class="head3">Category:</span> <span class="head4">${content.category}</span><br/>
+        <span class="head3">Message Type:</span> <span class="head4">${content.messageType}</span> <br/>
+        <span class="head3">Original Post:</span> ${originalPostHTML}<br/>
+        <span class="head3">Tags:</span> <span class="head4">${tagsHTML}</span></p>
+    `;
 
     // Show the Bootstrap Modal
     const contentModal = new bootstrap.Modal(document.getElementById("contentModal"));
     contentModal.show();
 }
+
+
+
 
 
 
@@ -575,7 +610,7 @@ async function fetchTags() {
                 li.innerHTML = `
                     <span>${tag.tag}</span>
                     <div>
-                        <button class="btn btn-sm btn-edit me-2" onclick="openEditTagModal('${tag._id}', '${tag.tag}')"><span class="material-icons icon-small">edit</span></button>
+                        <button class="btn btn-sm btn-edit xxme-2" onclick="openEditTagModal('${tag._id}', '${tag.tag}')"><span class="material-icons icon-small">edit</span></button>
                         <button class="btn btn-sm btn-danger" onclick="confirmDeleteTag('${tag._id}')"><span class="material-icons icon-small">delete</span></button>
                     </div>
                 `;

@@ -158,7 +158,4 @@ xxtransition: all 0.2s ease-in-out;
 cursor: pointer; /* Changes cursor to pointer on hover */
 }
 
-.tag-filter:hover {
-background-color: #222 !important; /* Optional: Darken the tag on hover */
-color: white; /* Optional: Change text color */
-}
+
