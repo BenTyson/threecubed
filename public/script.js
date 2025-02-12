@@ -482,30 +482,21 @@ function updateCategoryDropdown(categories) {
 }
 
 function confirmDeleteCategory(categoryId) {
-    console.log("🛠️ Confirm Delete Category Triggered! ID:", categoryId); // Debugging log
+    console.log("🛠️ Confirm Delete Category Triggered! ID:", categoryId);
 
-    // ✅ Ensure alert box elements exist
-    const alertBox = document.getElementById("confirmDeleteAlert");
-    const alertMessage = document.getElementById("confirmDeleteMessage");
-    const confirmButton = document.getElementById("confirmDeleteBtn");
-
-    if (!alertBox || !alertMessage || !confirmButton) {
-        console.error("❌ Error: Bootstrap alert elements not found in DOM!");
-        return;
-    }
-
-    // ✅ Set alert message dynamically
-    alertMessage.textContent = "Are you sure you want to delete this category? This action is permanent.";
-
-    // ✅ Show the Bootstrap-styled alert
-    alertBox.classList.remove("d-none");
-
-    // ✅ Set the confirm button to trigger deletion
+    // ✅ Set event listener on confirm button
+    const confirmButton = document.getElementById("confirmDeleteCategoryBtn");
     confirmButton.onclick = function () {
         deleteCategory(categoryId);
-        hideDeleteAlert(); // ✅ Hide alert after confirming
+        const modal = bootstrap.Modal.getInstance(document.getElementById("confirmDeleteCategoryModal"));
+        modal.hide(); // ✅ Close modal after confirmation
     };
+
+    // ✅ Show the modal
+    const categoryModal = new bootstrap.Modal(document.getElementById("confirmDeleteCategoryModal"));
+    categoryModal.show();
 }
+
 
 
 //Hide Delete Alert Box
@@ -731,31 +722,23 @@ async function addNewTag() {
     newTagInput.value = ""; // Clear input field
 }
 
-// Delete alert box
+// Delete modal
 function confirmDeleteTag(tagId) {
-    const alertContainer = document.getElementById("confirmDeleteAlert");
-    const alertMessage = document.getElementById("confirmDeleteMessage");
-    const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+    console.log("🛠️ Confirm Delete Tag Triggered! ID:", tagId);
 
-    // ✅ Ensure all elements exist before proceeding
-    if (!alertContainer || !alertMessage || !confirmDeleteBtn) {
-        console.error("❌ Error: Bootstrap alert elements not found in DOM!");
-        return;
-    }
-
-    // ✅ Set the delete message dynamically
-    alertMessage.innerHTML = `Are you sure you want to delete this tag? <strong>This action is permanent!</strong>`;
-
-    // ✅ Show the alert box
-    alertContainer.classList.remove("d-none");
-    alertContainer.classList.add("show");
-
-    // ✅ Set Confirm button action
-    confirmDeleteBtn.onclick = function () {
-        deleteTag(tagId);  // ✅ Proceed with deletion
-        hideDeleteAlert(); // ✅ Hide alert after confirming
+    // ✅ Set event listener on confirm button
+    const confirmButton = document.getElementById("confirmDeleteTagBtn");
+    confirmButton.onclick = function () {
+        deleteTag(tagId);
+        const modal = bootstrap.Modal.getInstance(document.getElementById("confirmDeleteTagModal"));
+        modal.hide(); // ✅ Close modal after confirmation
     };
+
+    // ✅ Show the modal
+    const tagModal = new bootstrap.Modal(document.getElementById("confirmDeleteTagModal"));
+    tagModal.show();
 }
+
 
 // Hide the Delete Alert Box
 function hideDeleteAlert() {
