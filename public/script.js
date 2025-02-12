@@ -252,7 +252,7 @@ async function addNewContent() {
         if (response.ok) {
             console.log("✅ Content block added successfully.");
             fetchContent();
-            showSuccessModal();  // ✅ Show success modal instead of inline alert
+            showSuccessModal("Transmission Received!");  // ✅ Pass specific message
         } else {
             console.error("❌ Failed to add content block.");
         }
@@ -261,11 +261,13 @@ async function addNewContent() {
     }
 }
 
-function showSuccessModal() {
+
+function showSuccessModal(message) {
+    document.getElementById("successModalMessage").textContent = message; // ✅ Set dynamic message
+
     const successModal = new bootstrap.Modal(document.getElementById("successModal"));
     successModal.show();
 }
-
 
 
 
@@ -277,23 +279,30 @@ async function editContent(id, title, category, tags, encodedMessage, messageTyp
     document.getElementById("newTitle").value = title;
     document.getElementById("categorySelect").value = category;
     document.getElementById("messageTypeSelect").value = messageType;
-    
+
     // ✅ Decode the message properly to prevent syntax errors
     const message = decodeURIComponent(encodedMessage);
-    quill.root.innerHTML = message; 
+    quill.root.innerHTML = message;
 
     await fetchOriginalPosts();
     document.getElementById("originalPostSelect").value = originalPost || "";
 
-    // ✅ Pre-select existing tags in multi-select
+    // ✅ Ensure tags are an array
+    let selectedTags = Array.isArray(tags) ? tags : JSON.parse(tags); // Ensure parsing if needed
+    if (!Array.isArray(selectedTags)) {
+        console.warn("🚨 Unexpected tag format:", tags);
+        selectedTags = [];
+    }
+
+    // ✅ Pre-select existing tags in multi-select dropdown
     const newTagsDropdown = document.getElementById("newTags");
     if (newTagsDropdown) {
-        const selectedTags = tags.split(",").map(tag => tag.trim());
         Array.from(newTagsDropdown.options).forEach(option => {
             option.selected = selectedTags.includes(option.value);
         });
     }
 
+    // ✅ Set the update button functionality
     const addButton = document.getElementById("addContentButton");
     addButton.textContent = "Update Content";
     addButton.onclick = function () {
@@ -302,14 +311,11 @@ async function editContent(id, title, category, tags, encodedMessage, messageTyp
 }
 
 
-
-
 async function updateContent(contentId) {
     const updatedTitle = document.getElementById("newTitle").value.trim();
     const updatedCategory = document.getElementById("categorySelect").value.trim();
     const updatedTags = Array.from(document.getElementById("newTags").selectedOptions).map(option => option.value);
     const updatedMessage = quill.root.innerHTML.trim(); // ✅ Fetch message from Quill
-
     const updatedMessageType = document.getElementById("messageTypeSelect").value; // ✅ Capture Message Type
 
     try {
@@ -328,6 +334,10 @@ async function updateContent(contentId) {
         if (response.ok) {
             console.log("✅ Content updated successfully.");
             fetchContent();
+
+            // ✅ Show success modal after update with correct message
+            showSuccessModal("Transmission Updated!");
+
         } else {
             console.error("❌ Failed to update content.");
         }
@@ -335,6 +345,7 @@ async function updateContent(contentId) {
         console.error("❌ Error updating content:", error);
     }
 }
+
 
 
 
