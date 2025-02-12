@@ -432,6 +432,73 @@ app.delete("/original-posts/:id", async (req, res) => {
 
 
 
+// =====================================================
+//  📌 MESSAGE TYPE SCHEMA & ROUTES
+// =====================================================
+
+const messageTypeSchema = new mongoose.Schema({ type: String });
+const MessageType = mongoose.model("MessageType", messageTypeSchema);
+
+// ✅ Fetch all message types
+app.get("/message-types", async (req, res) => {
+    try {
+        const types = await MessageType.find();
+        res.json(types);
+    } catch (error) {
+        console.error("❌ Error fetching message types:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ✅ Add a new message type
+app.post("/message-types", async (req, res) => {
+    try {
+        const { type } = req.body;
+        if (!type) {
+            return res.status(400).json({ error: "Message Type is required" });
+        }
+        const newType = new MessageType({ type });
+        await newType.save();
+        res.json(newType);
+    } catch (error) {
+        console.error("❌ Error adding message type:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ✅ Edit a message type
+app.put("/message-types/:id", async (req, res) => {
+    try {
+        const { type } = req.body;
+        const updatedType = await MessageType.findByIdAndUpdate(req.params.id, { type }, { new: true });
+        if (!updatedType) {
+            return res.status(404).json({ error: "Message Type not found" });
+        }
+        res.json(updatedType);
+    } catch (error) {
+        console.error("❌ Error updating message type:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ✅ Delete a message type
+app.delete("/message-types/:id", async (req, res) => {
+    try {
+        const deletedType = await MessageType.findByIdAndDelete(req.params.id);
+        if (!deletedType) {
+            return res.status(404).json({ error: "Message Type not found" });
+        }
+        res.json({ message: "✅ Message Type deleted successfully" });
+    } catch (error) {
+        console.error("❌ Error deleting message type:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
+
+
+
 
 
 

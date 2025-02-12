@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     populateCategories();
     fetchContent();
     fetchOriginalPosts();
+    fetchMessageTypes();
 
     // ✅ Initialize Quill Editor
     quill = new Quill("#newMessage", {
@@ -262,13 +263,21 @@ async function addNewContent() {
 }
 
 
-function showSuccessModal(message) {
-    document.getElementById("successModalMessage").textContent = message; // ✅ Set dynamic message
-
-    const successModal = new bootstrap.Modal(document.getElementById("successModal"));
+function showSuccessModal(message, modalId = "successModal", focusElementId = "addContentButton") {
+    document.getElementById(`${modalId}Message`).textContent = message; // ✅ Set dynamic message
+    
+    const successModal = new bootstrap.Modal(document.getElementById(modalId));
+    
+    // ✅ Show the modal
     successModal.show();
-}
 
+    // ✅ When the modal is closed, move focus to a visible button
+    const modalElement = document.getElementById(modalId);
+    modalElement.addEventListener("hidden.bs.modal", function () {
+        const mainButton = document.getElementById(focusElementId) || document.body;
+        mainButton.focus(); // ✅ Moves focus back to the page
+    });
+}
 
 
 
@@ -848,6 +857,122 @@ function toggleTagFilter(element, tag) {
 
 
 // =====================================================
+//  📌 MESSAGE TYPE MANAGEMENT
+// =====================================================
+
+// ✅ Fetch and display message types
+async function fetchMessageTypes() {
+    try {
+        const response = await fetch("/message-types");
+        const messageTypes = await response.json();
+
+        console.log("✅ Fetched Message Types:", messageTypes);
+
+        // ✅ Update dropdown in Creator View
+        const messageTypeSelect = document.getElementById("messageTypeSelect");
+        messageTypeSelect.innerHTML = "<option value=''>Select Message Type</option>";
+        messageTypes.forEach(type => {
+            messageTypeSelect.innerHTML += `<option value="${type.type}">${type.type}</option>`;
+        });
+
+        // ✅ Update Organizer View list
+        const messageTypeList = document.getElementById("messageTypeList");
+        messageTypeList.innerHTML = "";
+        messageTypes.forEach(type => {
+            const listItem = document.createElement("li");
+            listItem.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+
+            listItem.innerHTML = `
+                <span>${type.type}</span>
+                <div>
+                    <button class="btn btn-sm btn-edit me-2" onclick="openEditMessageTypeModal('${type._id}', '${type.type}')">
+                        <span class="material-icons icon-small">edit</span>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="confirmDeleteMessageType('${type._id}')">
+                        <span class="material-icons icon-small">delete</span>
+                    </button>
+                </div>
+            `;
+
+            messageTypeList.appendChild(listItem);
+        });
+
+    } catch (error) {
+        console.error("❌ Error fetching message types:", error);
+    }
+}
+
+// ✅ Add new message type
+async function addNewMessageType() {
+    const newMessageType = document.getElementById("newMessageTypeInput").value.trim();
+    if (!newMessageType) {
+        alert("Please enter a message type.");
+        return;
+    }
+
+    try {
+        const response = await fetch("/message-types", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: newMessageType }),
+        });
+
+        if (response.ok) {
+            console.log("✅ Message type added successfully!");
+            fetchMessageTypes();
+            document.getElementById("newMessageTypeInput").value = "";
+        } else {
+            console.error("❌ Failed to add message type.");
+        }
+    } catch (error) {
+        console.error("❌ Error adding message type:", error);
+    }
+}
+
+// ✅ Open Edit Message Type Modal
+function openEditMessageTypeModal(id, type) {
+    document.getElementById("editMessageTypeId").value = id;
+    document.getElementById("editMessageTypeInput").value = type;
+
+    const editMessageTypeModal = new bootstrap.Modal(document.getElementById("editMessageTypeModal"));
+    editMessageTypeModal.show();
+}
+
+// ✅ Save Edited Message Type
+async function saveEditedMessageType() {
+    const id = document.getElementById("editMessageTypeId").value;
+    const updatedType = document.getElementById("editMessageTypeInput").value.trim();
+
+    try {
+        const response = await fetch(`/message-types/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: updatedType }),
+        });
+
+        if (response.ok) {
+            console.log("✅ Message type updated successfully!");
+            fetchMessageTypes();
+            bootstrap.Modal.getInstance(document.getElementById("editMessageTypeModal")).hide();
+        }
+    } catch (error) {
+        console.error("❌ Error updating message type:", error);
+    }
+}
+
+// ✅ Delete Message Type
+async function confirmDeleteMessageType(id) {
+    if (confirm("Are you sure you want to delete this message type?")) {
+        await fetch(`/message-types/${id}`, { method: "DELETE" });
+        fetchMessageTypes();
+    }
+}
+
+
+
+
+
+// =====================================================
 //  📌 ORIGINAL POST
 // =====================================================
 
@@ -920,10 +1045,23 @@ async function fetchOriginalPosts() {
                 postList.appendChild(li);
             });
         }
+
+        // ✅ Update "Create" View Dropdown
+        const originalPostSelect = document.getElementById("originalPostSelect");
+        if (originalPostSelect) {
+            originalPostSelect.innerHTML = `<option value="">Select a post</option>`; // Reset options
+            posts.forEach(post => {
+                const option = document.createElement("option");
+                option.value = post.url; // Store the post URL
+                option.textContent = post.title; // Display the post title
+                originalPostSelect.appendChild(option);
+            });
+        }
     } catch (error) {
         console.error("❌ Error fetching original posts:", error);
     }
 }
+
 
 
 function openEditOriginalPostModal(postId, postTitle, postUrl) {

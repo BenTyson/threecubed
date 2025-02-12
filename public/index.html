@@ -163,6 +163,45 @@
 				</div>
 			</div>
 
+
+            <br/><hr><br/>
+
+            <!-- ✅ Message Type Management -->
+            <p class="head1">Message Types</p>
+            <div class="mb-3">
+                <span class="head2">Add New Message Type</span><br/>
+                <div class="input-group">
+                    <input type="text" id="newMessageTypeInput" class="form-control" placeholder="Enter new message type">
+                    <button class="btn btn-dark" onclick="addNewMessageType()">Add</button>
+                </div>
+            </div>
+
+            <!-- Existing Message Types -->
+            <span class="head2">Existing Message Types</span><br/>
+            <ul id="messageTypeList" class="list-group"></ul> <!-- Dynamically Populated -->
+
+            <!-- ✅ Edit Message Type Modal -->
+            <div class="modal fade" id="editMessageTypeModal" tabindex="-1" aria-labelledby="editMessageTypeModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Edit Message Type</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="editMessageTypeId"> <!-- Store Message Type ID -->
+                            <label for="editMessageTypeInput" class="form-label">New Message Type</label>
+                            <input type="text" id="editMessageTypeInput" class="form-control" placeholder="Enter new message type">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-dark" onclick="saveEditedMessageType()">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
             
             <br/><hr><br/>
             
@@ -216,6 +255,7 @@
 
             <!-- ✅ Confirm Delete Original Post Modal -->
             <div class="modal fade" id="confirmDeleteOriginalPostModal" tabindex="-1" aria-labelledby="confirmDeleteOriginalPostModalLabel" aria-hidden="true">
+
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -254,12 +294,10 @@
             <div class="mb-3">
                 <span class="head2">Type</span><br/>
                 <select id="messageTypeSelect" class="form-select">
-                    <option value="Q&A">Q&A</option>
-                    <option value="3-3-3 Speaks">3-3-3 Speaks</option>
-                    <option value="Damien">Damien</option>
-                    <option value="Misc">Misc</option>
+                    <option value="">Select Message Type</option> <!-- Placeholder -->
                 </select>
             </div>
+
             
             <div class="mb-3">
 				<span class="head2">Original Post</span><br/>
