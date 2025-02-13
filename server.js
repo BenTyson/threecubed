@@ -147,7 +147,8 @@ const contentSchema = new mongoose.Schema({
     title: { type: String, required: true },
     category: { type: String, required: true },
     tags: [String],
-    message: { type: String, required: true },
+    question: { type: String, required: true },  // ✅ NEW FIELD
+    answer: { type: String, required: true },    // ✅ Renamed "message" to "answer"
     messageType: { type: String, required: true },
     originalPost: { type: String } // ✅ New: Stores the selected original post URL
 });
@@ -157,7 +158,7 @@ const Content = mongoose.model("Content", contentSchema);
 // Fetch all content
 app.get("/content", async (req, res) => {
     try {
-        const content = await Content.find();
+        const content = await Content.find({}, "title category tags question answer messageType originalPost");
         res.json(content);
     } catch (error) {
         console.error("❌ Error fetching content:", error);
@@ -165,15 +166,17 @@ app.get("/content", async (req, res) => {
     }
 });
 
+
 // Add new content block
 app.post("/content", async (req, res) => {
     try {
-        const { title, category, tags, message, messageType, originalPost } = req.body;
-        if (!title || !category || !message) {
-            return res.status(400).json({ error: "Title, category, and message are required." });
+        const { title, category, tags, question, answer, messageType, originalPost } = req.body;
+        
+        if (!title || !category || !question || !answer) {
+            return res.status(400).json({ error: "Title, category, question, and answer are required." });
         }
 
-        const newContent = new Content({ title, category, tags, message, messageType, originalPost });
+        const newContent = new Content({ title, category, tags, question, answer, messageType, originalPost });
         await newContent.save();
         res.json(newContent);
     } catch (error) {
@@ -182,16 +185,18 @@ app.post("/content", async (req, res) => {
     }
 });
 
+
 // Edit content block
 app.put("/content/:id", async (req, res) => {
     try {
-        const { title, category, tags, message, messageType, originalPost } = req.body;
-        if (!title || !category || !message) {
-            return res.status(400).json({ error: "Title, category, and message are required." });
+        const { title, category, tags, question, answer, messageType, originalPost } = req.body;
+
+        if (!title || !category || !question || !answer) {
+            return res.status(400).json({ error: "Title, category, question, and answer are required." });
         }
 
         const updatedContent = await Content.findByIdAndUpdate(req.params.id, {
-            title, category, tags, message, messageType, originalPost
+            title, category, tags, question, answer, messageType, originalPost
         }, { new: true });
 
         if (!updatedContent) {
@@ -204,6 +209,7 @@ app.put("/content/:id", async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 });
+
 
 // Delete content
 app.delete("/content/:id", async (req, res) => {

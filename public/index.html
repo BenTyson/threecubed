@@ -317,22 +317,42 @@
                 <select id="newTags" class="form-select" multiple></select>
             </div>
 
-			<div class="mb-3">
-				<span class="head2">Message</span><br/>
+			<!-- ✅ Question Section -->
+            <div class="mb-3">
+                <span class="head2">Question</span><br/>
 
-				<!-- Quill Toolbar -->
-				<div id="toolbar">
-					<button class="ql-bold"></button>
-					<button class="ql-italic"></button>
-					<button class="ql-underline"></button>
-					<button class="ql-list" value="ordered"></button>
-					<button class="ql-list" value="bullet"></button>
-					<button class="ql-link"></button>
-				</div>
+                <!-- Quill Toolbar for Question -->
+                <div id="questionToolbar">
+                    <button class="ql-bold"></button>
+                    <button class="ql-italic"></button>
+                    <button class="ql-underline"></button>
+                    <button class="ql-list" value="ordered"></button>
+                    <button class="ql-list" value="bullet"></button>
+                    <button class="ql-link"></button>
+                </div>
 
-				<!-- Quill Editor -->
-				<div id="newMessage" style="min-height: 150px;"></div>
-			</div>
+                <!-- Quill Editor for Question -->
+                <div id="newQuestion" style="min-height: 150px;"></div>
+            </div>
+
+            <!-- ✅ Answer Section (Existing) -->
+            <div class="mb-3">
+                <span class="head2">Answer</span><br/>
+
+                <!-- Quill Toolbar for Answer -->
+                <div id="answerToolbar">
+                    <button class="ql-bold"></button>
+                    <button class="ql-italic"></button>
+                    <button class="ql-underline"></button>
+                    <button class="ql-list" value="ordered"></button>
+                    <button class="ql-list" value="bullet"></button>
+                    <button class="ql-link"></button>
+                </div>
+
+                <!-- Quill Editor for Answer -->
+                <div id="newMessage" style="min-height: 150px;"></div>
+            </div>
+
 
 
 

@@ -29,10 +29,16 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchOriginalPosts();
     fetchMessageTypes();
 
-    // ✅ Initialize Quill Editor
+    // ✅ Initialize Quill Editor for Question
+    questionQuill = new Quill("#newQuestion", {
+        theme: "snow",
+        modules: { toolbar: "#questionToolbar" }
+    });
+
+    // ✅ Initialize Quill Editor for Answer (Existing)
     quill = new Quill("#newMessage", {
         theme: "snow",
-        modules: { toolbar: "#toolbar" }
+        modules: { toolbar: "#answerToolbar" }
     });
 });
 
@@ -82,11 +88,11 @@ function displayContent(contentData) {
 
     contentData.forEach(item => {
         const maxWords = 50;
-        const words = item.message ? item.message.split(/\s+/) : [];
-        const truncatedMessage = words.length > maxWords ? words.slice(0, maxWords).join(" ") + "..." : item.message;
+        const words = item.answer ? item.answer.split(/\s+/) : [];
+        const truncatedAnswer = words.length > maxWords ? words.slice(0, maxWords).join(" ") + "..." : item.answer;
 
-        // ✅ Safely encode message to prevent breaking attributes
-        const safeMessage = encodeURIComponent(item.message);
+        const safeAnswer = encodeURIComponent(item.answer);
+        const safeQuestion = encodeURIComponent(item.question);
 
         const tagsHTML = item.tags.map(tag => `
             <span class="badge tag-filter bg-secondary me-1" data-tag="${tag}" onclick="toggleTagFilter('${tag}')">${tag}</span>
@@ -101,7 +107,8 @@ function displayContent(contentData) {
                 <div class="card-body">
                     <p class="head2">${item.title}</p>
                     
-                    <div class="card-text">${truncatedMessage}</div>
+                    <p><strong>Q:</strong> ${item.question}</p>
+                    <p class="card-text"><strong>A:</strong> ${truncatedAnswer}</p>
 
                     ${words.length > maxWords ? 
                         `<button class="btn btn-outline-dark btn-sm mt-2 read-more-btn">Read More</button>` 
@@ -109,12 +116,14 @@ function displayContent(contentData) {
 
                     <p><span class="head3">Category:</span> <span class="head4">${item.category}</span><br/>
                     <span class="head3">Message Type:</span> <span class="head4">${item.messageType}</span> <br/>
-                    <span class="head3">Tags:</span> <span class="head4">${item.tags}</span></p>
-                    
+                    <span class="head3">Tags:</span> <span class="head4">${tagsHTML}</span></p>
 
-                    <button class="btn btn-edit btn-sm mt-2 edit-btn"><span class="material-icons icon-small">edit</span>
-</button>
-                    <button class="btn btn-danger btn-sm mt-2 delete-btn"><span class="material-icons icon-small">delete</span></button>
+                    <button class="btn btn-edit btn-sm mt-2 edit-btn">
+                        <span class="material-icons icon-small">edit</span>
+                    </button>
+                    <button class="btn btn-danger btn-sm mt-2 delete-btn">
+                        <span class="material-icons icon-small">delete</span>
+                    </button>
                 </div>
             </div>
         `;
@@ -126,8 +135,10 @@ function displayContent(contentData) {
                 item.title, 
                 item.category, 
                 JSON.stringify(item.tags), // ✅ Convert tags array to string
-                decodeURIComponent(safeMessage), 
-                item.messageType
+                decodeURIComponent(safeQuestion),
+                decodeURIComponent(safeAnswer),
+                item.messageType,
+                item.originalPost
             );
         });
 
@@ -151,14 +162,13 @@ function displayContent(contentData) {
 
 
 
+
+
 // Function to Open Full-Screen Modal with Full Content
 async function expandMessage(contentId) {
     // Get the content block data
     const content = contentData.find(item => item._id === contentId);
     if (!content) return;
-
-    const words = content.message ? content.message.split(/\s+/) : [];
-    const safeMessage = encodeURIComponent(content.message);
 
     // ✅ Format tags consistently
     const tagsHTML = content.tags.map(tag => `
@@ -193,7 +203,8 @@ async function expandMessage(contentId) {
 
     const modalBody = document.getElementById("modalMessage");
     modalBody.innerHTML = `
-        <p class="card-text">${content.message}</p>
+        <p><strong>Q:</strong> ${content.question}</p>
+        <p><strong>A:</strong> ${content.answer}</p>
         <br/>
         <p><span class="head3">Category:</span> <span class="head4">${content.category}</span><br/>
         <span class="head3">Message Type:</span> <span class="head4">${content.messageType}</span> <br/>
@@ -211,18 +222,27 @@ async function expandMessage(contentId) {
 
 
 
+
+
 // Add a new content block
 async function addNewContent() {
     const newTitle = document.getElementById("newTitle").value.trim();
     const newCategory = document.getElementById("categorySelect").value.trim();
-    const newMessage = quill.root.innerHTML.trim();
     const newMessageType = document.getElementById("messageTypeSelect").value;
     const newTagsDropdown = document.getElementById("newTags");
     const newTags = Array.from(newTagsDropdown.selectedOptions).map(option => option.value);
     const originalPost = document.getElementById("originalPostSelect").value;
 
-    if (!newTitle || !newCategory || !newMessage) {
-        alert("Title, category, and message are required.");
+    // ✅ Ensure Quill Editors are correctly initialized
+    const newQuestion = questionQuill ? questionQuill.root.innerHTML.trim() : "";
+    const newAnswer = quill ? quill.root.innerHTML.trim() : "";
+
+    // ✅ Debugging Logs
+    console.log("📝 New Question:", newQuestion);
+    console.log("📝 New Answer:", newAnswer);
+
+    if (!newTitle || !newCategory || !newQuestion || !newAnswer) {
+        alert("Title, category, question, and answer are required.");
         return;
     }
 
@@ -230,7 +250,8 @@ async function addNewContent() {
         title: newTitle, 
         category: newCategory, 
         tags: newTags, 
-        message: newMessage, 
+        question: newQuestion, 
+        answer: newAnswer, 
         messageType: newMessageType, 
         originalPost: originalPost 
     };
@@ -253,7 +274,7 @@ async function addNewContent() {
         if (response.ok) {
             console.log("✅ Content block added successfully.");
             fetchContent();
-            showSuccessModal("Transmission Received!");  // ✅ Pass specific message
+            showSuccessModal("Transmission Received!");
         } else {
             console.error("❌ Failed to add content block.");
         }
@@ -261,6 +282,7 @@ async function addNewContent() {
         console.error("❌ Error adding content block:", error);
     }
 }
+
 
 
 function showSuccessModal(message, modalId = "successModal", focusElementId = "addContentButton") {
@@ -282,22 +304,25 @@ function showSuccessModal(message, modalId = "successModal", focusElementId = "a
 
 
 // Edit existing content
-async function editContent(id, title, category, tags, encodedMessage, messageType, originalPost) {
-    showSection("creator");
+async function editContent(id, title, category, tags, encodedQuestion, encodedAnswer, messageType, originalPost) {
+    showSection("creator"); // ✅ Switch to "Create" View
 
     document.getElementById("newTitle").value = title;
     document.getElementById("categorySelect").value = category;
     document.getElementById("messageTypeSelect").value = messageType;
 
-    // ✅ Decode the message properly to prevent syntax errors
-    const message = decodeURIComponent(encodedMessage);
-    quill.root.innerHTML = message;
+    // ✅ Decode the question and answer to prevent syntax errors
+    const question = decodeURIComponent(encodedQuestion);
+    const answer = decodeURIComponent(encodedAnswer);
+
+    quillQuestion.root.innerHTML = question; // ✅ Populate the Question Quill editor
+    quillAnswer.root.innerHTML = answer; // ✅ Populate the Answer Quill editor
 
     await fetchOriginalPosts();
     document.getElementById("originalPostSelect").value = originalPost || "";
 
     // ✅ Ensure tags are an array
-    let selectedTags = Array.isArray(tags) ? tags : JSON.parse(tags); // Ensure parsing if needed
+    let selectedTags = Array.isArray(tags) ? tags : JSON.parse(tags);
     if (!Array.isArray(selectedTags)) {
         console.warn("🚨 Unexpected tag format:", tags);
         selectedTags = [];
@@ -320,12 +345,22 @@ async function editContent(id, title, category, tags, encodedMessage, messageTyp
 }
 
 
+
 async function updateContent(contentId) {
     const updatedTitle = document.getElementById("newTitle").value.trim();
     const updatedCategory = document.getElementById("categorySelect").value.trim();
     const updatedTags = Array.from(document.getElementById("newTags").selectedOptions).map(option => option.value);
-    const updatedMessage = quill.root.innerHTML.trim(); // ✅ Fetch message from Quill
-    const updatedMessageType = document.getElementById("messageTypeSelect").value; // ✅ Capture Message Type
+    const updatedMessageType = document.getElementById("messageTypeSelect").value;
+    const updatedOriginalPost = document.getElementById("originalPostSelect").value;
+
+    const updatedQuestion = quillQuestion.root.innerHTML.trim(); // ✅ Fetch from Quill Question Editor
+    const updatedAnswer = quillAnswer.root.innerHTML.trim(); // ✅ Fetch from Quill Answer Editor
+
+    // ✅ Ensure required fields are filled
+    if (!updatedTitle || !updatedCategory || !updatedQuestion || !updatedAnswer) {
+        alert("Title, category, question, and answer are required.");
+        return;
+    }
 
     try {
         const response = await fetch(`/content/${contentId}`, {
@@ -335,18 +370,17 @@ async function updateContent(contentId) {
                 title: updatedTitle, 
                 category: updatedCategory, 
                 tags: updatedTags, 
-                message: updatedMessage,
-                messageType: updatedMessageType // ✅ Update message type
+                question: updatedQuestion, // ✅ Send Question
+                answer: updatedAnswer, // ✅ Send Answer
+                messageType: updatedMessageType, 
+                originalPost: updatedOriginalPost 
             })
         });
 
         if (response.ok) {
             console.log("✅ Content updated successfully.");
-            fetchContent();
-
-            // ✅ Show success modal after update with correct message
-            showSuccessModal("Transmission Updated!");
-
+            fetchContent(); // ✅ Refresh the content list
+            showSuccessModal("Content Updated!"); // ✅ Show success message
         } else {
             console.error("❌ Failed to update content.");
         }
@@ -354,6 +388,7 @@ async function updateContent(contentId) {
         console.error("❌ Error updating content:", error);
     }
 }
+
 
 
 
@@ -885,7 +920,7 @@ async function fetchMessageTypes() {
             listItem.innerHTML = `
                 <span>${type.type}</span>
                 <div>
-                    <button class="btn btn-sm btn-edit me-2" onclick="openEditMessageTypeModal('${type._id}', '${type.type}')">
+                    <button class="btn btn-sm btn-edit " onclick="openEditMessageTypeModal('${type._id}', '${type.type}')">
                         <span class="material-icons icon-small">edit</span>
                     </button>
                     <button class="btn btn-sm btn-danger" onclick="confirmDeleteMessageType('${type._id}')">
