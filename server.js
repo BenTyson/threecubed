@@ -502,8 +502,83 @@ app.delete("/message-types/:id", async (req, res) => {
 });
 
 
+// =====================================================
+//  📌 DEV TRACKER
+// =====================================================
 
+// ✅ Dev Item Schema & Model
+const devItemSchema = new mongoose.Schema({
+    text: { type: String, required: true },
+    completed: { type: Boolean, default: false }, // ✅ New Field
+});
 
+const DevItem = mongoose.model("DevItem", devItemSchema);
+
+// ✅ Fetch All Dev Items
+app.get("/dev-items", async (req, res) => {
+    try {
+        const devItems = await DevItem.find();
+        res.json(devItems);
+    } catch (error) {
+        console.error("❌ Error fetching dev items:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ✅ Add a New Dev Item
+app.post("/dev-items", async (req, res) => {
+    try {
+        const { text } = req.body;
+        if (!text) return res.status(400).json({ error: "Text is required" });
+
+        const newItem = new DevItem({ text });
+        await newItem.save();
+        res.json(newItem);
+    } catch (error) {
+        console.error("❌ Error adding dev item:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ✅ Update a Dev Item (Edit)
+app.put("/dev-items/:id", async (req, res) => {
+    try {
+        const { text } = req.body;
+        const updatedItem = await DevItem.findByIdAndUpdate(req.params.id, { text }, { new: true });
+        if (!updatedItem) return res.status(404).json({ error: "Item not found" });
+
+        res.json(updatedItem);
+    } catch (error) {
+        console.error("❌ Error updating dev item:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ✅ Mark Dev Item as Complete
+app.put("/dev-items/:id/complete", async (req, res) => {
+    try {
+        const updatedItem = await DevItem.findByIdAndUpdate(req.params.id, { completed: true }, { new: true });
+        if (!updatedItem) return res.status(404).json({ error: "Item not found" });
+
+        res.json(updatedItem);
+    } catch (error) {
+        console.error("❌ Error marking item complete:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ✅ Delete a Dev Item
+app.delete("/dev-items/:id", async (req, res) => {
+    try {
+        const deletedItem = await DevItem.findByIdAndDelete(req.params.id);
+        if (!deletedItem) return res.status(404).json({ error: "Item not found" });
+
+        res.json({ message: "✅ Dev Item deleted successfully" });
+    } catch (error) {
+        console.error("❌ Error deleting dev item:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
 
 
 

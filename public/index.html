@@ -24,9 +24,13 @@
 <body>
     <div class="container mt-4">
         <h1 class="text-center mb-4 head1">JR PRUDENCE</h1>
+        <div class="text-center head2" style="color: #7a0012">CURRENT STATUS: UNSTABLE VERSION</div><br/>
 
         <!-- Navigation Tabs -->
         <ul class="nav nav-tabs justify-content-center mb-4">
+            <li class="nav-item">
+                <button class="nav-link" onclick="showSection('dev')">Dev</button>
+            </li>
        		<li class="nav-item">
                 <button class="nav-link" onclick="showSection('organizer')">Organize</button> <!-- New Tab -->
             </li>
@@ -38,6 +42,32 @@
                 <button class="nav-link" onclick="showSection('viewer')">View</button>
             </li>
         </ul>
+
+        <!-- ✅ Dev Section -->
+        <div id="dev" class="section" style="display:none;">
+            <p class="head1">BUGS + NEW FEATURES</p>
+
+            <!-- Input Field -->
+            <div class="mb-3">
+                <span class="head2">Add New Idea or Task</span><br/>
+                <div class="input-group">
+                    <input type="text" id="newDevItemInput" class="form-control" placeholder="Enter a bug or feature">
+                    <button class="btn btn-dark" onclick="addNewDevItem()">Add</button>
+                </div>
+            </div>
+
+            <!-- List of Items -->
+            <span class="head2">Current Tasks</span><br/>
+            <ul id="devItemList" class="list-group"></ul> <!-- Dynamically Populated -->
+
+            <br/><hr><br/>
+
+            <!-- ✅ Completed Dev Items -->
+            <span class="head2">Completed Tasks</span><br/>
+            <ul id="completedDevItemList" class="list-group"></ul> <!-- Dynamically Populated -->
+        </div>
+
+
 
         <!-- ✅ Organizer Section -->
         <div id="organizer" class="section" style="display:none;">

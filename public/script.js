@@ -7,16 +7,18 @@ function showSection(section) {
     document.getElementById("creator").style.display = section === "creator" ? "block" : "none";
     document.getElementById("organizer").style.display = section === "organizer" ? "block" : "none";
     document.getElementById("viewer").style.display = section === "viewer" ? "block" : "none";
+    document.getElementById("dev").style.display = section === "dev" ? "block" : "none"; // ✅ Added Dev Section
 
     // ✅ If switching to Organizer or Creator, refresh the tag list
     if (section === "organizer" || section === "creator") {
         fetchTags();  // ✅ Ensure tags are up-to-date in both views
     }
 
-    // Update Bootstrap active state for tabs
+    // ✅ Update Bootstrap active state for tabs
     document.querySelectorAll(".nav-link").forEach(btn => btn.classList.remove("active"));
     document.querySelector(`[onclick="showSection('${section}')"]`).classList.add("active");
 }
+
 
 let quill;
 
@@ -1232,6 +1234,162 @@ function confirmDeleteOriginalPost(postId) {
 
     deleteModal.show();
 }
+
+
+// =====================================================
+//  📌 DEV PROJECT TRACKER
+// =====================================================
+
+
+// ✅ Load Dev Items on Page Load
+document.addEventListener("DOMContentLoaded", () => {
+    loadDevItems();
+    loadCompletedDevItems();
+});
+
+// ✅ Fetch and Display Dev Items from MongoDB
+async function loadDevItems() {
+    const devItemList = document.getElementById("devItemList");
+    devItemList.innerHTML = ""; // Clear existing list
+
+    try {
+        const response = await fetch("/dev-items");
+        const devItems = await response.json();
+
+        devItems.forEach(item => {
+            const listItem = document.createElement("li");
+            listItem.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+
+            listItem.innerHTML = `
+                <span id="devItemText-${item._id}">${item.text}</span>
+                <div>
+                    <!-- ✅ Mark Complete Button -->
+                    <button class="btn btn-sm btn-success" onclick="markDevItemComplete('${item._id}')">
+                        <span class="material-icons icon-small">check</span>
+                    </button>
+
+                    <!-- ✅ Edit Button -->
+                    <button class="btn btn-sm btn-edit me-2" onclick="editDevItem('${item._id}')">
+                        <span class="material-icons icon-small">edit</span>
+                    </button>
+
+                    <!-- ✅ Delete Button -->
+                    <button class="btn btn-sm btn-danger" onclick="deleteDevItem('${item._id}')">
+                        <span class="material-icons icon-small">delete</span>
+                    </button>
+                </div>
+            `;
+
+            devItemList.appendChild(listItem);
+        });
+
+    } catch (error) {
+        console.error("❌ Error loading dev items:", error);
+    }
+}
+
+// ✅ Fetch & Display Completed Dev Items
+async function loadCompletedDevItems() {
+    const completedDevItemList = document.getElementById("completedDevItemList");
+    completedDevItemList.innerHTML = ""; // Clear existing list
+
+    try {
+        const response = await fetch("/dev-items");
+        const devItems = await response.json();
+
+        devItems
+            .filter(item => item.completed) // ✅ Only show completed items
+            .forEach(item => {
+                const listItem = document.createElement("li");
+                listItem.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+
+                listItem.innerHTML = `
+                    <span>${item.text}</span>
+                    <button class="btn btn-sm btn-danger" onclick="deleteDevItem('${item._id}')">
+                        <span class="material-icons icon-small">delete</span>
+                    </button>
+                `;
+
+                completedDevItemList.appendChild(listItem);
+            });
+
+    } catch (error) {
+        console.error("❌ Error loading completed dev items:", error);
+    }
+}
+
+// ✅ Add New Dev Item
+async function addNewDevItem() {
+    const inputField = document.getElementById("newDevItemInput");
+    const newItemText = inputField.value.trim();
+
+    if (!newItemText) {
+        alert("Please enter a valid item.");
+        return;
+    }
+
+    try {
+        const response = await fetch("/dev-items", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: newItemText })
+        });
+
+        if (response.ok) {
+            inputField.value = "";
+            loadDevItems(); // Refresh list
+        }
+
+    } catch (error) {
+        console.error("❌ Error adding dev item:", error);
+    }
+}
+
+// ✅ Edit Dev Item
+async function editDevItem(id) {
+    const currentText = document.getElementById(`devItemText-${id}`).textContent;
+    const newText = prompt("Edit your item:", currentText);
+
+    if (newText !== null && newText.trim() !== "") {
+        try {
+            await fetch(`/dev-items/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: newText })
+            });
+
+            loadDevItems(); // Refresh list
+
+        } catch (error) {
+            console.error("❌ Error editing dev item:", error);
+        }
+    }
+}
+
+// ✅ Mark Dev Item as Complete (Moves to Completed Section)
+async function markDevItemComplete(id) {
+    try {
+        await fetch(`/dev-items/${id}/complete`, { method: "PUT" });
+        loadDevItems();
+        loadCompletedDevItems();
+    } catch (error) {
+        console.error("❌ Error marking dev item complete:", error);
+    }
+}
+
+// ✅ Delete Dev Item (Both Active & Completed)
+async function deleteDevItem(id) {
+    try {
+        await fetch(`/dev-items/${id}`, { method: "DELETE" });
+        loadDevItems();
+        loadCompletedDevItems();
+    } catch (error) {
+        console.error("❌ Error deleting dev item:", error);
+    }
+}
+
+
+
 
 
 
