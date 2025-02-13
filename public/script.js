@@ -105,10 +105,10 @@ function displayContent(contentData) {
         card.innerHTML = `
             <div class="card mb-3 shadow-sm">
                 <div class="card-body">
-                    <p class="head2">${item.title}</p>
+                    <!--<p class="head2">${item.title}</p>-->
                     
-                    <p><strong>Q:</strong> ${item.question}</p>
-                    <p class="card-text"><strong>A:</strong> ${truncatedAnswer}</p>
+                    <p><strong>${item.question}</strong></p>
+                    <p class="card-text"> ${truncatedAnswer}</p>
 
                     ${words.length > maxWords ? 
                         `<button class="btn btn-outline-dark btn-sm mt-2 read-more-btn">Read More</button>` 
@@ -203,8 +203,8 @@ async function expandMessage(contentId) {
 
     const modalBody = document.getElementById("modalMessage");
     modalBody.innerHTML = `
-        <p><strong>Q:</strong> ${content.question}</p>
-        <p><strong>A:</strong> ${content.answer}</p>
+        <p><strong>${content.question}</strong></p>
+        <p>${content.answer}</p>
         <br/>
         <p><span class="head3">Category:</span> <span class="head4">${content.category}</span><br/>
         <span class="head3">Message Type:</span> <span class="head4">${content.messageType}</span> <br/>
@@ -311,12 +311,29 @@ async function editContent(id, title, category, tags, encodedQuestion, encodedAn
     document.getElementById("categorySelect").value = category;
     document.getElementById("messageTypeSelect").value = messageType;
 
+    // ✅ Initialize Quill if not already initialized
+    if (!window.questionQuill) {
+        console.warn("🛠️ Initializing quillQuestion...");
+        questionQuill = new Quill("#newQuestion", {
+            theme: "snow",
+            modules: { toolbar: "#questionToolbar" }
+        });
+    }
+
+    if (!window.quill) {
+        console.warn("🛠️ Initializing quill...");
+        quill = new Quill("#newMessage", {
+            theme: "snow",
+            modules: { toolbar: "#answerToolbar" }
+        });
+    }
+
     // ✅ Decode the question and answer to prevent syntax errors
     const question = decodeURIComponent(encodedQuestion);
     const answer = decodeURIComponent(encodedAnswer);
 
-    quillQuestion.root.innerHTML = question; // ✅ Populate the Question Quill editor
-    quillAnswer.root.innerHTML = answer; // ✅ Populate the Answer Quill editor
+    questionQuill.root.innerHTML = question; // ✅ Populate the Question Quill editor
+    quill.root.innerHTML = answer; // ✅ Populate the Answer Quill editor
 
     await fetchOriginalPosts();
     document.getElementById("originalPostSelect").value = originalPost || "";
@@ -346,15 +363,33 @@ async function editContent(id, title, category, tags, encodedQuestion, encodedAn
 
 
 
+
 async function updateContent(contentId) {
+    // ✅ Ensure Quill editors are initialized
+    if (!window.questionQuill) {
+        console.warn("🛠️ Initializing quillQuestion...");
+        window.questionQuill = new Quill("#newQuestion", {
+            theme: "snow",
+            modules: { toolbar: "#questionToolbar" }
+        });
+    }
+
+    if (!window.quill) {
+        console.warn("🛠️ Initializing quill...");
+        window.quill = new Quill("#newMessage", {
+            theme: "snow",
+            modules: { toolbar: "#answerToolbar" }
+        });
+    }
+
     const updatedTitle = document.getElementById("newTitle").value.trim();
     const updatedCategory = document.getElementById("categorySelect").value.trim();
     const updatedTags = Array.from(document.getElementById("newTags").selectedOptions).map(option => option.value);
     const updatedMessageType = document.getElementById("messageTypeSelect").value;
     const updatedOriginalPost = document.getElementById("originalPostSelect").value;
 
-    const updatedQuestion = quillQuestion.root.innerHTML.trim(); // ✅ Fetch from Quill Question Editor
-    const updatedAnswer = quillAnswer.root.innerHTML.trim(); // ✅ Fetch from Quill Answer Editor
+    const updatedQuestion = questionQuill.root.innerHTML.trim(); // ✅ Fetch from Quill Question Editor
+    const updatedAnswer = quill.root.innerHTML.trim(); // ✅ Fetch from Quill Answer Editor
 
     // ✅ Ensure required fields are filled
     if (!updatedTitle || !updatedCategory || !updatedQuestion || !updatedAnswer) {
@@ -388,6 +423,7 @@ async function updateContent(contentId) {
         console.error("❌ Error updating content:", error);
     }
 }
+
 
 
 
