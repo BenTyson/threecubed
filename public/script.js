@@ -1269,7 +1269,7 @@ async function loadDevItems() {
                     </button>
 
                     <!-- ✅ Edit Button -->
-                    <button class="btn btn-sm btn-edit me-2" onclick="editDevItem('${item._id}')">
+                    <button class="btn btn-sm btn-edit" onclick="editDevItem('${item._id}')">
                         <span class="material-icons icon-small">edit</span>
                     </button>
 
