@@ -171,19 +171,38 @@ app.get("/content", async (req, res) => {
 app.post("/content", async (req, res) => {
     try {
         const { title, category, tags, question, answer, messageType, originalPost } = req.body;
-        
+
         if (!title || !category || !question || !answer) {
             return res.status(400).json({ error: "Title, category, question, and answer are required." });
         }
 
+        // ✅ Check if content already exists by title
+        const existingContent = await Content.findOne({ title });
+
+        if (existingContent) {
+            // ✅ Update existing entry
+            existingContent.category = category;
+            existingContent.tags = tags;
+            existingContent.question = question;
+            existingContent.answer = answer;
+            existingContent.messageType = messageType;
+            existingContent.originalPost = originalPost;
+            await existingContent.save();
+
+            return res.json({ message: "✅ Content updated successfully!", content: existingContent });
+        }
+
+        // ✅ Create new entry if it doesn't exist
         const newContent = new Content({ title, category, tags, question, answer, messageType, originalPost });
         await newContent.save();
-        res.json(newContent);
+
+        res.json({ message: "✅ New content created!", content: newContent });
     } catch (error) {
-        console.error("❌ Error adding content:", error);
+        console.error("❌ Error adding/updating content:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
+
 
 
 // Edit content block
@@ -203,12 +222,13 @@ app.put("/content/:id", async (req, res) => {
             return res.status(404).json({ error: "Content not found" });
         }
 
-        res.json(updatedContent);
+        res.json({ message: "✅ Content updated successfully!", content: updatedContent });
     } catch (error) {
         console.error("❌ Error updating content:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
+
 
 
 // Delete content

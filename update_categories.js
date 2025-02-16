@@ -9,20 +9,22 @@ const mongoURI = process.env.NODE_ENV === "production"
     ? process.env.MONGO_URI_PROD
     : process.env.MONGO_URI_DEV;
 
+// ✅ Debugging: Confirm environment
+console.log(`🔍 NODE_ENV: ${process.env.NODE_ENV}`);
+console.log(`🔍 Using MongoDB URI: ${mongoURI}`);
+
+// ✅ Check if MongoDB URI is loaded correctly
 if (!mongoURI) {
     console.error("❌ Error: MongoDB URI is undefined. Check your .env file and NODE_ENV setting.");
     process.exit(1);
 }
-
-console.log(`🔍 NODE_ENV: ${process.env.NODE_ENV}`);
-console.log(`🔍 Using MongoDB URI: ${mongoURI}`);
 
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const Content = mongoose.model(
     "Content",
     new mongoose.Schema({
-        title: String,
+        title: { type: String, required: true, unique: true }, // ✅ Ensure unique title
         category: String,
         tags: [String],
         question: String,
@@ -33,35 +35,33 @@ const Content = mongoose.model(
 );
 
 // ✅ Read the update JSON file
-fs.readFile("update_tags.json", "utf8", async (err, data) => {
+fs.readFile("update_categories.json", "utf8", async (err, data) => {
     if (err) {
         console.error("❌ Error reading JSON file:", err);
-        process.exit(1);
+        return;
     }
 
     try {
-        let updates = JSON.parse(data);
+        const updates = JSON.parse(data);
 
-        for (let entry of updates) {
-            if (!entry.Title || !entry.Tags) {
+        for (const entry of updates) {
+            if (!entry.Title || !entry.Category) {
                 console.log(`⚠️ Skipping entry due to missing fields: ${JSON.stringify(entry)}`);
                 continue;
             }
 
-            // ✅ Auto-fix JSON field names
             const formattedTitle = entry.Title.trim();
-            const formattedTags = Array.isArray(entry.Tags) 
-                ? entry.Tags 
-                : entry.Tags.split(",").map(tag => tag.trim());
+            const formattedCategory = entry.Category.trim();
 
+            // ✅ Only update existing entries, prevent duplicates
             const updated = await Content.findOneAndUpdate(
                 { title: formattedTitle }, // Match by title
-                { $set: { tags: formattedTags } }, // Convert to proper array
-                { new: true }
+                { $set: { category: formattedCategory } }, // Only update category field
+                { new: true, upsert: false } // ✅ Prevent new content creation
             );
 
             if (updated) {
-                console.log(`✅ Updated: ${updated.title} -> ${updated.tags}`);
+                console.log(`✅ Updated: ${updated.title} -> ${updated.category}`);
             } else {
                 console.log(`❌ No match found for: ${formattedTitle}`);
             }
