@@ -24,18 +24,22 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
 
         if (collections.length === 0) {
             console.log("✅ Database is already empty.");
-            return process.exit(0);
+            process.exit(0);
         }
 
-        console.log(`🚨 Deleting ${collections.length} collections...`);
+        console.log(`🚨 Deleting ${collections.length} collections (excluding 'devitems')...`);
 
-        // ✅ Drop each collection
+        // ✅ Drop each collection EXCEPT "devitems"
         for (let collection of collections) {
-            await collection.drop();
-            console.log(`🗑️ Dropped collection: ${collection.collectionName}`);
+            if (collection.collectionName !== "devitems") {
+                await collection.drop();
+                console.log(`🗑️ Dropped collection: ${collection.collectionName}`);
+            } else {
+                console.log(`⏭️ Skipped collection: ${collection.collectionName} (Dev Tasks Kept)`);
+            }
         }
 
-        console.log("🚀 Database cleared successfully!");
+        console.log("🚀 Database cleared successfully (except 'devitems')!");
         process.exit(0);
     })
     .catch(err => {

@@ -14,7 +14,7 @@ def format_json(input_file, output_file):
             print(f"🔍 Checking entry {index + 1}: {entry}")  # Debugging print
 
             # Ensure required fields are present & not empty
-            required_fields = ["Title", "Category", "Question", "Answer", "MessageType"]
+            required_fields = ["Title", "Category", "Question", "Answer", "messageType"]
             if any(field not in entry or not str(entry[field]).strip() for field in required_fields):
                 print(f"❌ Skipping invalid entry {index + 1}: {entry}")
                 skipped_entries += 1

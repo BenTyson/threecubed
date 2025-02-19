@@ -144,13 +144,14 @@ mongoose.connect(mongoURI, {
 
 // Define Content Schema
 const contentSchema = new mongoose.Schema({
-    title: { type: String, required: true },
+    title: { type: String, required: true, unique: true },
     category: { type: String, required: true },
-    tags: [String],
-    question: { type: String, required: true },  // ✅ NEW FIELD
-    answer: { type: String, required: true },    // ✅ Renamed "message" to "answer"
-    messageType: { type: String, required: true },
-    originalPost: { type: String } // ✅ New: Stores the selected original post URL
+    tags: [{ type: String }],
+    question: { type: String, required: true },
+    answer: { type: String, required: true },
+    messageType: { type: String, required: true },   
+    originalPostTitle: { type: String, required: true },  // ✅ NOW REQUIRED
+    originalPostURL: { type: String, required: true }     // ✅ NOW REQUIRED
 });
 
 const Content = mongoose.model("Content", contentSchema);
@@ -175,10 +176,10 @@ app.get("/content", async (req, res) => {
 // Add new content block
 app.post("/content", async (req, res) => {
     try {
-        const { title, category, tags, question, answer, messageType, originalPost } = req.body;
+        const { title, category, tags, question, answer, messageType, originalPostTitle, originalPostURL } = req.body;
 
-        if (!title || !category || !question || !answer) {
-            return res.status(400).json({ error: "Title, category, question, and answer are required." });
+        if (!title || !category || !question || !answer || !originalPostTitle || !originalPostURL) {
+            return res.status(400).json({ error: "Title, category, question, answer, originalPostTitle, and originalPostURL are required." });
         }
 
         // ✅ Check if content already exists by title
@@ -191,14 +192,15 @@ app.post("/content", async (req, res) => {
             existingContent.question = question;
             existingContent.answer = answer;
             existingContent.messageType = messageType;
-            existingContent.originalPost = originalPost;
+            existingContent.originalPostTitle = originalPostTitle;  // ✅ FIXED FIELD
+            existingContent.originalPostURL = originalPostURL;      // ✅ FIXED FIELD
             await existingContent.save();
 
             return res.json({ message: "✅ Content updated successfully!", content: existingContent });
         }
 
         // ✅ Create new entry if it doesn't exist
-        const newContent = new Content({ title, category, tags, question, answer, messageType, originalPost });
+        const newContent = new Content({ title, category, tags, question, answer, messageType, originalPostTitle, originalPostURL });
         await newContent.save();
 
         res.json({ message: "✅ New content created!", content: newContent });
@@ -208,19 +210,17 @@ app.post("/content", async (req, res) => {
     }
 });
 
-
-
 // Edit content block
 app.put("/content/:id", async (req, res) => {
     try {
-        const { title, category, tags, question, answer, messageType, originalPost } = req.body;
+        const { title, category, tags, question, answer, messageType, originalPostTitle, originalPostURL } = req.body;
 
-        if (!title || !category || !question || !answer) {
-            return res.status(400).json({ error: "Title, category, question, and answer are required." });
+        if (!title || !category || !question || !answer || !originalPostTitle || !originalPostURL) {
+            return res.status(400).json({ error: "Title, category, question, answer, originalPostTitle, and originalPostURL are required." });
         }
 
         const updatedContent = await Content.findByIdAndUpdate(req.params.id, {
-            title, category, tags, question, answer, messageType, originalPost
+            title, category, tags, question, answer, messageType, originalPostTitle, originalPostURL  // ✅ FIXED FIELDS
         }, { new: true });
 
         if (!updatedContent) {
@@ -233,6 +233,7 @@ app.put("/content/:id", async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 });
+
 
 
 

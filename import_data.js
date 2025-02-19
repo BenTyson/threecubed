@@ -25,15 +25,7 @@ const contentSchema = new mongoose.Schema({
     originalPostURL: { type: String }
 });
 
-const categorySchema = new mongoose.Schema({ category: { type: String, unique: true } });
-const tagSchema = new mongoose.Schema({ tag: { type: String, unique: true } });
-const messageTypeSchema = new mongoose.Schema({ type: { type: String, unique: true } });
-
-// ✅ Define Models
 const Content = mongoose.model("Content", contentSchema);
-const Category = mongoose.model("Category", categorySchema);
-const Tag = mongoose.model("Tag", tagSchema);
-const MessageType = mongoose.model("MessageType", messageTypeSchema);
 
 // ✅ Connect to MongoDB
 mongoose.connect(mongoURI, {
@@ -57,9 +49,6 @@ fs.readFile(jsonFilePath, "utf8", async (err, data) => {
 
     try {
         const jsonData = JSON.parse(data);
-        const tagsToInsert = new Set();
-        const categoriesToInsert = new Set();
-        const messageTypesToInsert = new Set();
 
         for (const entry of jsonData) {
             if (!entry.Title || !entry.Category || !entry.Question || !entry.Answer) {
@@ -69,7 +58,9 @@ fs.readFile(jsonFilePath, "utf8", async (err, data) => {
 
             const formattedTitle = entry.Title.trim();
             const formattedCategory = entry.Category.trim();
-            const formattedMessageType = entry.MessageType?.trim() || "General";
+            const formattedMessageType = entry.messageType?.trim() || "General";
+            const formattedOriginalPostTitle = entry.originalPostTitle?.trim() || "N/A";
+            const formattedOriginalPostURL = entry.originalPostURL?.trim() || "N/A";
 
             // ✅ Fix Tags
             let formattedTags = [];
@@ -83,59 +74,45 @@ fs.readFile(jsonFilePath, "utf8", async (err, data) => {
                 formattedTags = [];
             }
 
-            // ✅ Track categories, tags, and message types for bulk insertion
-            categoriesToInsert.add(formattedCategory);
-            messageTypesToInsert.add(formattedMessageType);
-            formattedTags.forEach(tag => tagsToInsert.add(tag));
+            // ✅ Logging for debugging
+            console.log("📝 Processing Entry:");
+            console.log(`   🔹 Title: ${formattedTitle}`);
+            console.log(`   🔹 Category: ${formattedCategory}`);
+            console.log(`   🔹 Message Type: ${formattedMessageType}`);
+            console.log(`   🔹 Original Post Title: ${formattedOriginalPostTitle}`);
+            console.log(`   🔹 Original Post URL: ${formattedOriginalPostURL}`);
+            console.log(`   🔹 Tags: ${formattedTags.join(", ")}`);
 
             // ✅ Insert or Update Content
-            await Content.findOneAndUpdate(
-                { title: formattedTitle },
-                {
-                    $set: {
-                        category: formattedCategory,
-                        tags: formattedTags,
-                        question: entry.Question,
-                        answer: entry.Answer,
-                        messageType: formattedMessageType,
-                        originalPostTitle: entry.OriginalPostTitle,
-                        originalPostURL: entry.OriginalPostURL
-                    }
-                },
-                { new: true, upsert: true }
-            );
+            try {
+                const result = await Content.findOneAndUpdate(
+                    { title: formattedTitle },
+                    {
+                        $set: {
+                            category: formattedCategory,
+                            tags: formattedTags, // ✅ Ensures array format
+                            question: entry.Question,
+                            answer: entry.Answer,
+                            messageType: formattedMessageType,
+                            originalPostTitle: formattedOriginalPostTitle,
+                            originalPostURL: formattedOriginalPostURL
+                        }
+                    },
+                    { new: true, upsert: true }
+                );
 
-            console.log(`✅ Inserted/Updated: ${formattedTitle}`);
-        }
+                console.log(`✅ Successfully inserted/updated: ${formattedTitle}`);
+            } catch (error) {
+                console.error(`❌ Error inserting/updating content for: ${formattedTitle}`, error);
+            }
 
-        // ✅ Insert Categories
-        for (const category of categoriesToInsert) {
-            await Category.findOneAndUpdate(
-                { category },
-                { $set: { category } },
-                { new: true, upsert: true }
-            );
-            console.log(`📁 Category Inserted: ${category}`);
-        }
 
-        // ✅ Insert Tags
-        for (const tag of tagsToInsert) {
-            await Tag.findOneAndUpdate(
-                { tag },
-                { $set: { tag } },
-                { new: true, upsert: true }
-            );
-            console.log(`🏷️ Tag Inserted: ${tag}`);
-        }
-
-        // ✅ Insert Message Types
-        for (const messageType of messageTypesToInsert) {
-            await MessageType.findOneAndUpdate(
-                { type: messageType },
-                { $set: { type: messageType } },
-                { new: true, upsert: true }
-            );
-            console.log(`📩 Message Type Inserted: ${messageType}`);
+            // ✅ Verification log
+            if (!result.messageType || !result.originalPostTitle || !result.originalPostURL) {
+                console.error(`❌ ERROR: Failed to insert messageType, originalPostTitle, or originalPostURL for '${formattedTitle}'`);
+            } else {
+                console.log(`✅ Successfully inserted: ${formattedTitle}`);
+            }
         }
 
         console.log("🚀 Import Complete!");
