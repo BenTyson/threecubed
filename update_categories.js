@@ -19,12 +19,14 @@ if (!mongoURI) {
     process.exit(1);
 }
 
+// ✅ Connect to MongoDB
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
 
+// ✅ Define Models
 const Content = mongoose.model(
     "Content",
     new mongoose.Schema({
-        title: { type: String, required: true, unique: true }, // ✅ Ensure unique title
+        title: { type: String, required: true, unique: true }, 
         category: String,
         tags: [String],
         question: String,
@@ -34,7 +36,14 @@ const Content = mongoose.model(
     })
 );
 
-// ✅ Read the update JSON file
+const Category = mongoose.model(
+    "Category",
+    new mongoose.Schema({
+        category: { type: String, unique: true }
+    })
+);
+
+// ✅ Read and Update Categories from JSON
 fs.readFile("update_categories.json", "utf8", async (err, data) => {
     if (err) {
         console.error("❌ Error reading JSON file:", err);
@@ -43,6 +52,7 @@ fs.readFile("update_categories.json", "utf8", async (err, data) => {
 
     try {
         const updates = JSON.parse(data);
+        const categoriesToInsert = new Set();
 
         for (const entry of updates) {
             if (!entry.Title || !entry.Category) {
@@ -53,18 +63,29 @@ fs.readFile("update_categories.json", "utf8", async (err, data) => {
             const formattedTitle = entry.Title.trim();
             const formattedCategory = entry.Category.trim();
 
-            // ✅ Only update existing entries, prevent duplicates
+            // ✅ Update category inside `contents` collection
             const updated = await Content.findOneAndUpdate(
-                { title: formattedTitle }, // Match by title
-                { $set: { category: formattedCategory } }, // Only update category field
-                { new: true, upsert: false } // ✅ Prevent new content creation
+                { title: formattedTitle }, 
+                { $set: { category: formattedCategory } },
+                { new: true, upsert: false }
             );
 
             if (updated) {
                 console.log(`✅ Updated: ${updated.title} -> ${updated.category}`);
+                categoriesToInsert.add(formattedCategory);
             } else {
                 console.log(`❌ No match found for: ${formattedTitle}`);
             }
+        }
+
+        // ✅ Ensure categories exist in `categories` collection
+        for (const category of categoriesToInsert) {
+            await Category.updateOne(
+                { category: category },
+                { $set: { category: category } },
+                { upsert: true }
+            );
+            console.log(`✅ Ensured category exists: ${category}`);
         }
 
         console.log("🚀 Bulk update completed!");

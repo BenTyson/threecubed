@@ -158,13 +158,18 @@ const Content = mongoose.model("Content", contentSchema);
 // Fetch all content
 app.get("/content", async (req, res) => {
     try {
-        const content = await Content.find({}, "title category tags question answer messageType originalPost");
+        const content = await Content.find({}, "title category tags question answer messageType originalPostTitle originalPostURL");
+        
+        // ✅ Debugging: Log the output to confirm correct data retrieval
+        console.log("📤 Sending Content Data:", content);
+        
         res.json(content);
     } catch (error) {
         console.error("❌ Error fetching content:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
+
 
 
 // Add new content block

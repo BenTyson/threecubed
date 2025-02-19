@@ -9,20 +9,24 @@ const mongoURI = process.env.NODE_ENV === "production"
     ? process.env.MONGO_URI_PROD
     : process.env.MONGO_URI_DEV;
 
+// ✅ Debugging: Confirm environment
+console.log(`🔍 NODE_ENV: ${process.env.NODE_ENV}`);
+console.log(`🔍 Using MongoDB URI: ${mongoURI}`);
+
+// ✅ Check if MongoDB URI is loaded correctly
 if (!mongoURI) {
     console.error("❌ Error: MongoDB URI is undefined. Check your .env file and NODE_ENV setting.");
     process.exit(1);
 }
 
-console.log(`🔍 NODE_ENV: ${process.env.NODE_ENV}`);
-console.log(`🔍 Using MongoDB URI: ${mongoURI}`);
-
+// ✅ Connect to MongoDB
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
 
+// ✅ Define Models
 const Content = mongoose.model(
     "Content",
     new mongoose.Schema({
-        title: String,
+        title: { type: String, required: true, unique: true }, 
         category: String,
         tags: [String],
         question: String,
@@ -32,39 +36,58 @@ const Content = mongoose.model(
     })
 );
 
-// ✅ Read the update JSON file
+const Tag = mongoose.model(
+    "Tag",
+    new mongoose.Schema({
+        tag: { type: String, unique: true }
+    })
+);
+
+// ✅ Read and Update Tags from JSON
 fs.readFile("update_tags.json", "utf8", async (err, data) => {
     if (err) {
         console.error("❌ Error reading JSON file:", err);
-        process.exit(1);
+        return;
     }
 
     try {
-        let updates = JSON.parse(data);
+        const updates = JSON.parse(data);
+        const tagsToInsert = new Set();
 
-        for (let entry of updates) {
+        for (const entry of updates) {
             if (!entry.Title || !entry.Tags) {
                 console.log(`⚠️ Skipping entry due to missing fields: ${JSON.stringify(entry)}`);
                 continue;
             }
 
-            // ✅ Auto-fix JSON field names
             const formattedTitle = entry.Title.trim();
-            const formattedTags = Array.isArray(entry.Tags) 
-                ? entry.Tags 
+            const formattedTags = Array.isArray(entry.Tags)
+                ? entry.Tags.map(tag => tag.trim()) 
                 : entry.Tags.split(",").map(tag => tag.trim());
 
+            // ✅ Update tags inside `contents` collection
             const updated = await Content.findOneAndUpdate(
-                { title: formattedTitle }, // Match by title
-                { $set: { tags: formattedTags } }, // Convert to proper array
-                { new: true }
+                { title: formattedTitle }, 
+                { $set: { tags: formattedTags } },
+                { new: true, upsert: false }
             );
 
             if (updated) {
                 console.log(`✅ Updated: ${updated.title} -> ${updated.tags}`);
+                formattedTags.forEach(tag => tagsToInsert.add(tag));
             } else {
                 console.log(`❌ No match found for: ${formattedTitle}`);
             }
+        }
+
+        // ✅ Ensure tags exist in `tags` collection
+        for (const tag of tagsToInsert) {
+            await Tag.updateOne(
+                { tag: tag },
+                { $set: { tag: tag } },
+                { upsert: true }
+            );
+            console.log(`✅ Ensured tag exists: ${tag}`);
         }
 
         console.log("🚀 Bulk update completed!");

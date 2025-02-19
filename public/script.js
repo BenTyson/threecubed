@@ -709,7 +709,7 @@ async function fetchTags() {
             tagFilters.innerHTML = "";
             tags.forEach(tag => {
                 tagFilters.innerHTML += `
-                    <span class="badge tag-filter bg-secondary p-2 me-1" 
+                    <span class="badge tag-filter viewTag1 p-2 me-1" 
                         data-tag="${tag.tag}" 
                         onclick="toggleTagFilter(this, '${tag.tag}')">
                         ${tag.tag}
@@ -1408,17 +1408,20 @@ async function filterContent() {
         const response = await fetch("/content");
         let contentData = await response.json(); // Fetch latest content
 
-        // ✅ Enhanced Search: Match Title, Message, or Tags
+        // ✅ Enhanced Search: Match Title, Answer, or Tags (Avoid undefined errors)
         contentData = contentData.filter(item => {
+            const title = item.title ? item.title.toLowerCase() : "";
+            const answer = item.answer ? item.answer.toLowerCase() : ""; // ✅ Changed from "message" to "answer"
+            const tags = Array.isArray(item.tags) ? item.tags.map(tag => tag.toLowerCase()) : []; 
+
             const matchesSearch = (
-                item.title.toLowerCase().includes(searchQuery) || 
-                item.message.toLowerCase().includes(searchQuery) || 
-                item.tags.some(tag => tag.toLowerCase().includes(searchQuery))
+                title.includes(searchQuery) || 
+                answer.includes(searchQuery) || 
+                tags.some(tag => tag.includes(searchQuery))
             );
 
             const matchesCategory = (selectedCategory === "All Categories" || item.category === selectedCategory);
-
-            const matchesActiveTags = (activeTags.size === 0 || item.tags.some(tag => activeTags.has(tag.toLowerCase())));
+            const matchesActiveTags = (activeTags.size === 0 || tags.some(tag => activeTags.has(tag)));
 
             return matchesSearch && matchesCategory && matchesActiveTags;
         });
@@ -1428,6 +1431,7 @@ async function filterContent() {
         console.error("❌ Error filtering content:", error);
     }
 }
+
 
 
 

@@ -123,7 +123,7 @@ xxtransition: all 0.2s ease-in-out;
 }
 
 /* Minimalist Tags & Filters */
-.tag-item {
+.xxtag-item {
 	cursor: pointer;
 	padding: 5px 10px;
 	border-radius: 5px;
@@ -131,10 +131,7 @@ xxtransition: all 0.2s ease-in-out;
 	font-size: 0.9rem;
 	transition: background 0.2s;
 }
-.tag-item.active {
-	background: #444;
-	color: #fff;
-}
+
 
 /* Card Styling */
 .card {
@@ -158,4 +155,28 @@ xxtransition: all 0.2s ease-in-out;
 cursor: pointer; /* Changes cursor to pointer on hover */
 }
 
+
+.viewTag1 {
+	border: 1px solid #444;
+	color: #444;
+	font-size: .7em;
+}
+
+.viewTag1:hover {
+	background-color: #efefef;
+}
+
+.viewTag1.bg-primary {
+    background-color: #999 !important; /* Override Bootstrap */
+    xxcolor: #efefef !IMPORTANT;
+    --bs-bg-opacity: 1; /* Ensure full color */
+    color: #000 !important; /* Adjust text color if needed */
+}
+
+.viewTag1.bg-secondary {
+    background-color: #f8f9fa !important; /* Override Bootstrap */
+    color: #444;
+    --bs-bg-opacity: 1; /* Ensure full color */
+    color: #000 !important; /* Adjust text color if needed */
+}
 
