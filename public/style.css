@@ -80,13 +80,14 @@ font-weight: normal;
 	border: none;
 }
 .btn-danger {
-	background-color: #7a0012;
+	color: #7a0012;
+	background-color:white;
 	border: none;
 }
 
 .btn-edit {
-background-color: #333; /* Dark gray */
-color: #fff; /* White text */
+background-color: #fff; 
+color: #333; /* White text */
 border: none;
 xxpadding: 6px 12px;
 xxfont-size: 14px;
@@ -179,4 +180,25 @@ cursor: pointer; /* Changes cursor to pointer on hover */
     --bs-bg-opacity: 1; /* Ensure full color */
     color: #000 !important; /* Adjust text color if needed */
 }
+
+
+
+/*Tag Filter*/
+.tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.remove-tag {
+    font-weight: bold;
+    margin-left: 5px;
+    cursor: pointer;
+}
+.remove-tag:hover {
+    color: #ff4d4d;
+}
+
 

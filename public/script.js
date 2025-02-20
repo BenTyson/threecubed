@@ -81,8 +81,10 @@ async function fetchContent() {
 }
 
 
-// Display content blocks
+// Display content blocks with full answer and action buttons
 function displayContent(contentData) {
+    console.log("📌 Displaying Content:", contentData); // ✅ Log displayed content
+
     const contentList = document.getElementById("contentList");
     contentList.innerHTML = ""; // ✅ Clear previous content
 
@@ -92,75 +94,44 @@ function displayContent(contentData) {
     }
 
     contentData.forEach(item => {
-        const maxWords = 50;
-        const words = item.answer ? item.answer.split(/\s+/) : [];
-        const truncatedAnswer = words.length > maxWords ? words.slice(0, maxWords).join(" ") + "..." : item.answer;
-
-        const safeAnswer = encodeURIComponent(item.answer);
-        const safeQuestion = encodeURIComponent(item.question);
+        console.log("🖥️ Displaying:", item.title); // ✅ Confirm content is showing
 
         const tagsHTML = item.tags.map(tag => `
-            <span class="badge tag-filter bg-secondary me-1" data-tag="${tag}" onclick="toggleTagFilter('${tag}')">${tag}</span>
+            <span class="badge tag-filter bg-secondary me-1" data-tag="${tag}" onclick="removeTag('${tag}')">${tag}</span>
         `).join(" ");
 
-        // ✅ Create the card element dynamically
         const card = document.createElement("div");
         card.classList.add("col-12");
 
         card.innerHTML = `
             <div class="card mb-3 shadow-sm">
                 <div class="card-body">
-                    <!--<p class="head2">${item.title}</p>-->
-                    
                     <p><strong>${item.question}</strong></p>
-                    <p class="card-text"> ${truncatedAnswer}</p>
+                    <p class="card-text">${item.answer}</p> <!-- ✅ Full Answer is now displayed -->
 
-                    ${words.length > maxWords ? 
-                        `<button class="btn btn-outline-dark btn-sm mt-2 read-more-btn">Read More</button>` 
-                        : ""}<br/><br/>
+                    <p>
+                        <span class="head3">ID:</span> <span class="head4">${item.title}</span><br/>
+                        <span class="head3">Category:</span> <span class="head4">${item.category}</span><br/>
+                        <span class="head3">Message Type:</span> <span class="head4">${item.messageType}</span> <br/>
+                        <span class="head3">Tags:</span> <span class="head4">${tagsHTML}</span>
+                    </p>
 
-                    <p><span class="head3">Category:</span> <span class="head4">${item.category}</span><br/>
-                    <span class="head3">Message Type:</span> <span class="head4">${item.messageType}</span> <br/>
-                    <span class="head3">Tags:</span> <span class="head4">${tagsHTML}</span></p>
-
-                    <button class="btn btn-edit btn-sm mt-2 edit-btn">
+                    <!-- ✅ Edit & Delete Buttons Restored -->
+                    <button class="btn btn-edit btn-outline-dark btn-sm mt-2" onclick="editContent('${item._id}', '${item.title}', '${item.category}', '${JSON.stringify(item.tags)}', '${encodeURIComponent(item.question)}', '${encodeURIComponent(item.answer)}', '${item.messageType}', '${item.originalPost}')">
                         <span class="material-icons icon-small">edit</span>
                     </button>
-                    <button class="btn btn-danger btn-sm mt-2 delete-btn">
+                    <!--<button class="btn btn-danger btn-sm mt-2" onclick="confirmDeleteContent('${item._id}')">
                         <span class="material-icons icon-small">delete</span>
-                    </button>
+                    </button>-->
                 </div>
             </div>
         `;
 
-        // ✅ Attach event listeners dynamically
-        card.querySelector(".edit-btn").addEventListener("click", () => {
-            editContent(
-                item._id, 
-                item.title, 
-                item.category, 
-                JSON.stringify(item.tags), // ✅ Convert tags array to string
-                decodeURIComponent(safeQuestion),
-                decodeURIComponent(safeAnswer),
-                item.messageType,
-                item.originalPost
-            );
-        });
-
-        card.querySelector(".delete-btn").addEventListener("click", () => {
-            confirmDeleteContent(item._id);
-        });
-
-        // ✅ Attach event listener for Read More if applicable
-        const readMoreBtn = card.querySelector(".read-more-btn");
-        if (readMoreBtn) {
-            readMoreBtn.addEventListener("click", () => expandMessage(item._id));
-        }
-
-        // ✅ Append the card to the content list
         contentList.appendChild(card);
     });
 }
+
+
 
 
 
@@ -1408,16 +1379,22 @@ async function deleteDevItem(id) {
 async function filterContent() {
     const searchQuery = document.getElementById("search").value.toLowerCase();
     const selectedCategory = document.getElementById("categoryFilter").value;
+    const selectedTags = getSelectedTags(); // ✅ Get selected tags
+
+    console.log("🔍 Filtering with Tags:", selectedTags);
 
     try {
         const response = await fetch("/content");
-        let contentData = await response.json(); // Fetch latest content
+        let contentData = await response.json(); // ✅ Fetch latest content
 
-        // ✅ Enhanced Search: Match Title, Answer, or Tags (Avoid undefined errors)
+        console.log("📝 Raw Content Data:", contentData); // ✅ Log fetched data
+
         contentData = contentData.filter(item => {
             const title = item.title ? item.title.toLowerCase() : "";
-            const answer = item.answer ? item.answer.toLowerCase() : ""; // ✅ Changed from "message" to "answer"
+            const answer = item.answer ? item.answer.toLowerCase() : ""; 
             const tags = Array.isArray(item.tags) ? item.tags.map(tag => tag.toLowerCase()) : []; 
+
+            console.log(`🔍 Checking Item: ${item.title} | Tags:`, tags); // ✅ Log each item's tags
 
             const matchesSearch = (
                 title.includes(searchQuery) || 
@@ -1426,16 +1403,23 @@ async function filterContent() {
             );
 
             const matchesCategory = (selectedCategory === "All Categories" || item.category === selectedCategory);
-            const matchesActiveTags = (activeTags.size === 0 || tags.some(tag => activeTags.has(tag)));
 
-            return matchesSearch && matchesCategory && matchesActiveTags;
+            // ✅ NEW: Ensure the content matches **ALL selected tags**
+            const matchesSelectedTags = selectedTags.length === 0 || selectedTags.every(tag => tags.includes(tag));
+
+            console.log(`✅ Search: ${matchesSearch} | Category: ${matchesCategory} | Tags Match: ${matchesSelectedTags}`);
+
+            return matchesSearch && matchesCategory && matchesSelectedTags;
         });
+
+        console.log("✅ Filtered Content:", contentData); // ✅ Log filtered content
 
         displayContent(contentData); // ✅ Display filtered content
     } catch (error) {
         console.error("❌ Error filtering content:", error);
     }
 }
+
 
 
 
