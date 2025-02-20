@@ -1099,30 +1099,45 @@ async function addNewOriginalPost() {
 
 
 async function fetchOriginalPosts() {
+    console.log("🔍 Fetching Original Posts..."); // ✅ Debugging log
     try {
         const response = await fetch("/original-posts");
         const posts = await response.json();
 
-        const formattedPosts = posts.map(post => ({
-            originalPostTitle: post.title,
-            originalPostURL: post.url
-        }));
+        console.log("✅ Fetched Original Posts:", posts); // ✅ See what we got
 
-        console.log("✅ Fetched Original Posts:", formattedPosts);
+        const originalPostList = document.getElementById("originalPostList");
+        originalPostList.innerHTML = ""; // ✅ Clear previous list
 
-        const originalPostSelect = document.getElementById("originalPostSelect");
-        const currentSelection = originalPostSelect.value; // Store selection
+        if (!Array.isArray(posts) || posts.length === 0) {
+            originalPostList.innerHTML = "<p>No original posts found.</p>";
+            return;
+        }
 
-        originalPostSelect.innerHTML = "<option value=''>Select a post</option>";
-        formattedPosts.forEach(post => {
-            originalPostSelect.innerHTML += `<option value="${post.originalPostURL}">${post.originalPostTitle}</option>`;
+        posts.forEach(post => {
+            const li = document.createElement("li");
+            li.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+
+            li.innerHTML = `
+                <span>${post.title}</span>
+                <div>
+                    <button class="btn btn-sm btn-edit" onclick="openEditOriginalPostModal('${post._id}', '${post.title}', '${post.url}')">
+                        <span class="material-icons icon-small">edit</span>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="confirmDeleteOriginalPost('${post._id}')">
+                        <span class="material-icons icon-small">delete</span>
+                    </button>
+                </div>
+            `;
+
+            originalPostList.appendChild(li);
         });
 
-        originalPostSelect.value = currentSelection; // Restore selection
     } catch (error) {
         console.error("❌ Error fetching original posts:", error);
     }
 }
+
 
 
 
