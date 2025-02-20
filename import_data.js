@@ -25,7 +25,20 @@ const contentSchema = new mongoose.Schema({
     originalPostURL: { type: String }
 });
 
+const categorySchema = new mongoose.Schema({ category: { type: String, unique: true } });
+const tagSchema = new mongoose.Schema({ tag: { type: String, unique: true } });
+const messageTypeSchema = new mongoose.Schema({ type: { type: String, unique: true } });
+const originalPostSchema = new mongoose.Schema({
+    title: { type: String, unique: true },
+    url: { type: String, unique: true }
+});
+
+// ✅ Define Models
 const Content = mongoose.model("Content", contentSchema);
+const Category = mongoose.model("Category", categorySchema);
+const Tag = mongoose.model("Tag", tagSchema);
+const MessageType = mongoose.model("MessageType", messageTypeSchema);
+const OriginalPost = mongoose.model("OriginalPost", originalPostSchema);
 
 // ✅ Connect to MongoDB
 mongoose.connect(mongoURI, {
@@ -50,17 +63,36 @@ fs.readFile(jsonFilePath, "utf8", async (err, data) => {
     try {
         const jsonData = JSON.parse(data);
 
+        let insertedCount = 0;
+        let skippedCount = 0;
+        let errorCount = 0;
+
+        const categoriesSet = new Set();
+        const tagsSet = new Set();
+        const messageTypesSet = new Set();
+        const originalPostsSet = new Map(); // Map to avoid duplicate URLs with different titles
+
         for (const entry of jsonData) {
             if (!entry.Title || !entry.Category || !entry.Question || !entry.Answer) {
                 console.log(`⚠️ Skipping entry due to missing fields: ${JSON.stringify(entry)}`);
+                skippedCount++;
                 continue;
             }
 
+            // ✅ Standardize data
             const formattedTitle = entry.Title.trim();
             const formattedCategory = entry.Category.trim();
             const formattedMessageType = entry.messageType?.trim() || "General";
             const formattedOriginalPostTitle = entry.originalPostTitle?.trim() || "N/A";
             const formattedOriginalPostURL = entry.originalPostURL?.trim() || "N/A";
+
+            // ✅ Collect unique categories, message types, and original posts
+            categoriesSet.add(formattedCategory);
+            messageTypesSet.add(formattedMessageType);
+
+            if (formattedOriginalPostURL !== "N/A") {
+                originalPostsSet.set(formattedOriginalPostURL, formattedOriginalPostTitle);
+            }
 
             // ✅ Fix Tags
             let formattedTags = [];
@@ -70,18 +102,9 @@ fs.readFile(jsonFilePath, "utf8", async (err, data) => {
                 ).map(tag => tag.trim());
             } else if (typeof entry.Tags === "string") {
                 formattedTags = entry.Tags.split(/\s*,\s*/).map(tag => tag.trim());
-            } else {
-                formattedTags = [];
             }
 
-            // ✅ Logging for debugging
-            console.log("📝 Processing Entry:");
-            console.log(`   🔹 Title: ${formattedTitle}`);
-            console.log(`   🔹 Category: ${formattedCategory}`);
-            console.log(`   🔹 Message Type: ${formattedMessageType}`);
-            console.log(`   🔹 Original Post Title: ${formattedOriginalPostTitle}`);
-            console.log(`   🔹 Original Post URL: ${formattedOriginalPostURL}`);
-            console.log(`   🔹 Tags: ${formattedTags.join(", ")}`);
+            formattedTags.forEach(tag => tagsSet.add(tag));
 
             // ✅ Insert or Update Content
             try {
@@ -90,7 +113,7 @@ fs.readFile(jsonFilePath, "utf8", async (err, data) => {
                     {
                         $set: {
                             category: formattedCategory,
-                            tags: formattedTags, // ✅ Ensures array format
+                            tags: formattedTags,
                             question: entry.Question,
                             answer: entry.Answer,
                             messageType: formattedMessageType,
@@ -101,24 +124,71 @@ fs.readFile(jsonFilePath, "utf8", async (err, data) => {
                     { new: true, upsert: true }
                 );
 
-                console.log(`✅ Successfully inserted/updated: ${formattedTitle}`);
+                if (result) {
+                    insertedCount++;
+                } else {
+                    console.error(`❌ Failed to insert/update: ${formattedTitle}`);
+                    errorCount++;
+                }
             } catch (error) {
                 console.error(`❌ Error inserting/updating content for: ${formattedTitle}`, error);
-            }
-
-
-            // ✅ Verification log
-            if (!result.messageType || !result.originalPostTitle || !result.originalPostURL) {
-                console.error(`❌ ERROR: Failed to insert messageType, originalPostTitle, or originalPostURL for '${formattedTitle}'`);
-            } else {
-                console.log(`✅ Successfully inserted: ${formattedTitle}`);
+                errorCount++;
             }
         }
 
-        console.log("🚀 Import Complete!");
+        // ✅ Insert Unique Categories
+        await Promise.all([...categoriesSet].map(async category => {
+            await Category.findOneAndUpdate({ category }, { category }, { upsert: true });
+        }));
+
+        // ✅ Insert Unique Tags
+        await Promise.all([...tagsSet].map(async tag => {
+            await Tag.findOneAndUpdate({ tag }, { tag }, { upsert: true });
+        }));
+
+        // ✅ Insert Unique Message Types
+        await Promise.all([...messageTypesSet].map(async type => {
+            await MessageType.findOneAndUpdate({ type }, { type }, { upsert: true });
+        }));
+
+        // ✅ Insert Unique Original Posts
+        await Promise.all([...originalPostsSet.entries()].map(async ([url, title]) => {
+            await OriginalPost.findOneAndUpdate(
+                { url },
+                { title, url },
+                { upsert: true }
+            );
+        }));
+
+        console.log("\n🚀 Import Complete!");
+        console.log(`   ✅ Inserted/Updated: ${insertedCount}`);
+        console.log(`   ⚠️ Skipped (missing fields): ${skippedCount}`);
+        console.log(`   ❌ Errors: ${errorCount}`);
+
+        // ✅ Verify Database Contents
+        console.log("\n🔍 Verifying Data in Database...");
+        const totalContents = await Content.countDocuments();
+        const totalCategories = await Category.countDocuments();
+        const totalTags = await Tag.countDocuments();
+        const totalMessageTypes = await MessageType.countDocuments();
+        const totalOriginalPosts = await OriginalPost.countDocuments();
+
+        console.log(`📊 Contents: ${totalContents}`);
+        console.log(`📊 Categories: ${totalCategories}`);
+        console.log(`📊 Tags: ${totalTags}`);
+        console.log(`📊 Message Types: ${totalMessageTypes}`);
+        console.log(`📊 Original Posts: ${totalOriginalPosts}`);
+
+        if (totalContents > 0) {
+            console.log("✅ Data successfully stored in MongoDB!");
+        } else {
+            console.warn("⚠️ No data found in MongoDB. The import may not have worked.");
+        }
+
     } catch (parseError) {
         console.error("❌ Error parsing JSON data:", parseError);
     } finally {
         mongoose.connection.close();
+        console.log("⚠️ MongoDB Disconnected!");
     }
 });

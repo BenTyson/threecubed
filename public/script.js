@@ -7,17 +7,20 @@ function showSection(section) {
     document.getElementById("creator").style.display = section === "creator" ? "block" : "none";
     document.getElementById("organizer").style.display = section === "organizer" ? "block" : "none";
     document.getElementById("viewer").style.display = section === "viewer" ? "block" : "none";
-    document.getElementById("dev").style.display = section === "dev" ? "block" : "none"; // ✅ Added Dev Section
+    document.getElementById("dev").style.display = section === "dev" ? "block" : "none"; // ✅ Dev Section
 
-    // ✅ If switching to Organizer or Creator, refresh the tag list
     if (section === "organizer" || section === "creator") {
-        fetchTags();  // ✅ Ensure tags are up-to-date in both views
+        fetchCategories();
+        fetchTags();
+        fetchMessageTypes(); // ✅ Ensure this runs when switching to "Organize"
+        fetchOriginalPosts();
     }
 
-    // ✅ Update Bootstrap active state for tabs
     document.querySelectorAll(".nav-link").forEach(btn => btn.classList.remove("active"));
     document.querySelector(`[onclick="showSection('${section}')"]`).classList.add("active");
 }
+
+
 
 
 let quill;
@@ -933,7 +936,6 @@ function toggleTagFilter(element, tag) {
 //  📌 MESSAGE TYPE MANAGEMENT
 // =====================================================
 
-// ✅ Fetch and display message types
 async function fetchMessageTypes() {
     try {
         const response = await fetch("/message-types");
@@ -941,24 +943,34 @@ async function fetchMessageTypes() {
 
         console.log("✅ Fetched Message Types:", messageTypes);
 
-        // ✅ Update dropdown in Creator View
+        // ✅ Update the dropdown in the "Create" view
         const messageTypeSelect = document.getElementById("messageTypeSelect");
+        const currentSelection = messageTypeSelect.value; // Store selection
         messageTypeSelect.innerHTML = "<option value=''>Select Message Type</option>";
+
         messageTypes.forEach(type => {
             messageTypeSelect.innerHTML += `<option value="${type.type}">${type.type}</option>`;
         });
 
-        // ✅ Update Organizer View list
-        const messageTypeList = document.getElementById("messageTypeList");
-        messageTypeList.innerHTML = "";
-        messageTypes.forEach(type => {
-            const listItem = document.createElement("li");
-            listItem.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+        messageTypeSelect.value = currentSelection; // Restore previous selection
 
-            listItem.innerHTML = `
+        // ✅ Update the "Organize" view (Message Type List)
+        const messageTypeList = document.getElementById("messageTypeList");
+        if (!messageTypeList) {
+            console.error("❌ ERROR: 'messageTypeList' element not found in HTML!");
+            return;
+        }
+
+        messageTypeList.innerHTML = ""; // Clear previous items
+
+        messageTypes.forEach(type => {
+            const li = document.createElement("li");
+            li.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+
+            li.innerHTML = `
                 <span>${type.type}</span>
                 <div>
-                    <button class="btn btn-sm btn-edit " onclick="openEditMessageTypeModal('${type._id}', '${type.type}')">
+                    <button class="btn btn-sm btn-edit" onclick="openEditMessageTypeModal('${type._id}', '${type.type}')">
                         <span class="material-icons icon-small">edit</span>
                     </button>
                     <button class="btn btn-sm btn-danger" onclick="confirmDeleteMessageType('${type._id}')">
@@ -967,13 +979,16 @@ async function fetchMessageTypes() {
                 </div>
             `;
 
-            messageTypeList.appendChild(listItem);
+            messageTypeList.appendChild(li);
         });
 
     } catch (error) {
         console.error("❌ Error fetching message types:", error);
     }
 }
+
+
+
 
 // ✅ Add new message type
 async function addNewMessageType() {
@@ -1085,55 +1100,30 @@ async function addNewOriginalPost() {
 
 async function fetchOriginalPosts() {
     try {
-        const response = await fetch("/original-posts"); // ✅ Fetch posts from backend
+        const response = await fetch("/original-posts");
         const posts = await response.json();
 
-        console.log("📥 Fetched Posts:", posts); // ✅ Debugging log
+        const formattedPosts = posts.map(post => ({
+            originalPostTitle: post.title,
+            originalPostURL: post.url
+        }));
 
-        // ✅ Update Organizer View List
-        const postList = document.getElementById("originalPostList");
-        if (postList) {
-            postList.innerHTML = "";
-            posts.forEach(post => {
-                console.log("🔹 Post Object:", post); // ✅ Debugging log
+        console.log("✅ Fetched Original Posts:", formattedPosts);
 
-                const li = document.createElement("li");
-                li.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
-
-                li.innerHTML = `
-                    <div>
-                        <strong>${post.title}</strong><br/>
-                        <a href="${post.url}" target="_blank">${post.url}</a>
-                    </div>
-                    <div>
-                        <button class="btn btn-sm btn-edit xxme-2" onclick="openEditOriginalPostModal('${post._id}', '${post.title}', '${post.url}')">
-                            <span class="material-icons icon-small">edit</span>
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="confirmDeleteOriginalPost('${post._id}')">
-                            <span class="material-icons icon-small">delete</span>
-                        </button>
-                    </div>
-                `;
-
-                postList.appendChild(li);
-            });
-        }
-
-        // ✅ Update "Create" View Dropdown
         const originalPostSelect = document.getElementById("originalPostSelect");
-        if (originalPostSelect) {
-            originalPostSelect.innerHTML = `<option value="">Select a post</option>`; // Reset options
-            posts.forEach(post => {
-                const option = document.createElement("option");
-                option.value = post.url; // Store the post URL
-                option.textContent = post.title; // Display the post title
-                originalPostSelect.appendChild(option);
-            });
-        }
+        const currentSelection = originalPostSelect.value; // Store selection
+
+        originalPostSelect.innerHTML = "<option value=''>Select a post</option>";
+        formattedPosts.forEach(post => {
+            originalPostSelect.innerHTML += `<option value="${post.originalPostURL}">${post.originalPostTitle}</option>`;
+        });
+
+        originalPostSelect.value = currentSelection; // Restore selection
     } catch (error) {
         console.error("❌ Error fetching original posts:", error);
     }
 }
+
 
 
 

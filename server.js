@@ -77,8 +77,19 @@ mongoose.connect(mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
-.then(() => console.log(`✅ Connected to MongoDB (${process.env.NODE_ENV})`))
+.then(async () => {
+    console.log(`✅ Connected to MongoDB (${process.env.NODE_ENV})`);
+
+    // 🔍 Debugging: Check active database name
+    const db = mongoose.connection;
+    console.log("📌 Connected to Database:", db.name);
+
+    // 🔍 Debugging: Check available collections
+    const collections = await db.db.listCollections().toArray();
+    console.log("📂 Available Collections:", collections.map(c => c.name));
+})
 .catch(err => console.error("❌ MongoDB connection error:", err));
+
 
 
 
@@ -149,10 +160,11 @@ const contentSchema = new mongoose.Schema({
     tags: [{ type: String }],
     question: { type: String, required: true },
     answer: { type: String, required: true },
-    messageType: { type: String, required: true },   
-    originalPostTitle: { type: String, required: true },  // ✅ NOW REQUIRED
-    originalPostURL: { type: String, required: true }     // ✅ NOW REQUIRED
+    messageType: { type: String, required: false }, // ✅ Ensure correct casing
+    originalPostTitle: { type: String, required: false }, // ✅ Ensure exact match
+    originalPostURL: { type: String, required: false } // ✅ Ensure exact match
 });
+
 
 const Content = mongoose.model("Content", contentSchema);
 
@@ -468,8 +480,9 @@ app.delete("/original-posts/:id", async (req, res) => {
 //  📌 MESSAGE TYPE SCHEMA & ROUTES
 // =====================================================
 
-const messageTypeSchema = new mongoose.Schema({ type: String });
+const messageTypeSchema = new mongoose.Schema({ type: String }, { collection: "messagetypes" });
 const MessageType = mongoose.model("MessageType", messageTypeSchema);
+
 
 // ✅ Fetch all message types
 app.get("/message-types", async (req, res) => {
@@ -611,9 +624,49 @@ app.delete("/dev-items/:id", async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // =====================================================
 // ✅ **SERVE FRONTEND FILES (MUST COME AFTER API ROUTES)**
 // =====================================================
+
+
+// ✅ Log to confirm debugging route is active
+console.log("✅ Debugging route '/debug/message-types' is now active!");
+
+app.get("/debug/message-types", async (req, res) => {
+    try {
+        const testFetch = await mongoose.connection.db.collection("messageTypes").find({}).toArray();
+        console.log("📢 Direct DB Fetch:", testFetch);
+        res.json(testFetch);
+    } catch (error) {
+        console.error("❌ Direct DB Fetch Error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
+
+
+
 
 // ✅ Serve frontend files from 'public' directory
 app.use(express.static(path.join(__dirname, "public")));
@@ -624,6 +677,22 @@ app.get("*", (req, res) => {
         res.sendFile(path.join(__dirname, "public", "index.html"));
     }
 });
+
+
+//**DEBUGGING**
+
+app.get("/debug/message-types", async (req, res) => {
+    try {
+        const types = await MessageType.find({});
+        console.log("📢 Test Route Output (Message Types):", types);
+        res.json(types);
+    } catch (error) {
+        console.error("❌ Error fetching message types:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
 
 // 🚀 Start Server
 const PORT = process.env.PORT || 5001;
