@@ -190,6 +190,7 @@ cursor: pointer; /* Changes cursor to pointer on hover */
     gap: 5px;
     cursor: pointer;
     font-size: 0.85rem;
+    margin-bottom: 5px;
 }
 
 .tag-pill.bg-primary {

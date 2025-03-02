@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /**
- * ✅ Fetch tags for View 2 and display them in a vertical list
+ * ✅ Fetch tags for View 2 and display them with Bootstrap badges
  */
 async function fetchView2Tags() {
     try {
@@ -37,15 +37,30 @@ async function fetchView2Tags() {
         const tagContainer = document.getElementById("view2TagList");
         tagContainer.innerHTML = ""; // Clear existing tags
 
-        // Populate tags with counts
+        // Populate tags with counts (using Bootstrap badges)
         tags.forEach(tag => {
             const count = tagCounts[tag.tag] || 0; // Get count or default to 0
             const tagElement = document.createElement("button");
-            tagElement.classList.add("list-group-item", "list-group-item-action", "text-start", "border-0", "rounded-0");
-            tagElement.textContent = `${tag.tag} (${count})`; // Append count
-            tagElement.setAttribute("data-tag", tag.tag.toLowerCase());
 
+            tagElement.classList.add(
+                "list-group-item",
+                "list-group-item-action",
+                "text-start",
+                "border-0",
+                "rounded-0",
+                "d-flex",
+                "justify-content-between",
+                "align-items-center"
+            );
+            tagElement.setAttribute("data-tag", tag.tag.toLowerCase());
             tagElement.onclick = () => toggleView2Tag(tagElement, tag.tag);
+            tagElement.style.fontSize = "0.85rem"; // ✅ Reduce font size
+
+            tagElement.innerHTML = `
+                <span>${tag.tag}</span>
+                <span class="badge bg-light text-dark">${count}</span> 
+            `;
+
             tagContainer.appendChild(tagElement);
         });
 
@@ -54,6 +69,7 @@ async function fetchView2Tags() {
         console.error("❌ Error fetching View 2 tags:", error);
     }
 }
+
 
 
 /**
@@ -66,17 +82,17 @@ const selectedView2TagsContainer = document.getElementById("selectedView2Tags");
 
 
 /**
- * ✅ Toggle tag selection & filter View 2 content
+ * ✅ Toggle tag selection & hide from list
  */
 function toggleView2Tag(element, tag) {
     const tagLower = tag.toLowerCase();
 
     if (activeView2Tags.has(tagLower)) {
         activeView2Tags.delete(tagLower);
-        element.classList.remove("active");
+        element.style.display = "block"; // ✅ Show tag again in list
     } else {
         activeView2Tags.add(tagLower);
-        element.classList.add("active");
+        element.style.display = "none"; // ✅ Hide tag from list
     }
 
     console.log("🔍 Active View 2 Tags:", [...activeView2Tags]);
@@ -86,22 +102,7 @@ function toggleView2Tag(element, tag) {
 }
 
 /**
- * ✅ Update the UI to show selected tags
- */
-function updateSelectedView2TagsUI() {
-    selectedView2TagsContainer.innerHTML = ""; // Clear previous selections
-
-    activeView2Tags.forEach(tag => {
-        const tagElement = document.createElement("span");
-        tagElement.classList.add("tag-pill", "bg-primary", "text-white", "px-2", "py-1", "rounded");
-        tagElement.setAttribute("data-tag", tag);
-        tagElement.innerHTML = `${tag} <span class="remove-tag" onclick="removeView2Tag('${tag}')">✖</span>`;
-        selectedView2TagsContainer.appendChild(tagElement);
-    });
-}
-
-/**
- * ✅ Remove selected tag & reapply filtering
+ * ✅ Remove selected tag & show it again in the tag list
  */
 function removeView2Tag(tag) {
     activeView2Tags.delete(tag);
@@ -109,17 +110,49 @@ function removeView2Tag(tag) {
     // ✅ Update selected tag display
     updateSelectedView2TagsUI();
 
-    // ✅ Find and un-highlight the corresponding tag in the list
+    // ✅ Find and show the corresponding tag in the list
     const tagButtons = document.querySelectorAll("#view2TagList .list-group-item");
     tagButtons.forEach(button => {
         if (button.getAttribute("data-tag") === tag.toLowerCase()) {
-            button.classList.remove("active");
+            button.style.display = "block"; // ✅ Show it back in the list
         }
     });
 
     // ✅ Apply content filtering
     filterView2Content();
 }
+
+
+/**
+ * ✅ Update the UI to show selected tags while maintaining capitalization
+ */
+function updateSelectedView2TagsUI() {
+    selectedView2TagsContainer.innerHTML = ""; // Clear previous selections
+
+    activeView2Tags.forEach(tagLower => {
+        // ✅ Find the original tag element from the tag list
+        const tagElement = document.querySelector(`#view2TagList .list-group-item[data-tag="${tagLower}"]`);
+        
+        // ✅ Ensure we extract only the tag name and NOT the count
+        let originalTag = tagLower; // Default fallback
+
+        if (tagElement) {
+            // Extract only the tag name, ignoring the count badge
+            const tagSpan = tagElement.querySelector("span:first-child"); // Selects the first <span> inside the button
+            if (tagSpan) {
+                originalTag = tagSpan.textContent.trim(); // Use the proper capitalization
+            }
+        }
+
+        const selectedTag = document.createElement("span");
+        selectedTag.classList.add("tag-pill", "bg-primary", "text-white", "px-2", "py-1", "rounded");
+        selectedTag.setAttribute("data-tag", tagLower);
+        selectedTag.innerHTML = `${originalTag} <span class="remove-tag" onclick="removeView2Tag('${originalTag}')">✖</span>`;
+
+        selectedView2TagsContainer.appendChild(selectedTag);
+    });
+}
+
 
 
 
@@ -170,7 +203,7 @@ function displayView2Content(contentData) {
 
     contentData.forEach(item => {
         const tagsHTML = item.tags.map(tag => `
-            <span class="badge bg-secondary me-1">${tag}</span>
+            <span class="badge bg-light text-dark me-1">${tag}</span>
         `).join(" ");
 
         const card = document.createElement("div");
@@ -183,7 +216,7 @@ function displayView2Content(contentData) {
                     <p><strong>${item.question}</strong></p>
                     <p class="card-text">${item.answer}</p>
                     <span class="head3">${item.title}</span><br/>
-                    <p><span class="head3">Tags:</span> ${tagsHTML}</p>
+                    <p> ${tagsHTML}</p>
                 </div>
             </div>
         `;
