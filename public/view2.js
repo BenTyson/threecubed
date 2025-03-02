@@ -87,7 +87,7 @@ async function fetchView2Tags() {
             tagElement.setAttribute("data-tag", tag.tag.toLowerCase());
             tagElement.onclick = () => toggleView2Tag(tag.tag);
 
-            tagElement.style.fontSize = "0.85rem"; // ✅ Reduce font size
+            tagElement.style.fontSize = "0.79rem"; // ✅ Reduce font size
 
             tagElement.innerHTML = `
                 <span>${tag.tag}</span>

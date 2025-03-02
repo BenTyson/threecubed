@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JR Prudence</title>
+
+    <!-- Bootstrap CSS -->
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+    <link href="style.css" rel="stylesheet">
+    <script defer src="view2.js"></script>
+
+
+
+<!-- Quill.js Styles -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<!-- Quill.js Script -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+
+
+
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <h1 class="text-center mb-4 head1">JR PRUDENCE</h1>
+        
+
+
+        <div class="row">
+            <!-- ✅ Left Column: Tag Filters (Vertical Tab Style) -->
+            <div class="col-md-3">
+                <div id="view2TagContainer">
+
+
+                    <!-- ✅ Content Search Box -->
+                    <div class="mb-3">
+                        <input type="text" id="view2ContentSearch" class="form-control" placeholder="Search content...">
+                    </div>
+
+                   <input type="text" id="view2TagSearch" class="form-control mb-3" placeholder="Search tags...">
+
+
+
+
+
+                    <!-- ✅ Display selected tags here -->
+                    <div id="selectedView2Tags" class="mb-3"></div>
+
+                    <div id="view2TagList" class="list-group"></div>
+                </div>
+            </div>
+
+            <!-- ✅ Right Column: Content Blocks (Now Scrollable) -->
+            <div class="col-md-9">
+                <div id="view2ContentWrapper">
+                    <div id="view2ContentList" class="row row-cols-1 g-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        console.log("🚀 reader.html Loaded - Fetching Tags & Content");
+
+        if (typeof fetchView2Tags === "function") {
+            fetchView2Tags();
+            console.log("✅ fetchView2Tags() triggered.");
+        } else {
+            console.error("❌ fetchView2Tags() function not found.");
+        }
+
+        if (typeof fetchView2Content === "function") {
+            fetchView2Content();
+            console.log("✅ fetchView2Content() triggered.");
+        } else {
+            console.error("❌ fetchView2Content() function not found.");
+        }
+    });
+</script>
+
+
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

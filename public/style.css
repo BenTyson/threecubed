@@ -194,7 +194,7 @@ cursor: pointer; /* Changes cursor to pointer on hover */
 }
 
 .tag-pill.bg-primary {
-	background-color: #114945!important;
+	background-color: #0c7b91!important;
 }
 }
 
@@ -227,7 +227,6 @@ cursor: pointer; /* Changes cursor to pointer on hover */
     height: 600px;  /* ✅ Restrict content height */
     overflow-y: auto; /* ✅ Enable independent scrolling */
     padding: 10px;
-    border-left: 1px solid #ddd; /* ✅ Adds separation */
     display: flex;
     flex-direction: column;
 }
