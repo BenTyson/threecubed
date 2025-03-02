@@ -206,4 +206,66 @@ cursor: pointer; /* Changes cursor to pointer on hover */
     color: #ff4d4d;
 }
 
+/* ✅ Left column remains scrollable */
+#view2TagContainer {
+    max-height: 600px; /* ✅ Restrict max height */
+    overflow-y: auto;  /* ✅ Enable scrolling */
+    background: white;
+    padding: 10px;
+    xxborder-right: 1px solid #ddd; /* ✅ Clean separation */
+}
+
+/* ✅ Keep tag list scrollable */
+#view2TagList {
+    max-height: 550px; /* ✅ Limit height of tag list */
+    overflow-y: auto;
+}
+
+/* ✅ Right side content scrolls independently */
+#view2ContentWrapper {
+    height: 600px;  /* ✅ Restrict content height */
+    overflow-y: auto; /* ✅ Enable independent scrolling */
+    padding: 10px;
+    border-left: 1px solid #ddd; /* ✅ Adds separation */
+    display: flex;
+    flex-direction: column;
+}
+
+/* ✅ Ensure multiple content blocks are displayed */
+#view2ContentList {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* ✅ Space between blocks */
+}
+
+/* ✅ Maintain row structure */
+#viewer2 .row {
+    display: flex;
+    flex-wrap: nowrap; /* ✅ Prevents row breaking */
+    height: 100%; /* ✅ Full height */
+}
+
+/* ✅ Ensure the left column does not shrink */
+#viewer2 .col-md-3 {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ✅ Right column grows to take available space */
+#viewer2 .col-md-9 {
+    flex-grow: 1;
+}
+
+/* ✅ Ensure content blocks don't get squished */
+#view2ContentList .card {
+    width: 100%; /* ✅ Full width */
+    flex-shrink: 0; /* ✅ Prevents blocks from shrinking */
+}
+
+
+
+
+
+
+
 

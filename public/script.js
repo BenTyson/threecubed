@@ -2,11 +2,12 @@
 //  📌 PAGE LOAD & VIEW MANAGEMENT
 // =====================================================
 
-// Toggle between Creator & Viewer & Organizer sections
+// Toggle between Creator, Viewer, Organizer, Dev, and View 2 sections
 function showSection(section) {
     document.getElementById("creator").style.display = section === "creator" ? "block" : "none";
     document.getElementById("organizer").style.display = section === "organizer" ? "block" : "none";
     document.getElementById("viewer").style.display = section === "viewer" ? "block" : "none";
+    document.getElementById("viewer2").style.display = section === "viewer2" ? "block" : "none"; // ✅ Added View 2
     document.getElementById("dev").style.display = section === "dev" ? "block" : "none"; // ✅ Dev Section
 
     if (section === "organizer" || section === "creator") {
@@ -18,7 +19,14 @@ function showSection(section) {
 
     document.querySelectorAll(".nav-link").forEach(btn => btn.classList.remove("active"));
     document.querySelector(`[onclick="showSection('${section}')"]`).classList.add("active");
+
+    // ✅ Fetch tags and content ONLY when View 2 is activated (Prevents unnecessary API calls)
+    if (section === "viewer2") {
+        fetchView2Tags();
+        fetchView2Content();
+    }
 }
+
 
 
 

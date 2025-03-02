@@ -13,6 +13,7 @@
     <link href="style.css" rel="stylesheet">
     <script defer src="script.js"></script>
     <script defer src="tagFilter.js"></script>
+    <script defer src="view2.js"></script>
 
 <!-- Quill.js Styles -->
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
@@ -42,6 +43,9 @@
             
             <li class="nav-item">
                 <button class="nav-link" onclick="showSection('viewer')">View</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" onclick="showSection('viewer2')">View 2</button> <!-- ✅ New View 2 Tab -->
             </li>
         </ul>
 
@@ -471,6 +475,33 @@
 			</div>
 
         </div>
+
+        <!-- ✅ New View 2 Section -->
+        <div id="viewer2" class="section" style="display:none;">
+            <div class="text-center head2" style="color: #228B22">EXPERIMENTAL</div><br/>
+
+            <div class="row">
+                <!-- ✅ Left Column: Tag Filters (Vertical Tab Style) -->
+                <div class="col-md-3">
+                    <div id="view2TagContainer">
+                        <input type="text" id="view2TagSearch" class="form-control mb-3" placeholder="Search tags..." onkeyup="searchView2Tags()">
+
+                        <!-- ✅ Display selected tags here -->
+                        <div id="selectedView2Tags" class="mb-3"></div>
+                        
+                        <div id="view2TagList" class="list-group"></div>
+                    </div>
+                </div>
+
+                <!-- ✅ Right Column: Content Blocks (Now Scrollable) -->
+                <div class="col-md-9">
+                    <div id="view2ContentWrapper">
+                        <div id="view2ContentList" class="row row-cols-1 g-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Bootstrap Bundle with Popper -->
