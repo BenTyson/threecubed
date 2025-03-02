@@ -211,9 +211,12 @@ function displayView2Content(contentData) {
     }
 
     contentData.forEach((item, index) => {
-        const tagsHTML = item.tags.map(tag => `
-            <span class="badge bg-light text-dark me-1">${tag}</span>
-        `).join(" ");
+        const tagsHTML = item.tags.map(tag => {
+            const tagLower = tag.toLowerCase();
+            const isSelected = activeView2Tags.has(tagLower) ? "bg-info text-white" : "bg-light text-dark"; // ✅ Change bg if selected
+
+            return `<span class="badge ${isSelected} me-1">${tag}</span>`;
+        }).join(" ");
 
         const card = document.createElement("div");
         card.classList.add("col-12", "content-block"); // ✅ Apply animation class
@@ -236,8 +239,9 @@ function displayView2Content(contentData) {
         }, index * 50); // Stagger each card by 50ms
     });
 
-    console.log("✅ View 2 Content Loaded:", contentData);
+    console.log("✅ View 2 Content Updated with Selected Tag Highlighting");
 }
+
 
 
 /**
