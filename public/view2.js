@@ -3,11 +3,10 @@
 // =====================================================
 
 
-console.log("🛠️ view2.js is executing (Global Scope)");
-
 document.addEventListener("DOMContentLoaded", () => {
     console.log("🚀 DOMContentLoaded Event Fired in View2.js");
 
+    // ✅ Attach Tag Search Event Listener
     const tagSearchBox = document.getElementById("view2TagSearch");
     console.log("🔍 Checking for Tag Search Box:", tagSearchBox);
 
@@ -19,6 +18,20 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("✅ Tag Search Box Found and Event Listener Attached");
     } else {
         console.error("❌ Tag Search Box NOT found inside DOMContentLoaded");
+    }
+
+    // ✅ Attach Content Search Event Listener
+    const contentSearchBox = document.getElementById("view2ContentSearch");
+    console.log("🔍 Checking for Content Search Box:", contentSearchBox);
+
+    if (contentSearchBox) {
+        contentSearchBox.addEventListener("input", () => {
+            console.log("🔍 Content search triggered");
+            filterView2Content();
+        });
+        console.log("✅ Content Search Box Found and Event Listener Attached");
+    } else {
+        console.error("❌ Content Search Box NOT found inside DOMContentLoaded");
     }
 });
 
