@@ -270,3 +270,22 @@ cursor: pointer; /* Changes cursor to pointer on hover */
 
 
 
+/* ✅ Add fade-in animation to content blocks */
+.content-block {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+/* ✅ Make it fully visible when loaded */
+.content-block.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+
+
+
+
+

@@ -130,10 +130,9 @@ function updateSelectedView2TagsUI() {
     selectedView2TagsContainer.innerHTML = ""; // Clear previous selections
 
     activeView2Tags.forEach(tagLower => {
-        // ✅ Find the original tag element from the tag list
+        // ✅ Find the original capitalization from the tag list
         const tagElement = document.querySelector(`#view2TagList .list-group-item[data-tag="${tagLower}"]`);
         
-        // ✅ Ensure we extract only the tag name and NOT the count
         let originalTag = tagLower; // Default fallback
 
         if (tagElement) {
@@ -144,14 +143,27 @@ function updateSelectedView2TagsUI() {
             }
         }
 
+        // ✅ Create the selected tag element
         const selectedTag = document.createElement("span");
-        selectedTag.classList.add("tag-pill", "bg-primary", "text-white", "px-2", "py-1", "rounded");
+        selectedTag.classList.add("tag-pill", "bg-primary", "text-white", "px-2", "py-1", "rounded", "mb-1");
         selectedTag.setAttribute("data-tag", tagLower);
-        selectedTag.innerHTML = `${originalTag} <span class="remove-tag" onclick="removeView2Tag('${originalTag}')">✖</span>`;
 
+        // ✅ Create the "X" button properly and add event listener
+        const removeButton = document.createElement("span");
+        removeButton.classList.add("remove-tag", "ms-2", "cursor-pointer");
+        removeButton.innerHTML = "✖";
+        
+        // ✅ Correctly attach event listener using an inline function
+        removeButton.onclick = function() {
+            removeView2Tag(tagLower); // ✅ Ensure function is called with lowercase tag
+        };
+
+        selectedTag.appendChild(document.createTextNode(originalTag + " "));
+        selectedTag.appendChild(removeButton);
         selectedView2TagsContainer.appendChild(selectedTag);
     });
 }
+
 
 
 
@@ -189,42 +201,44 @@ async function fetchView2Content() {
     }
 }
 
-/**
- * ✅ Display content blocks for View 2
- */
 function displayView2Content(contentData) {
     const contentList = document.getElementById("view2ContentList");
-    contentList.innerHTML = ""; // Clear previous content
+    contentList.innerHTML = ""; // ✅ Clear previous content
 
     if (!Array.isArray(contentData) || contentData.length === 0) {
         contentList.innerHTML = "<p>No content available.</p>";
         return;
     }
 
-    contentData.forEach(item => {
+    contentData.forEach((item, index) => {
         const tagsHTML = item.tags.map(tag => `
             <span class="badge bg-light text-dark me-1">${tag}</span>
         `).join(" ");
 
         const card = document.createElement("div");
-        card.classList.add("col-12");
+        card.classList.add("col-12", "content-block"); // ✅ Apply animation class
         card.innerHTML = `
             <div class="card mb-3 shadow-sm">
                 <div class="card-body">
-                    
-                    
                     <p><strong>${item.question}</strong></p>
                     <p class="card-text">${item.answer}</p>
                     <span class="head3">${item.title}</span><br/>
-                    <p> ${tagsHTML}</p>
+                    <p>${tagsHTML}</p>
                 </div>
             </div>
         `;
+
         contentList.appendChild(card);
+
+        // ✅ Delay adding "show" class to create a staggered effect
+        setTimeout(() => {
+            card.classList.add("show");
+        }, index * 50); // Stagger each card by 50ms
     });
 
     console.log("✅ View 2 Content Loaded:", contentData);
 }
+
 
 /**
  * ✅ Filter tag list based on search input
