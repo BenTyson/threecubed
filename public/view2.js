@@ -2,11 +2,30 @@
 // 📌 VIEW 2: TAGS & CONTENT MANAGEMENT
 // =====================================================
 
+
+console.log("🛠️ view2.js is executing (Global Scope)");
+
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("✅ View 2 JS Loaded");
-    fetchView2Tags();
-    fetchView2Content();
+    console.log("🚀 DOMContentLoaded Event Fired in View2.js");
+
+    const tagSearchBox = document.getElementById("view2TagSearch");
+    console.log("🔍 Checking for Tag Search Box:", tagSearchBox);
+
+    if (tagSearchBox) {
+        tagSearchBox.addEventListener("input", () => {
+            console.log("🔍 Tag search triggered");
+            searchView2Tags();
+        });
+        console.log("✅ Tag Search Box Found and Event Listener Attached");
+    } else {
+        console.error("❌ Tag Search Box NOT found inside DOMContentLoaded");
+    }
 });
+
+
+
+
+
 
 /**
  * ✅ Fetch tags for View 2 and display them with Bootstrap badges
@@ -53,7 +72,8 @@ async function fetchView2Tags() {
                 "align-items-center"
             );
             tagElement.setAttribute("data-tag", tag.tag.toLowerCase());
-            tagElement.onclick = () => toggleView2Tag(tagElement, tag.tag);
+            tagElement.onclick = () => toggleView2Tag(tag.tag);
+
             tagElement.style.fontSize = "0.85rem"; // ✅ Reduce font size
 
             tagElement.innerHTML = `
@@ -81,25 +101,37 @@ const activeView2Tags = new Set();
 const selectedView2TagsContainer = document.getElementById("selectedView2Tags");
 
 
-/**
- * ✅ Toggle tag selection & hide from list
- */
-function toggleView2Tag(element, tag) {
+function toggleView2Tag(tag) {
+    if (typeof tag !== "string") {
+        console.error("❌ toggleView2Tag received a non-string value:", tag);
+        return;
+    }
+
     const tagLower = tag.toLowerCase();
+    const tagElements = document.querySelectorAll(`#view2TagList .list-group-item[data-tag="${tagLower}"]`);
 
     if (activeView2Tags.has(tagLower)) {
         activeView2Tags.delete(tagLower);
-        element.style.display = "block"; // ✅ Show tag again in list
+
+        // ✅ Show the tag again in the list
+        tagElements.forEach(tagElement => {
+            tagElement.style.setProperty("display", "block", "important");
+        });
+
     } else {
         activeView2Tags.add(tagLower);
-        element.style.display = "none"; // ✅ Hide tag from list
+
+        // ✅ Hide the tag from the list
+        tagElements.forEach(tagElement => {
+            tagElement.style.setProperty("display", "none", "important");
+        });
     }
 
-    console.log("🔍 Active View 2 Tags:", [...activeView2Tags]);
-    
+    // ✅ Update selected tag display
     updateSelectedView2TagsUI();
     filterView2Content();
 }
+
 
 /**
  * ✅ Remove selected tag & show it again in the tag list
@@ -171,22 +203,37 @@ function updateSelectedView2TagsUI() {
 /**
  * ✅ Fetch & Filter View 2 content based on selected tags
  */
+/**
+ * ✅ Apply filtering logic for content based on search & selected tags
+ */
 async function filterView2Content() {
     try {
+        const searchQuery = document.getElementById("view2ContentSearch").value.toLowerCase(); // ✅ Get content search input
         const response = await fetch("/content");
-        let contentData = await response.json();
+        let contentData = await response.json(); // ✅ Fetch all content
 
+        // ✅ Apply Content Search Filtering
+        if (searchQuery.trim() !== "") {
+            contentData = contentData.filter(item => 
+                (item.title && item.title.toLowerCase().includes(searchQuery)) || 
+                (item.question && item.question.toLowerCase().includes(searchQuery)) || 
+                (item.answer && item.answer.toLowerCase().includes(searchQuery))
+            );
+        }
+
+        // ✅ Apply Tag Selection Filtering
         if (activeView2Tags.size > 0) {
             contentData = contentData.filter(item =>
                 item.tags.some(tag => activeView2Tags.has(tag.toLowerCase()))
             );
         }
 
-        displayView2Content(contentData);
+        displayView2Content(contentData); // ✅ Update content display
     } catch (error) {
         console.error("❌ Error filtering View 2 content:", error);
     }
 }
+
 
 /**
  * ✅ Fetch all content for View 2
@@ -243,16 +290,28 @@ function displayView2Content(contentData) {
 }
 
 
-
-/**
- * ✅ Filter tag list based on search input
- */
 function searchView2Tags() {
     const query = document.getElementById("view2TagSearch").value.toLowerCase();
-    const tags = document.querySelectorAll("#view2TagList .list-group-item");
+    console.log("🔍 Searching for:", query);
 
-    tags.forEach(tagElement => {
-        const tagText = tagElement.textContent.toLowerCase();
-        tagElement.style.display = tagText.includes(query) ? "block" : "none";
+    const tagElements = document.querySelectorAll("#view2TagList .list-group-item");
+
+    if (!tagElements.length) {
+        console.warn("⚠️ No tags found in the list!");
+        return;
+    }
+
+    tagElements.forEach(tagElement => {
+        const tagSpan = tagElement.querySelector("span:first-child");
+        const tagText = tagSpan ? tagSpan.textContent.trim().toLowerCase() : "";
+
+        const shouldShow = tagText.includes(query);
+
+        // ✅ Force `display: none` or `display: block` with `!important`
+        tagElement.style.setProperty("display", shouldShow ? "block" : "none", "important");
+
+        console.log(`🔍 Checking Tag: "${tagText}" - Displaying: ${shouldShow ? "✅ YES" : "❌ NO"}`);
     });
 }
+
+

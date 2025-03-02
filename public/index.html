@@ -484,11 +484,22 @@
                 <!-- ✅ Left Column: Tag Filters (Vertical Tab Style) -->
                 <div class="col-md-3">
                     <div id="view2TagContainer">
-                        <input type="text" id="view2TagSearch" class="form-control mb-3" placeholder="Search tags..." onkeyup="searchView2Tags()">
+
+
+                        <!-- ✅ Content Search Box -->
+                        <div class="mb-3">
+                            <input type="text" id="view2ContentSearch" class="form-control" placeholder="Search content...">
+                        </div>
+
+                       <input type="text" id="view2TagSearch" class="form-control mb-3" placeholder="Search tags...">
+
+
+
+
 
                         <!-- ✅ Display selected tags here -->
                         <div id="selectedView2Tags" class="mb-3"></div>
-                        
+
                         <div id="view2TagList" class="list-group"></div>
                     </div>
                 </div>
