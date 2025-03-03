@@ -189,8 +189,8 @@ cursor: pointer; /* Changes cursor to pointer on hover */
     align-items: center;
     gap: 5px;
     cursor: pointer;
-    font-size: 0.85rem;
-    margin-bottom: 5px;
+    font-size: 0.7rem;
+    margin-bottom: 5px 5px 0px 0px;
 }
 
 .tag-pill.bg-primary {

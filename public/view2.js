@@ -228,39 +228,36 @@ function updateSelectedView2TagsUI() {
 
 
 
-/**
- * ✅ Fetch & Filter View 2 content based on selected tags
- */
-/**
- * ✅ Apply filtering logic for content based on search & selected tags
- */
 async function filterView2Content() {
     try {
-        const searchQuery = document.getElementById("view2ContentSearch").value.toLowerCase(); // ✅ Get content search input
+        const searchQuery = document.getElementById("view2ContentSearch").value.toLowerCase().trim(); // ✅ Get search input
         const response = await fetch("/content");
         let contentData = await response.json(); // ✅ Fetch all content
 
         // ✅ Apply Content Search Filtering
-        if (searchQuery.trim() !== "") {
-            contentData = contentData.filter(item => 
-                (item.title && item.title.toLowerCase().includes(searchQuery)) || 
-                (item.question && item.question.toLowerCase().includes(searchQuery)) || 
+        if (searchQuery !== "") {
+            contentData = contentData.filter(item =>
+                (item.title && item.title.toLowerCase().includes(searchQuery)) ||
+                (item.question && item.question.toLowerCase().includes(searchQuery)) ||
                 (item.answer && item.answer.toLowerCase().includes(searchQuery))
             );
         }
 
-        // ✅ Apply Tag Selection Filtering
-        if (activeView2Tags.size > 0) {
-            contentData = contentData.filter(item =>
-                item.tags.some(tag => activeView2Tags.has(tag.toLowerCase()))
-            );
-        }
+        // ✅ Apply highlighting while keeping all posts
+        const highlightedContentData = contentData.map(item => ({
+            ...item,
+            title: highlightSearchTerm(item.title || "", searchQuery),
+            question: highlightSearchTerm(item.question || "", searchQuery),
+            answer: highlightSearchTerm(item.answer || "", searchQuery)
+        }));
 
-        displayView2Content(contentData); // ✅ Update content display
+        // ✅ Ensure only highlighted data is sent for display
+        displayView2Content(highlightedContentData);
     } catch (error) {
         console.error("❌ Error filtering View 2 content:", error);
     }
 }
+
 
 
 /**
@@ -347,4 +344,11 @@ function searchView2Tags() {
 
         console.log(`🔍 Checking Tag: "${tagText}" - Displaying: ${shouldShow ? "✅ YES" : "❌ NO"}`);
     });
+}
+
+
+function highlightSearchTerm(text, searchQuery) {
+    if (!searchQuery) return text; // No search term, return original text
+    const regex = new RegExp(`(${searchQuery})`, "gi"); // Case-insensitive search
+    return text.replace(regex, `<span class="bg-info text-white px-1 rounded">$1</span>`);
 }
