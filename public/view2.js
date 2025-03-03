@@ -230,9 +230,9 @@ function updateSelectedView2TagsUI() {
 
 async function filterView2Content() {
     try {
-        const searchQuery = document.getElementById("view2ContentSearch").value.toLowerCase().trim(); // ✅ Get search input
+        const searchQuery = document.getElementById("view2ContentSearch").value.toLowerCase().trim(); 
         const response = await fetch("/content");
-        let contentData = await response.json(); // ✅ Fetch all content
+        let contentData = await response.json(); 
 
         // ✅ Apply Content Search Filtering
         if (searchQuery !== "") {
@@ -243,20 +243,21 @@ async function filterView2Content() {
             );
         }
 
-        // ✅ Apply highlighting while keeping all posts
-        const highlightedContentData = contentData.map(item => ({
-            ...item,
-            title: highlightSearchTerm(item.title || "", searchQuery),
-            question: highlightSearchTerm(item.question || "", searchQuery),
-            answer: highlightSearchTerm(item.answer || "", searchQuery)
-        }));
+        // ✅ Apply Tag Selection Filtering (Strict Matching)
+        if (activeView2Tags.size > 0) {
+            contentData = contentData.filter(item =>
+                item.tags.some(tag => activeView2Tags.has(tag.toLowerCase())) // Must contain at least one selected tag
+            );
+        }
 
-        // ✅ Ensure only highlighted data is sent for display
-        displayView2Content(highlightedContentData);
+        // ✅ Ensure only the filtered content is displayed
+        displayView2Content(contentData);
+
     } catch (error) {
         console.error("❌ Error filtering View 2 content:", error);
     }
 }
+
 
 
 
