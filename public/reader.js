@@ -228,9 +228,7 @@ function updateSelectedView2TagsUI() {
 
 
 
-/**
- * ✅ Fetch & Filter View 2 content based on selected tags
- */
+
 /**
  * ✅ Apply filtering logic for content based on search & selected tags
  */
@@ -263,44 +261,49 @@ async function filterView2Content() {
 }
 
 
-/**
- * ✅ Fetch all content for View 2
- */
-async function fetchView2Content() {
+async function fetchReaderContent() {
     try {
-        const response = await fetch("/content");
-        const contentData = await response.json();
-        displayView2Content(contentData);
+        const response = await fetch("/content");  // ✅ Ensure this URL is correct
+        let contentData = await response.json();
+        
+        console.log("📥 Fetched Content Data:", contentData);
+        console.log("📥 Number of Entries Fetched:", contentData.length);
+
+        displayReaderContent(contentData);
     } catch (error) {
-        console.error("❌ Error fetching View 2 content:", error);
+        console.error("❌ Error fetching Reader content:", error);
     }
 }
 
-function displayView2Content(contentData) {
-    const contentList = document.getElementById("view2ContentList");
-    contentList.innerHTML = ""; // ✅ Clear previous content
+function displayReaderContent(contentData) {
+    const contentList = document.getElementById("readerContentList");
+    
+    if (!contentList) {
+        console.error("❌ readerContentList element not found!");
+        return;
+    }
 
     if (!Array.isArray(contentData) || contentData.length === 0) {
         contentList.innerHTML = "<p>No content available.</p>";
         return;
     }
 
+    contentList.innerHTML = ""; // ✅ Clear previous content
+
     contentData.forEach((item, index) => {
-        const tagsHTML = item.tags.map(tag => {
-            const tagLower = tag.toLowerCase();
-            const isSelected = activeView2Tags.has(tagLower) ? "bg-info text-white" : "bg-light text-dark"; // ✅ Change bg if selected
+        console.log(`📌 Adding Post ${index + 1}:`, item.title); // ✅ Debug each post
 
-            return `<span class="badge ${isSelected} me-1">${tag}</span>`;
-        }).join(" ");
+        const tagsHTML = item.tags
+            ? item.tags.map(tag => `<span class="badge bg-light text-dark me-1">${tag}</span>`).join(" ")
+            : "";
 
-        // ✅ Ensure proper paragraph formatting
         const formattedAnswer = item.answer
-            .split("\n") // Split into paragraphs
-            .map(para => `<p>${para.trim()}</p>`) // Wrap in <p> tags
-            .join(""); // Join them as HTML
+            .split("\n") // ✅ Convert paragraphs
+            .map(para => `<p>${para.trim()}</p>`)
+            .join("");
 
         const card = document.createElement("div");
-        card.classList.add("col-12", "content-block"); // ✅ Apply animation class
+        card.classList.add("col-12", "content-block");
         card.innerHTML = `
             <div class="card mb-3 shadow-sm">
                 <div class="card-body">
@@ -313,15 +316,66 @@ function displayView2Content(contentData) {
         `;
 
         contentList.appendChild(card);
-
-        // ✅ Delay adding "show" class to create a staggered effect
-        setTimeout(() => {
-            card.classList.add("show");
-        }, index * 50); // Stagger each card by 50ms
     });
 
-    console.log("✅ View 2 Content Updated with Proper Paragraph Formatting");
+    console.log(`✅ Total Posts Rendered: ${contentData.length}`);
 }
+
+// ✅ Load the content when the page is ready
+document.addEventListener("DOMContentLoaded", fetchReaderContent);
+
+
+function displayView2Content(contentData) {
+    const contentList = document.getElementById("view2ContentList");
+
+    if (!Array.isArray(contentData) || contentData.length === 0) {
+        contentList.innerHTML = "<p>No content available.</p>";
+        return;
+    }
+
+    contentList.innerHTML = ""; // ✅ Clear previous content
+
+    contentData.forEach((item, index) => {
+        console.log(`📌 Adding Post ${index + 1}:`, item.title); // ✅ Debug each post
+
+        const tagsHTML = item.tags.map(tag => {
+            const tagLower = tag.toLowerCase();
+            const isSelected = activeView2Tags.has(tagLower) ? "bg-info text-white" : "bg-light text-dark";
+            return `<span class="badge ${isSelected} me-1">${tag}</span>`;
+        }).join(" ");
+
+        const formattedAnswer = item.answer
+            .split("\n")
+            .map(para => `<p>${para.trim()}</p>`)
+            .join("");
+
+        const card = document.createElement("div");
+        card.classList.add("col-12", "content-block");
+        card.innerHTML = `
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <p><strong>${item.question}</strong></p>
+                    <div class="card-text">${formattedAnswer}</div>
+                    <span class="head3">${item.title}</span><br/>
+                    <p>${tagsHTML}</p>
+                </div>
+            </div>
+        `;
+
+        contentList.appendChild(card);
+    });
+
+    // ✅ Force reflow to ensure visibility
+    setTimeout(() => {
+        contentList.style.height = `${contentList.scrollHeight}px`;
+        contentList.style.overflowY = "auto";
+        console.log("📌 Updated Content List Height:", contentList.scrollHeight);
+    }, 100);
+
+    console.log(`✅ Total Posts Rendered: ${contentData.length}`);
+}
+
+
 
 
 

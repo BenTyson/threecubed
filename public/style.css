@@ -189,8 +189,8 @@ cursor: pointer; /* Changes cursor to pointer on hover */
     align-items: center;
     gap: 5px;
     cursor: pointer;
-    font-size: 0.7rem;
-    margin: 5px 5px 0px 0px;
+    font-size: 0.85rem;
+    margin-bottom: 5px;
 }
 
 .tag-pill.bg-primary {
@@ -299,41 +299,3 @@ cursor: pointer; /* Changes cursor to pointer on hover */
 	color: white;
 
 }
-
-
-
-
-
-/* ✅ Fix Bootstrap Row Negative Margin */
-#view2ContentList {
-    margin-right: 0 !important;
-    margin-left: 0 !important;
-    overflow-x: hidden; /* Prevents horizontal scroll */
-}
-
-/* ✅ Ensure Full Width Usage */
-#view2ContentWrapper {
-    width: 100%;
-    overflow-x: hidden;
-}
-
-/* ✅ Prevent Unexpected Scroll Issues */
-html, body {
-    max-width: 100%;
-    overflow-x: hidden;
-}
-
-/* ✅ Fix Bootstrap Column Spacing */
-.container-fluid .row {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-}
-
-
-
-
-
-
-
-
-
