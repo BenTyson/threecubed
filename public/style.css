@@ -263,6 +263,16 @@ cursor: pointer; /* Changes cursor to pointer on hover */
 }
 
 
+.container-fluid .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+
+#viewer2 .col-md-9 {
+    flex-grow: 1;
+    min-width: 0; /* ✅ Prevents flexbox from expanding unexpectedly */
+}
 
 
 
