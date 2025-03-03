@@ -33,6 +33,21 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
         console.error("❌ Content Search Box NOT found inside DOMContentLoaded");
     }
+
+
+    const tagToggleButton = document.querySelector('[data-bs-target="#view2TagList"]');
+    const tagToggleText = document.getElementById("tagToggleText");
+    const tagToggleIcon = document.getElementById("tagToggleIcon");
+
+    if (tagToggleButton) {
+        tagToggleButton.addEventListener("click", () => {
+            const isExpanded = tagToggleButton.getAttribute("aria-expanded") === "true";
+            tagToggleText.textContent = isExpanded ? "Hide Tags" : "Select Tags";
+            tagToggleIcon.textContent = isExpanded ? "▲" : "▼";
+        });
+    }
+
+
 });
 
 
@@ -278,13 +293,19 @@ function displayView2Content(contentData) {
             return `<span class="badge ${isSelected} me-1">${tag}</span>`;
         }).join(" ");
 
+        // ✅ Ensure proper paragraph formatting
+        const formattedAnswer = item.answer
+            .split("\n") // Split into paragraphs
+            .map(para => `<p>${para.trim()}</p>`) // Wrap in <p> tags
+            .join(""); // Join them as HTML
+
         const card = document.createElement("div");
         card.classList.add("col-12", "content-block"); // ✅ Apply animation class
         card.innerHTML = `
             <div class="card mb-3 shadow-sm">
                 <div class="card-body">
                     <p><strong>${item.question}</strong></p>
-                    <p class="card-text">${item.answer}</p>
+                    <div class="card-text">${formattedAnswer}</div>
                     <span class="head3">${item.title}</span><br/>
                     <p>${tagsHTML}</p>
                 </div>
@@ -299,8 +320,9 @@ function displayView2Content(contentData) {
         }, index * 50); // Stagger each card by 50ms
     });
 
-    console.log("✅ View 2 Content Updated with Selected Tag Highlighting");
+    console.log("✅ View 2 Content Updated with Proper Paragraph Formatting");
 }
+
 
 
 function searchView2Tags() {

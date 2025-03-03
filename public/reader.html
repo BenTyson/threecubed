@@ -31,28 +31,29 @@
 
 
         <div class="row">
-            <!-- ✅ Left Column: Tag Filters (Vertical Tab Style) -->
             <div class="col-md-3">
                 <div id="view2TagContainer">
-
-
-                    <!-- ✅ Content Search Box -->
+                    <!-- ✅ Content Search Box (Always Visible) -->
                     <div class="mb-3">
                         <input type="text" id="view2ContentSearch" class="form-control" placeholder="Search content...">
                     </div>
 
-                   <input type="text" id="view2TagSearch" class="form-control mb-3" placeholder="Search tags...">
+                    <!-- ✅ Tag Search Box (Always Visible) -->
+                    <input type="text" id="view2TagSearch" class="form-control mb-3" placeholder="Search tags...">
 
-
-
-
-
-                    <!-- ✅ Display selected tags here -->
+                    <!-- ✅ Selected Tags (Always Visible) -->
                     <div id="selectedView2Tags" class="mb-3"></div>
 
-                    <div id="view2TagList" class="list-group"></div>
+                    <!-- ✅ Toggle Button for Tag List (Mobile Only) -->
+                    <button class="btn btn-primary w-100 d-md-none mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#view2TagList" aria-expanded="false" aria-controls="view2TagList">
+                        <span id="tagToggleText">Show Tags</span> <span id="tagToggleIcon">▼</span>
+                    </button>
+
+                    <!-- ✅ Collapsible Tag List -->
+                    <div id="view2TagList" class="list-group collapse show"></div>
                 </div>
             </div>
+
 
             <!-- ✅ Right Column: Content Blocks (Now Scrollable) -->
             <div class="col-md-9">

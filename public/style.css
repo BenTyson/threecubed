@@ -196,7 +196,7 @@ cursor: pointer; /* Changes cursor to pointer on hover */
 .tag-pill.bg-primary {
 	background-color: #0c7b91!important;
 }
-}
+
 
 .remove-tag {
     font-weight: bold;
@@ -282,6 +282,23 @@ cursor: pointer; /* Changes cursor to pointer on hover */
     transform: translateY(0);
 }
 
+
+
+.btn-primary {
+
+	background-color: #0c7b91;
+	border-color: 1px solid #0c7b91;
+	color: white;
+
+}
+
+.btn-primary:hover {
+
+	background-color: #109ab5;
+	border-color: 1px solid #109ab5;
+	color: white;
+
+}
 
 
 
