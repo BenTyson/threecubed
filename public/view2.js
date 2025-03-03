@@ -228,20 +228,24 @@ function updateSelectedView2TagsUI() {
 
 
 
-/**
- * ✅ Fetch & Filter View 2 content based on selected tags
- */
-/**
- * ✅ Apply filtering logic for content based on search & selected tags
- */
+
 async function filterView2Content() {
     try {
-        const searchQuery = document.getElementById("view2ContentSearch").value.toLowerCase(); // ✅ Get content search input
+        const searchQuery = document.getElementById("view2ContentSearch").value.toLowerCase().trim();
         const response = await fetch("/content");
-        let contentData = await response.json(); // ✅ Fetch all content
+        let contentData = await response.json();
+
+        console.log("📥 Filtered Content Data:", contentData);
+
+        // ✅ Highlight search term
+        function highlightText(text) {
+            if (!searchQuery) return text; // No search, return original text
+            const regex = new RegExp(`(${searchQuery})`, "gi");
+            return text.replace(regex, `<span class="bg-info text-white px-1 rounded">${searchQuery}</span>`);
+        }
 
         // ✅ Apply Content Search Filtering
-        if (searchQuery.trim() !== "") {
+        if (searchQuery !== "") {
             contentData = contentData.filter(item => 
                 (item.title && item.title.toLowerCase().includes(searchQuery)) || 
                 (item.question && item.question.toLowerCase().includes(searchQuery)) || 
@@ -249,18 +253,21 @@ async function filterView2Content() {
             );
         }
 
-        // ✅ Apply Tag Selection Filtering
-        if (activeView2Tags.size > 0) {
-            contentData = contentData.filter(item =>
-                item.tags.some(tag => activeView2Tags.has(tag.toLowerCase()))
-            );
-        }
+        // ✅ Apply highlighting while keeping all posts
+        const highlightedContentData = contentData.map(item => ({
+            ...item,
+            title: highlightText(item.title || ""),
+            question: highlightText(item.question || ""),
+            answer: highlightText(item.answer || "")
+        }));
 
-        displayView2Content(contentData); // ✅ Update content display
+        // ✅ Ensure only highlighted data is sent for display
+        displayView2Content(highlightedContentData);
     } catch (error) {
         console.error("❌ Error filtering View 2 content:", error);
     }
 }
+
 
 
 /**
