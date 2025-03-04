@@ -166,6 +166,8 @@ const contentSchema = new mongoose.Schema({
 });
 
 
+
+
 const Content = mongoose.model("Content", contentSchema);
 
 // Fetch all content
@@ -629,6 +631,165 @@ app.delete("/dev-items/:id", async (req, res) => {
 
 
 
+// =====================================================
+//  📌 TAG PARENTS - SECTIONS MANAGEMENT
+// =====================================================
+
+// ✅ Section Schema
+const sectionSchema = new mongoose.Schema({
+    section: { type: String, required: true, unique: true }
+});
+const Section = mongoose.model("Section", sectionSchema);
+
+// ✅ Tag-Parent Schema (Tag Assignments)
+const tagSectionSchema = new mongoose.Schema({
+    tag: { type: String, required: true, unique: true },
+    section: { type: String, required: true }
+});
+const TagSection = mongoose.model("TagSection", tagSectionSchema);
+
+
+// ✅ Fetch all sections (ONLY section names, no tag assignments)
+app.get("/sections", async (req, res) => {
+    try {
+        const sections = await Section.find({}, "section");
+        res.json(sections.map(s => s.section)); 
+    } catch (error) {
+        console.error("❌ Error fetching sections:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ✅ Add a new section
+app.post("/sections", async (req, res) => {
+    try {
+        const { section } = req.body;
+        if (!section) {
+            return res.status(400).json({ error: "Section name is required" });
+        }
+
+        // ✅ Prevent duplicate sections
+        const existingSection = await Section.findOne({ section });
+        if (existingSection) {
+            return res.status(400).json({ error: "Section already exists" });
+        }
+
+        const newSection = new Section({ section });
+        await newSection.save();
+
+        res.json({ message: "✅ Section created!", section });
+    } catch (error) {
+        console.error("❌ Error adding section:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ✅ Edit a section (Find by name, update tag assignments)
+app.put("/sections/:section", async (req, res) => {
+    try {
+        const { section: newSection } = req.body;
+        const { section: oldSection } = req.params;
+
+        if (!newSection) {
+            return res.status(400).json({ error: "New section name is required" });
+        }
+
+        // ✅ Check if the new section name already exists
+        const existingSection = await Section.findOne({ section: newSection });
+        if (existingSection) {
+            return res.status(400).json({ error: "A section with this name already exists" });
+        }
+
+        // ✅ Find and update section
+        const updatedSection = await Section.findOneAndUpdate(
+            { section: oldSection }, // Find by name
+            { section: newSection }, // Update to new name
+            { new: true }
+        );
+
+        if (!updatedSection) {
+            return res.status(404).json({ error: "Section not found" });
+        }
+
+        // ✅ Also update TagSection assignments
+        await TagSection.updateMany({ section: oldSection }, { section: newSection });
+
+        res.json({ message: "✅ Section updated successfully!", section: updatedSection });
+    } catch (error) {
+        console.error("❌ Error updating section:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ✅ Delete a section (Find by name, remove tag assignments)
+app.delete("/sections/:section", async (req, res) => {
+    try {
+        const { section } = req.params;  // ✅ Get section name
+
+        // ✅ Find section by name
+        const sectionToDelete = await Section.findOne({ section });
+        if (!sectionToDelete) {
+            return res.status(404).json({ error: "Section not found" });
+        }
+
+        // ✅ Remove section
+        await Section.deleteOne({ section });
+
+        // ✅ Remove tag assignments tied to this section
+        await TagSection.deleteMany({ section });
+
+        res.json({ message: `✅ Section '${section}' deleted successfully!` });
+    } catch (error) {
+        console.error("❌ Error deleting section:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
+
+
+
+// ✅ Assign or reassign a tag to a section
+app.post("/tag-sections", async (req, res) => {
+    try {
+        const { tag, section } = req.body;
+        if (!tag || !section) {
+            return res.status(400).json({ error: "Tag and Section are required" });
+        }
+
+        // ✅ Either update existing entry or create new
+        const tagSection = await TagSection.findOneAndUpdate(
+            { tag },
+            { section },
+            { new: true, upsert: true }
+        );
+
+        res.json({ message: "✅ Tag assigned to section!", tagSection });
+    } catch (error) {
+        console.error("❌ Error assigning tag to section:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ✅ Fetch all tag-to-section assignments
+app.get("/tag-sections", async (req, res) => {
+    try {
+        const tagSections = await TagSection.find();
+        res.json(tagSections);
+    } catch (error) {
+        console.error("❌ Error fetching tag sections:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
+
+
+
+
+
+
+
 
 
 
@@ -662,6 +823,22 @@ app.get("/debug/message-types", async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

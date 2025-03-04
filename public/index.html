@@ -3,6 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Standard Favicon -->
+    <link rel="icon" type="image/jpeg" href="favicon.jpeg">
+
+    <!-- Apple Touch Icon (for iOS) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon.jpeg">
+
+    <!-- Android Chrome Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.jpeg">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon.jpeg">
+
+    <!-- Microsoft Edge and Windows Tile -->
+    <meta name="msapplication-TileImage" content="favicon.jpeg">
+    <meta name="msapplication-TileColor" content="#ffffff">
     <title>JR Prudence</title>
 
     <!-- Bootstrap CSS -->
@@ -11,9 +24,9 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
     <link href="style.css" rel="stylesheet">
-    <script defer src="script.js"></script>
-    <script defer src="tagFilter.js"></script>
     <script defer src="view2.js"></script>
+
+
 
 <!-- Quill.js Styles -->
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
@@ -25,495 +38,72 @@
 
 </head>
 <body>
-    <div class="container mt-4">
+    <div class="container-fluid mt-4">
         <h1 class="text-center mb-4 head1">JR PRUDENCE</h1>
         
-
-        <!-- Navigation Tabs -->
-        <ul class="nav nav-tabs justify-content-center mb-4">
-            <li class="nav-item">
-                <button class="nav-link" onclick="showSection('dev')">Dev</button>
-            </li>
-       		<li class="nav-item">
-                <button class="nav-link" onclick="showSection('organizer')">Organize</button> <!-- New Tab -->
-            </li>
-            <li class="nav-item">
-                <button class="nav-link active" onclick="showSection('creator')">Create</button>
-            </li>
-            
-            <li class="nav-item">
-                <button class="nav-link" onclick="showSection('viewer')">View</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" onclick="showSection('viewer2')">View 2</button> <!-- ✅ New View 2 Tab -->
-            </li>
-        </ul>
-
-        <!-- ✅ Dev Section -->
-        <div id="dev" class="section" style="display:none;">
-            <div class="text-center head2" style="color: #228B22">SEMI-STABLE</div><br/>
-
-            <p class="head1">BUGS + NEW FEATURES</p>
-
-            <!-- Input Field -->
-            <div class="mb-3">
-                <span class="head2">Add New Idea or Task</span><br/>
-                <div class="input-group">
-                    <input type="text" id="newDevItemInput" class="form-control" placeholder="Enter a bug or feature">
-                    <button class="btn btn-dark" onclick="addNewDevItem()">Add</button>
-                </div>
-            </div>
-
-            <!-- List of Items -->
-            <span class="head2">Current Tasks</span><br/>
-            <ul id="devItemList" class="list-group"></ul> <!-- Dynamically Populated -->
-
-            <br/><hr><br/>
-
-            <!-- ✅ Completed Dev Items -->
-            <span class="head2">Completed Tasks</span><br/>
-            <ul id="completedDevItemList" class="list-group"></ul> <!-- Dynamically Populated -->
+        <div class="row">
+            <!-- ✅ Total Entries Counter -->
+            <div id="totalEntries" class="head3">Entries: 0</div>
         </div>
 
-
-
-        <!-- ✅ Organizer Section -->
-        <div id="organizer" class="section" style="display:none;">
-            <div class="text-center head2" style="color: #7a0012">UNSTABLE </div><br/>
-            <!--  Alert Container -->
-            <div id="confirmDeleteAlert" class="alert alert-danger alert-dismissible fade show d-none" role="alert">
-                <p id="confirmDeleteMessage"></p>
-                <div class="d-flex justify-content-end">
-                    <button id="confirmDeleteBtn" class="btn btn-danger btn-sm me-2">Confirm</button>
-                    <button class="btn btn-secondary btn-sm" onclick="hideDeleteAlert()">Cancel</button>
-                </div>
-            </div>
-            
-            
-            <!-- Add New Category -->
-            <p class="head1">Categories</p>
-            <div class="mb-3">
-                <span class="head2">Add New Categories</span><br/>
-                <div class="input-group">
-                    <input type="text" id="newCategoryInput" class="form-control" placeholder="Enter new category">
-                    <button class="btn btn-dark" onclick="addNewCategory()">Add</button>
-                </div>
-            </div>
-
-            <!-- Existing Categories List -->
-            <span class="head2">Existing Categories</span><br/>
-            <ul id="categoryList" class="list-group"></ul> <!-- Dynamically Populated -->
-
-			<br/><hr><br/>
-
-            <!-- Add New Tag -->
-            <p class="head1">Tags</p>
-            <div class="mb-3">
-                <span class="head2">Add New Tag</span><br/>
-                <div class="input-group">
-                    <input type="text" id="newTagInput" class="form-control" placeholder="Enter new tag">
-                    <button class="btn btn-dark" onclick="addNewTag()">Add</button>
-                </div>
-            </div>
-
-            <!-- Manage Tags -->
-			<span class="head2">Existing Tags</span><br/>
-            <ul id="tagList" class="list-group"></ul> <!-- Tags dynamically populated -->
-
-
-            <!-- ✅ Confirm Delete Category Modal -->
-            <div class="modal fade" id="confirmDeleteCategoryModal" tabindex="-1" aria-labelledby="confirmDeleteCategoryModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Confirm Delete Category</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p id="confirmDeleteCategoryMessage">Are you sure you want to delete this category? This action is permanent.</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button id="confirmDeleteCategoryBtn" type="button" class="btn btn-danger">Confirm</button>
-                        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div id="view2TagContainer">
+                    <!-- ✅ Content Search Box (Always Visible) -->
+                    <div class="mb-3">
+                        <input type="text" id="view2ContentSearch" class="form-control" placeholder="Search content...">
                     </div>
-                </div>
-            </div>
 
-            <!-- ✅ Confirm Delete Tag Modal -->
-            <div class="modal fade" id="confirmDeleteTagModal" tabindex="-1" aria-labelledby="confirmDeleteTagModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Confirm Delete Tag</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p id="confirmDeleteTagMessage">Are you sure you want to delete this tag? This action is permanent.</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button id="confirmDeleteTagBtn" type="button" class="btn btn-danger">Confirm</button>
-                        </div>
-                    </div>
+                    <!-- ✅ Tag Search Box (Always Visible) -->
+                    <input type="text" id="view2TagSearch" class="form-control mb-3" placeholder="Search tags...">
+
+                    <!-- ✅ Selected Tags (Always Visible) -->
+                    <div id="selectedView2Tags" class="mb-3"></div>
+
+                    <!-- ✅ Toggle Button for Tag List (Mobile Only) -->
+                    <button class="btn btn-primary w-100 d-md-none mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#view2TagList" aria-expanded="false" aria-controls="view2TagList">
+                        <span id="tagToggleText">Show Tags</span> <span id="tagToggleIcon">▼</span>
+                    </button>
+
+                    <!-- ✅ Collapsible Tag List -->
+                    <div id="view2TagList" class="list-group collapse show"></div>
                 </div>
             </div>
 
 
-
-            <!-- Bootstrap Modal for Editing Tags -->
-            <div class="modal fade" id="editTagModal" tabindex="-1" aria-labelledby="editTagModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="editTagModalLabel">Edit Tag</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <input type="hidden" id="editTagId"> <!-- Hidden input for storing tag ID -->
-                            <input type="text" id="editTagInput" class="form-control" placeholder="Enter new tag name">
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-dark" onclick="saveEditedTag()">Save</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Bootstrap Modal for Editing Categories -->
-			<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
-				<div class="modal-dialog">
-					<div class="modal-content">
-						<div class="modal-header">
-							<h5 class="modal-title" id="editCategoryModalLabel">Edit Category</h5>
-							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-						</div>
-						<div class="modal-body">
-							<input type="hidden" id="editCategoryId"> <!-- Store category ID -->
-							<label for="editCategoryInput" class="form-label">New Category Name</label>
-							<input type="text" id="editCategoryInput" class="form-control" placeholder="Enter new category name">
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-							<button type="button" class="btn btn-dark" onclick="saveEditedCategory()">Save</button>
-						</div>
-					</div>
-				</div>
-			</div>
-
-
-            <br/><hr><br/>
-
-            <!-- ✅ Message Type Management -->
-            <p class="head1">Message Types</p>
-            <div class="mb-3">
-                <span class="head2">Add New Message Type</span><br/>
-                <div class="input-group">
-                    <input type="text" id="newMessageTypeInput" class="form-control" placeholder="Enter new message type">
-                    <button class="btn btn-dark" onclick="addNewMessageType()">Add</button>
-                </div>
-            </div>
-
-            <!-- Existing Message Types -->
-            <span class="head2">Existing Message Types</span><br/>
-            <ul id="messageTypeList" class="list-group"></ul> <!-- Dynamically Populated -->
-
-            <!-- ✅ Edit Message Type Modal -->
-            <div class="modal fade" id="editMessageTypeModal" tabindex="-1" aria-labelledby="editMessageTypeModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Edit Message Type</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <input type="hidden" id="editMessageTypeId"> <!-- Store Message Type ID -->
-                            <label for="editMessageTypeInput" class="form-label">New Message Type</label>
-                            <input type="text" id="editMessageTypeInput" class="form-control" placeholder="Enter new message type">
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-dark" onclick="saveEditedMessageType()">Save</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            
-            <br/><hr><br/>
-            
-            <!-- ✅ Original Post Section -->
-			<p class="head1">Original Posts</p>
-
-			<div class="mb-3">
-				<span class="head2">Add New Original Post</span><br/>
-				<div class="input-group">
-					<input type="text" id="newOriginalPostTitle" class="form-control" placeholder="Enter post title">
-				</div>
-				<div class="input-group mt-2">
-					<input type="url" id="newOriginalPostInput" class="form-control" placeholder="Enter post URL">
-					<button class="btn btn-dark" onclick="addNewOriginalPost()">Add</button>
-				</div>
-			</div>
-
-
-			<!-- ✅ List of Existing Original Posts -->
-            <span class="head2">Existing Posts</span><br/>
-            <ul id="originalPostList" class="list-group"></ul> <!-- Dynamically Populated -->
-
-            <!-- ✅ Edit Original Post Modal -->
-            <div class="modal fade" id="editOriginalPostModal" tabindex="-1" aria-labelledby="editOriginalPostModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Edit Original Post</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <input type="hidden" id="editOriginalPostId"> <!-- Store post ID -->
-                            
-                            <div class="mb-3">
-                                <label for="editOriginalPostTitle" class="form-label">Post Title</label>
-                                <input type="text" id="editOriginalPostTitle" class="form-control" placeholder="Enter new post title">
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="editOriginalPostUrl" class="form-label">Post URL</label>
-                                <input type="url" id="editOriginalPostUrl" class="form-control" placeholder="Enter new post URL">
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-dark" onclick="saveEditedOriginalPost()">Save Changes</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ✅ Confirm Delete Original Post Modal -->
-            <div class="modal fade" id="confirmDeleteOriginalPostModal" tabindex="-1" aria-labelledby="confirmDeleteOriginalPostModalLabel" aria-hidden="true">
-
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Confirm Delete Original Post</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Are you sure you want to delete this original post? This action is permanent.</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button id="confirmDeleteOriginalPostBtn" type="button" class="btn btn-danger">Confirm</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-
-            <br/><br/>
-
-            
-        </div>
-
-        <!-- ✅ Creator Section -->
-        <div id="creator" class="section">
-            <div class="text-center head2" style="color: #7a0012">UNSTABLE </div><br/>
-			<p class="head1">Content creator</p>			
-            <!-- Add/Edit Content Block -->
-            
-            <div class="mb-3">
-                <span class="head2">Title</span><br/>
-                <input type="text" id="newTitle" class="form-control" placeholder="Enter title">
-            </div>
-
-            <div class="mb-3">
-                <span class="head2">Type</span><br/>
-                <select id="messageTypeSelect" class="form-select">
-                    <option value="">Select Message Type</option> <!-- Placeholder -->
-                </select>
-            </div>
-
-            
-            <div class="mb-3">
-				<span class="head2">Original Post</span><br/>
-				<select id="originalPostSelect" class="form-select">
-					<option value="">Select a post</option>
-				</select>
-			</div>
-
-
-            <div class="mb-3">
-                <span class="head2">Category</span><br/>
-                <select id="categorySelect" class="form-select"></select>
-            </div>
-
-            <div class="mb-3">
-                <span class="head2">Tags</span><br/>
-                <select id="newTags" class="form-select" multiple></select>
-            </div>
-
-			<!-- ✅ Question Section -->
-            <div class="mb-3">
-                <span class="head2">Question</span><br/>
-
-                <!-- Quill Toolbar for Question -->
-                <div id="questionToolbar">
-                    <button class="ql-bold"></button>
-                    <button class="ql-italic"></button>
-                    <button class="ql-underline"></button>
-                    <button class="ql-list" value="ordered"></button>
-                    <button class="ql-list" value="bullet"></button>
-                    <button class="ql-link"></button>
-                </div>
-
-                <!-- Quill Editor for Question -->
-                <div id="newQuestion" style="min-height: 150px;"></div>
-            </div>
-
-            <!-- ✅ Answer Section (Existing) -->
-            <div class="mb-3">
-                <span class="head2">Answer</span><br/>
-
-                <!-- Quill Toolbar for Answer -->
-                <div id="answerToolbar">
-                    <button class="ql-bold"></button>
-                    <button class="ql-italic"></button>
-                    <button class="ql-underline"></button>
-                    <button class="ql-list" value="ordered"></button>
-                    <button class="ql-list" value="bullet"></button>
-                    <button class="ql-link"></button>
-                </div>
-
-                <!-- Quill Editor for Answer -->
-                <div id="newMessage" style="min-height: 150px;"></div>
-            </div>
-
-
-
-
-
-            <button id="addContentButton" class="btn btn-dark w-100" onclick="addNewContent()">Save Content</button><br/><br/>
-
-            <!-- ✅ Success Modal -->
-            <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        
-                        <div class="modal-body text-center" id="successModalMessage">
-                            Transmission Received!
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-dark" data-bs-dismiss="modal">OK</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-
-        </div>
-
-        <!-- ✅ Viewer Section -->
-        <div id="viewer" class="section" style="display:none;">
-            <div class="text-center head2" style="color: #228B22">SEMI-STABLE</div><br/>
-            <!-- Filter Content -->
-            <span class="head2">Search + Filter</span><br/>
-            <div class="row g-2">
-                <div class="col-md-6">
-                    <input type="text" id="search" class="form-control" placeholder="Search..." onkeyup="filterContent()">
-                </div>
-                <div class="col-md-6">
-                    <select id="categoryFilter" class="form-select" onchange="filterContent()">
-                        <option value="all">All Categories</option>
-                    </select>
-                </div>
-            </div>
-            <!--<div id="tagFilters" class="d-flex flex-wrap gap-2 mt-3"></div>-->
-
-
-            <!-- ✅ New Tag Filtering Section -->
-            <div id="newTagFilterSection" class="mt-3">
-                <label for="tagSearchInput" class="head2">Filter by Tags</label>
-                <input type="text" id="tagSearchInput" class="form-control" placeholder="Search tags..." onkeyup="filterTagDropdown()">
-
-                <select id="tagDropdown" class="form-select mt-2" onchange="selectTag()">
-                    <option value="">Select a tag</option> <!-- Dynamically populated -->
-                </select>
-
-                <!-- ✅ Display selected tags -->
-                <div id="selectedTagsContainer" class="d-flex flex-wrap gap-2 mt-3"></div>
-            </div>
-                        
-            <hr><br/>
-
-            <!-- Content Blocks -->
-
-            <div id="contentList" class="row row-cols-1 g-4"></div><br/><br/>
-
-            
-            
-            <!-- Full-Screen Modal for Viewing Full Content -->
-			<div class="modal fade" id="contentModal" tabindex="-1" aria-labelledby="contentModalLabel" aria-hidden="true">
-				<div class="modal-dialog modal-fullscreen"> <!-- Fullscreen Modal -->
-					<div class="modal-content">
-						<div class="modal-header">
-							<h5 class="modal-title" id="modalTitle"></h5>
-
-							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-						</div>
-						<div class="modal-body">
-							<h3 id="modalTitle"></h3>
-							<p id="modalMessage" class="mt-3"></p>
-							<div class="mt-3" id="modalTags"></div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-        </div>
-
-        <!-- ✅ New View 2 Section -->
-        <div id="viewer2" class="section" style="display:none;">
-            <div class="text-center head2" style="color: #228B22">EXPERIMENTAL</div><br/>
-
-            <div class="row">
-                <!-- ✅ Left Column: Tag Filters (Vertical Tab Style) -->
-                <div class="col-md-3">
-                    <div id="view2TagContainer">
-
-
-                        <!-- ✅ Content Search Box -->
-                        <div class="mb-3">
-                            <input type="text" id="view2ContentSearch" class="form-control" placeholder="Search content...">
-                        </div>
-
-                       <input type="text" id="view2TagSearch" class="form-control mb-3" placeholder="Search tags...">
-
-
-
-
-
-                        <!-- ✅ Display selected tags here -->
-                        <div id="selectedView2Tags" class="mb-3"></div>
-
-                        <div id="view2TagList" class="list-group"></div>
-                    </div>
-                </div>
-
-                <!-- ✅ Right Column: Content Blocks (Now Scrollable) -->
-                <div class="col-md-9">
-                    <div id="view2ContentWrapper">
-                        <div id="view2ContentList" class="row row-cols-1 g-4"></div>
-                    </div>
+            <!-- ✅ Right Column: Content Blocks (Now Scrollable) -->
+            <div class="col-md-9">
+                <div id="view2ContentWrapper">
+                    <div id="view2ContentList" class="row row-cols-1 g-4"></div>
                 </div>
             </div>
         </div>
-
     </div>
+
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        console.log("🚀 reader.html Loaded - Fetching Tags & Content");
+
+        if (typeof fetchView2Tags === "function") {
+            fetchView2Tags();
+            console.log("✅ fetchView2Tags() triggered.");
+        } else {
+            console.error("❌ fetchView2Tags() function not found.");
+        }
+
+        if (typeof fetchView2Content === "function") {
+            fetchView2Content();
+            console.log("✅ fetchView2Content() triggered.");
+        } else {
+            console.error("❌ fetchView2Content() function not found.");
+        }
+    });
+</script>
+
+
 
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

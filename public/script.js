@@ -9,6 +9,8 @@ function showSection(section) {
     document.getElementById("viewer").style.display = section === "viewer" ? "block" : "none";
     document.getElementById("viewer2").style.display = section === "viewer2" ? "block" : "none"; // ✅ Added View 2
     document.getElementById("dev").style.display = section === "dev" ? "block" : "none"; // ✅ Dev Section
+    document.getElementById("tags").style.display = section === "tags" ? "block" : "none"; // ✅ Show Tags Section
+
 
     if (section === "organizer" || section === "creator") {
         fetchCategories();
@@ -24,6 +26,11 @@ function showSection(section) {
     if (section === "viewer2") {
         fetchView2Tags();
         fetchView2Content();
+    }
+
+    // ✅ Load tags when entering the "Tags" tab
+    if (section === "tags") {
+        loadTags();  
     }
 }
 
