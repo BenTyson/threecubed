@@ -278,6 +278,11 @@ function displayView2Content(contentData) {
     const contentList = document.getElementById("view2ContentList");
     contentList.innerHTML = ""; // ✅ Clear previous content
 
+
+    // ✅ Update Total Entries Count
+    document.getElementById("totalEntries").textContent = `Entries: ${contentData.length}`;
+
+
     if (!Array.isArray(contentData) || contentData.length === 0) {
         contentList.innerHTML = "<p>No content available.</p>";
         return;
