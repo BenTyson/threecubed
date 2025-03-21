@@ -60,18 +60,20 @@ document.addEventListener("DOMContentLoaded", () => {
  */
 async function fetchView2Tags() {
     try {
-        // Fetch both tags and content data
-        const [tagsResponse, contentResponse] = await Promise.all([
+        // Fetch tags, tag-section assignments, and content
+        const [tagsResponse, contentResponse, tagSectionResponse] = await Promise.all([
             fetch("/tags"),
-            fetch("/content")
+            fetch("/content"),
+            fetch("/tag-sections")
         ]);
 
+        const showParentTagCounts = false; // 👈 Set to false to hide counts
         const tags = await tagsResponse.json();
         const contentData = await contentResponse.json();
+        const tagSections = await tagSectionResponse.json();
 
         // Create a tag count dictionary
         const tagCounts = {};
-
         contentData.forEach(item => {
             if (Array.isArray(item.tags)) {
                 item.tags.forEach(tag => {
@@ -80,43 +82,96 @@ async function fetchView2Tags() {
             }
         });
 
-        // Select the tag container
+        // Group tags by section
+        const groupedTags = {};
+        tags.forEach(tagObj => {
+            const tag = tagObj.tag;
+            const match = tagSections.find(ts => ts.tag === tag);
+            const section = match ? match.section : "Unassigned";
+
+            if (!groupedTags[section]) groupedTags[section] = [];
+            groupedTags[section].push(tag);
+        });
+
+        // Select the tag container and clear it
         const tagContainer = document.getElementById("view2TagList");
-        tagContainer.innerHTML = ""; // Clear existing tags
+        tagContainer.innerHTML = "";
 
-        // Populate tags with counts (using Bootstrap badges)
-        tags.forEach(tag => {
-            const count = tagCounts[tag.tag] || 0; // Get count or default to 0
-            const tagElement = document.createElement("button");
-
-            tagElement.classList.add(
+        for (const [section, tags] of Object.entries(groupedTags)) {
+            // 👉 Create parent (section) button
+            const parentButton = document.createElement("button");
+            parentButton.classList.add(
                 "list-group-item",
                 "list-group-item-action",
                 "text-start",
+                "bg-light",
+                "text-dark",
+                "fw-bold",
+                "mb-1",
+                "py-1",
+                "px-2",
                 "border-0",
-                "rounded-0",
-                "d-flex",
-                "justify-content-between",
-                "align-items-center"
+                "d-flex",                 
+                "justify-content-between", 
+                "align-items-center"       
             );
-            tagElement.setAttribute("data-tag", tag.tag.toLowerCase());
-            tagElement.onclick = () => toggleView2Tag(tag.tag);
+            parentButton.style.fontSize = "0.75rem";
+            parentButton.style.padding = "0.25rem 0.5rem";
 
-            tagElement.style.fontSize = "0.79rem"; // ✅ Reduce font size
+            const totalTagsInSection = tags.length;
 
-            tagElement.innerHTML = `
-                <span>${tag.tag}</span>
-                <span class="badge bg-light text-dark">${count}</span> 
+            parentButton.innerHTML = `
+                <span>${section}</span>
+                ${
+                    showParentTagCounts
+                        ? `<span class="badge bg-secondary text-white rounded-circle px-2 py-1" style="min-width: 1.5rem; text-align: center;">${totalTagsInSection}</span>`
+                        : ""
+                }
             `;
 
-            tagContainer.appendChild(tagElement);
-        });
+            // 🎯 On click, toggle all child tags under this parent
+            parentButton.onclick = () => {
+                tags.forEach(tag => toggleView2Tag(tag));
+            };
 
-        console.log("✅ View 2 Tags Loaded with Counts:", tagCounts);
+            tagContainer.appendChild(parentButton);
+
+            // 👉 Render each child tag under this parent
+            tags.forEach(tag => {
+                const count = tagCounts[tag] || 0;
+                const tagElement = document.createElement("button");
+
+                tagElement.classList.add(
+                    "list-group-item",
+                    "list-group-item-action",
+                    "text-start",
+                    "border-0",
+                    "rounded-0",
+                    "d-flex",
+                    "justify-content-between",
+                    "align-items-center"
+                );
+                tagElement.setAttribute("data-tag", tag.toLowerCase());
+                tagElement.onclick = () => toggleView2Tag(tag);
+
+                tagElement.style.fontSize = "0.79rem";
+
+                tagElement.innerHTML = `
+                    <span>${tag}</span>
+                    <span class="badge bg-light text-dark">${count}</span>
+                `;
+
+                tagContainer.appendChild(tagElement);
+            });
+        }
+
+        console.log("✅ View 2 Tags Loaded and Grouped by Parent");
     } catch (error) {
         console.error("❌ Error fetching View 2 tags:", error);
     }
 }
+
+
 
 
 
@@ -358,3 +413,51 @@ function highlightSearchTerm(text, searchQuery) {
     const regex = new RegExp(`(${searchQuery})`, "gi"); // Case-insensitive search
     return text.replace(regex, `<span class="bg-info text-white px-1 rounded">$1</span>`);
 }
+
+
+
+
+async function toggleView2ParentSection(sectionName) {
+    try {
+        // Fetch all tag-to-section mappings
+        const response = await fetch("/tag-sections");
+        const tagSections = await response.json();
+
+        // 🧠 Find tags that belong to the selected section
+        const sectionTags = tagSections
+            .filter(ts => ts.section.toLowerCase() === sectionName.toLowerCase())
+            .map(ts => ts.tag.toLowerCase());
+
+        // 🔁 Toggle each tag (add if not already selected, remove if selected)
+        let isSelecting = false;
+        for (let tag of sectionTags) {
+            if (!activeView2Tags.has(tag)) {
+                isSelecting = true;
+                break;
+            }
+        }
+
+        sectionTags.forEach(tag => {
+            if (isSelecting) {
+                // ✅ Add tag
+                if (!activeView2Tags.has(tag)) activeView2Tags.add(tag);
+                const tagEl = document.querySelector(`#view2TagList .list-group-item[data-tag="${tag}"]`);
+                if (tagEl) tagEl.style.setProperty("display", "none", "important");
+            } else {
+                // ❌ Remove tag
+                activeView2Tags.delete(tag);
+                const tagEl = document.querySelector(`#view2TagList .list-group-item[data-tag="${tag}"]`);
+                if (tagEl) tagEl.style.setProperty("display", "block", "important");
+            }
+        });
+
+        updateSelectedView2TagsUI();
+        filterView2Content();
+
+        console.log(`🔄 ${isSelecting ? "Selected" : "Deselected"} all tags under section:`, sectionName);
+
+    } catch (err) {
+        console.error("❌ Error toggling parent section:", err);
+    }
+}
+
