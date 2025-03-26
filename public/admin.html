@@ -129,19 +129,9 @@
             </div>
             
             
-            <!-- Add New Category -->
-            <p class="head1">Categories</p>
-            <div class="mb-3">
-                <span class="head2">Add New Categories</span><br/>
-                <div class="input-group">
-                    <input type="text" id="newCategoryInput" class="form-control" placeholder="Enter new category">
-                    <button class="btn btn-dark" onclick="addNewCategory()">Add</button>
-                </div>
-            </div>
 
-            <!-- Existing Categories List -->
-            <span class="head2">Existing Categories</span><br/>
-            <ul id="categoryList" class="list-group"></ul> <!-- Dynamically Populated -->
+
+
 
 			<br/><hr><br/>
 
@@ -160,24 +150,7 @@
             <ul id="tagList" class="list-group"></ul> <!-- Tags dynamically populated -->
 
 
-            <!-- ✅ Confirm Delete Category Modal -->
-            <div class="modal fade" id="confirmDeleteCategoryModal" tabindex="-1" aria-labelledby="confirmDeleteCategoryModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Confirm Delete Category</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p id="confirmDeleteCategoryMessage">Are you sure you want to delete this category? This action is permanent.</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button id="confirmDeleteCategoryBtn" type="button" class="btn btn-danger">Confirm</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            
 
             <!-- ✅ Confirm Delete Tag Modal -->
             <div class="modal fade" id="confirmDeleteTagModal" tabindex="-1" aria-labelledby="confirmDeleteTagModalLabel" aria-hidden="true">
@@ -220,26 +193,7 @@
                 </div>
             </div>
             
-            <!-- Bootstrap Modal for Editing Categories -->
-			<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
-				<div class="modal-dialog">
-					<div class="modal-content">
-						<div class="modal-header">
-							<h5 class="modal-title" id="editCategoryModalLabel">Edit Category</h5>
-							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-						</div>
-						<div class="modal-body">
-							<input type="hidden" id="editCategoryId"> <!-- Store category ID -->
-							<label for="editCategoryInput" class="form-label">New Category Name</label>
-							<input type="text" id="editCategoryInput" class="form-control" placeholder="Enter new category name">
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-							<button type="button" class="btn btn-dark" onclick="saveEditedCategory()">Save</button>
-						</div>
-					</div>
-				</div>
-			</div>
+            
 
 
             <br/><hr><br/>
