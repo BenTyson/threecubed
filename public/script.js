@@ -42,7 +42,7 @@ let quill;
 
 // Ensure the app starts in Viewer mode and loads necessary data
 document.addEventListener("DOMContentLoaded", () => {
-    showSection("viewer");
+    showSection("tags");
     fetchTags();  
     populateCategories();
     fetchContent();

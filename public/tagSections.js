@@ -55,32 +55,15 @@ async function fetchSections() {
         const response = await fetch("/sections");
         const sections = await response.json();
 
-        const sectionContainer = document.getElementById("sectionContainer");
-        const sectionSelect = document.getElementById("sectionSelect"); // ✅ Get the dropdown
+        const sectionSelect = document.getElementById("sectionSelect");
 
-        sectionContainer.innerHTML = ""; // ✅ Clear existing sections
-        sectionSelect.innerHTML = '<option value="">Select a Section</option>'; // ✅ Clear & Reset dropdown
+        sectionSelect.innerHTML = '<option value="">Select a Parent</option>'; // ✅ Reset dropdown
 
         sections.forEach(section => {
-            // ✅ Populate the dropdown
             const option = document.createElement("option");
             option.value = section;
             option.textContent = section;
             sectionSelect.appendChild(option);
-
-            // ✅ Populate the visualized section list
-            const sectionDiv = document.createElement("div");
-            sectionDiv.classList.add("section-item", "d-flex", "justify-content-between", "align-items-center", "mb-2");
-
-            sectionDiv.innerHTML = `
-                <span>${section}</span>
-                <div>
-                    <button class="btn btn-sm btn-warning" onclick="editSection('${section}')">✏️ Edit</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteSection('${section}')">🗑 Delete</button>
-                </div>
-            `;
-
-            sectionContainer.appendChild(sectionDiv);
         });
 
         console.log("✅ Sections Loaded & Dropdown Updated:", sections);
@@ -88,6 +71,9 @@ async function fetchSections() {
         console.error("❌ Error fetching sections:", error);
     }
 }
+
+
+
 
 
 
@@ -148,7 +134,7 @@ async function assignTagToSection() {
 
 
 
-// ✅ Fetch assigned tags and display them under their section
+// ✅ Fetch assigned tags and display them under their section in consistent UI style
 async function fetchAssignedTags() {
     try {
         const response = await fetch("/tag-sections");
@@ -168,22 +154,53 @@ async function fetchAssignedTags() {
 
         // ✅ Display each section with its assigned tags
         for (const [section, tags] of Object.entries(sectionMap)) {
-            const sectionDiv = document.createElement("div");
-            sectionDiv.classList.add("mb-3");
+            const card = document.createElement("div");
+            card.classList.add("card", "mb-3", "shadow-sm");
 
-            sectionDiv.innerHTML = `
-                <h5 class="text-primary">${section}</h5>
-                <p>${tags.map(tag => `<span class="badge bg-info text-white me-1">${tag}</span>`).join(" ")}</p>
+            // 🔧 Header with section name + actions
+            const header = document.createElement("div");
+            header.classList.add("card-header", "d-flex", "justify-content-between", "align-items-center", "bg-light");
+
+            const sectionTitle = document.createElement("span");
+            sectionTitle.classList.add("head2", "text-dark", "text-uppercase");
+            sectionTitle.textContent = section;
+
+            const buttonGroup = document.createElement("div");
+            buttonGroup.innerHTML = `
+                <button class="btn btn-sm btn-edit me-2" onclick="editSection('${section}')">
+                    <span class="material-icons icon-small">edit</span>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteSection('${section}')">
+                    <span class="material-icons icon-small">delete</span>
+                </button>
             `;
 
-            assignedTagsContainer.appendChild(sectionDiv);
+            header.appendChild(sectionTitle);
+            header.appendChild(buttonGroup);
+
+            // ✅ Tag pills
+            const body = document.createElement("div");
+            body.classList.add("card-body", "d-flex", "flex-wrap", "gap-2");
+
+            tags.forEach(tag => {
+                const tagBadge = document.createElement("span");
+                tagBadge.classList.add("tag-pill", "bg-primary", "text-white", "px-2", "py-1", "rounded");
+                tagBadge.textContent = tag;
+                body.appendChild(tagBadge);
+            });
+
+            card.appendChild(header);
+            card.appendChild(body);
+            assignedTagsContainer.appendChild(card);
         }
 
-        console.log("✅ Assigned Tags Loaded:", sectionMap);
+        console.log("✅ Assigned Tags Loaded (Improved Header UI):", sectionMap);
     } catch (error) {
         console.error("❌ Error fetching assigned tags:", error);
     }
 }
+
+
 
 // ✅ Call on page load
 document.addEventListener("DOMContentLoaded", () => {
