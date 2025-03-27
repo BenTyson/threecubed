@@ -134,7 +134,6 @@ async function assignTagToSection() {
 
 
 
-// ✅ Fetch assigned tags and display them under their section in consistent UI style
 async function fetchAssignedTags() {
     try {
         const response = await fetch("/tag-sections");
@@ -145,11 +144,11 @@ async function fetchAssignedTags() {
 
         // ✅ Group by section
         const sectionMap = {};
-        assignedTags.forEach(({ tag, section }) => {
+        assignedTags.forEach(({ tag, section, _id }) => {
             if (!sectionMap[section]) {
                 sectionMap[section] = [];
             }
-            sectionMap[section].push(tag);
+            sectionMap[section].push({ tag, _id });
         });
 
         // ✅ Display each section with its assigned tags
@@ -178,14 +177,17 @@ async function fetchAssignedTags() {
             header.appendChild(sectionTitle);
             header.appendChild(buttonGroup);
 
-            // ✅ Tag pills
+            // ✅ Tag pills (now clickable!)
             const body = document.createElement("div");
             body.classList.add("card-body", "d-flex", "flex-wrap", "gap-2");
 
-            tags.forEach(tag => {
+            tags.forEach(({ tag, _id }) => {
                 const tagBadge = document.createElement("span");
                 tagBadge.classList.add("tag-pill", "bg-primary", "text-white", "px-2", "py-1", "rounded");
+                tagBadge.style.cursor = "pointer";
+                tagBadge.title = "Click to edit";
                 tagBadge.textContent = tag;
+                tagBadge.onclick = () => openEditTagModal(_id, tag); // ✅ Trigger edit modal
                 body.appendChild(tagBadge);
             });
 
@@ -194,11 +196,12 @@ async function fetchAssignedTags() {
             assignedTagsContainer.appendChild(card);
         }
 
-        console.log("✅ Assigned Tags Loaded (Improved Header UI):", sectionMap);
+        console.log("✅ Assigned Tags Loaded (Clickable Tags):", sectionMap);
     } catch (error) {
         console.error("❌ Error fetching assigned tags:", error);
     }
 }
+
 
 
 

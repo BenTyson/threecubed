@@ -771,16 +771,57 @@ app.post("/tag-sections", async (req, res) => {
     }
 });
 
-// ✅ Fetch all tag-to-section assignments
+// ✅ Return FULL tag objects with assigned section info
 app.get("/tag-sections", async (req, res) => {
     try {
         const tagSections = await TagSection.find();
-        res.json(tagSections);
+        const allTags = await Tag.find();
+
+        const fullData = tagSections.map(ts => {
+            const tagObj = allTags.find(t => t.tag === ts.tag);
+            return {
+                _id: tagObj?._id || null,  // ✅ Real Tag ID
+                tag: ts.tag,
+                section: ts.section
+            };
+        });
+
+        res.json(fullData);
     } catch (error) {
-        console.error("❌ Error fetching tag sections:", error);
+        console.error("❌ Error fetching enriched tag sections:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
+
+
+
+
+// ✅ Return GROUPED tag-section structure (for Organizer tab)
+app.get("/tag-sections/grouped", async (req, res) => {
+    try {
+        const allTags = await Tag.find();
+        const tagSections = await TagSection.find();
+
+        const grouped = {};
+        const assignedTagNames = new Set();
+
+        tagSections.forEach(ts => {
+            const tagData = allTags.find(t => t.tag === ts.tag);
+            if (!tagData) return;
+
+            assignedTagNames.add(ts.tag);
+            if (!grouped[ts.section]) grouped[ts.section] = [];
+            grouped[ts.section].push(tagData);
+        });
+
+        const unassigned = allTags.filter(tag => !assignedTagNames.has(tag.tag));
+        res.json({ assigned: grouped, unassigned });
+    } catch (error) {
+        console.error("❌ Error grouping tags:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 
 
 

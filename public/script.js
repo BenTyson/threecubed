@@ -13,10 +13,13 @@ function showSection(section) {
 
 
     if (section === "organizer" || section === "creator") {
-        fetchTags();
         fetchMessageTypes(); // ✅ Ensure this runs when switching to "Organize"
         fetchOriginalPosts();
     }
+
+
+
+
 
     document.querySelectorAll(".nav-link").forEach(btn => btn.classList.remove("active"));
     document.querySelector(`[onclick="showSection('${section}')"]`).classList.add("active");
@@ -460,62 +463,77 @@ function confirmDeleteContent(contentId) {
 
 async function fetchTags() {
     try {
-        const response = await fetch("/tags");
-        const tags = await response.json();
+        const response = await fetch("/tag-sections"); // ✅ RAW JSON endpoint
+        const data = await response.json();
 
-        console.log("✅ Fetching tags:", tags); // Debugging log
+        console.log("✅ Raw Tags Response:", data);
 
-        // ✅ Update tag list (Organizer View)
+        const { assigned = {}, unassigned = [] } = data;
         const tagList = document.getElementById("tagList");
-        if (tagList) {
-            tagList.innerHTML = "";
+        tagList.innerHTML = ""; // Clear previous list
+
+        // Display grouped tags
+        Object.entries(assigned).forEach(([section, tags]) => {
+            const header = document.createElement("li");
+            header.className = "list-group-item active text-white";
+            header.textContent = section;
+            tagList.appendChild(header);
+
             tags.forEach(tag => {
                 const li = document.createElement("li");
-                li.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
-
+                li.className = "list-group-item d-flex justify-content-between align-items-center";
                 li.innerHTML = `
-                    <span>${tag.tag}</span>
+                    <span class="text-primary tag-clickable" style="cursor:pointer;" onclick="openEditTagModal('${tag._id}', '${tag.tag}')">
+                        ${tag.tag}
+                    </span>
                     <div>
-                        <button class="btn btn-sm btn-edit xxme-2" onclick="openEditTagModal('${tag._id}', '${tag.tag}')"><span class="material-icons icon-small">edit</span></button>
-                        <button class="btn btn-sm btn-danger" onclick="confirmDeleteTag('${tag._id}')"><span class="material-icons icon-small">delete</span></button>
+                        <button class="btn btn-sm btn-edit" onclick="openEditTagModal('${tag._id}', '${tag.tag}')">
+                            <span class="material-icons icon-small">edit</span>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="confirmDeleteTag('${tag._id}')">
+                            <span class="material-icons icon-small">delete</span>
+                        </button>
                     </div>
                 `;
+                tagList.appendChild(li);
+            });
+        });
 
+        // Display unassigned tags
+        if (unassigned.length > 0) {
+            const header = document.createElement("li");
+            header.className = "list-group-item active text-white mt-3";
+            header.textContent = "Ungrouped Tags";
+            tagList.appendChild(header);
+
+            unassigned.forEach(tag => {
+                const li = document.createElement("li");
+                li.className = "list-group-item d-flex justify-content-between align-items-center";
+                li.innerHTML = `
+                    <span class="text-primary tag-clickable" style="cursor:pointer;" onclick="openEditTagModal('${tag._id}', '${tag.tag}')">
+                        ${tag.tag}
+                    </span>
+                    <div>
+                        <button class="btn btn-sm btn-edit" onclick="openEditTagModal('${tag._id}', '${tag.tag}')">
+                            <span class="material-icons icon-small">edit</span>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="confirmDeleteTag('${tag._id}')">
+                            <span class="material-icons icon-small">delete</span>
+                        </button>
+                    </div>
+                `;
                 tagList.appendChild(li);
             });
         }
 
-        // ✅ Update tag filters (Viewer Mode - Clickable Tags)
-        const tagFilters = document.getElementById("tagFilters");
-        if (tagFilters) {
-            tagFilters.innerHTML = "";
-            tags.forEach(tag => {
-                tagFilters.innerHTML += `
-                    <span class="badge tag-filter viewTag1 p-2 me-1" 
-                        data-tag="${tag.tag}" 
-                        onclick="toggleTagFilter(this, '${tag.tag}')">
-                        ${tag.tag}
-                    </span>
-                `;
-            });
-        }
-
-        // ✅ Update multi-select dropdown in Creator Mode
-        const tagDropdown = document.getElementById("newTags");
-        if (tagDropdown) {
-            tagDropdown.innerHTML = ""; // Clear previous options
-            tags.forEach(tag => {
-                const option = document.createElement("option");
-                option.value = tag.tag;
-                option.textContent = tag.tag;
-                tagDropdown.appendChild(option);
-            });
-        }
-
     } catch (error) {
-        console.error("❌ Error fetching tags:", error);
+        console.error("❌ Error fetching grouped tags for Tags tab:", error);
     }
 }
+
+
+
+
 
 
 
@@ -635,8 +653,9 @@ async function deleteTag(tagId) {
 }
 
 
-// Open the Edit Tag Modal & Populate Input Field
 function openEditTagModal(tagId, currentTagName) {
+    console.log("🧪 openEditTagModal received:", { tagId, currentTagName });
+
     const editTagInput = document.getElementById("editTagInput");
     const editTagId = document.getElementById("editTagId");
     const editTagModal = new bootstrap.Modal(document.getElementById("editTagModal"));
@@ -654,11 +673,14 @@ function openEditTagModal(tagId, currentTagName) {
     editTagModal.show();
 }
 
+
 // Save the Edited Tag Name
 async function saveEditedTag() {
     const tagId = document.getElementById("editTagId").value.trim();
     const newTagName = document.getElementById("editTagInput").value.trim();
     const editTagModal = bootstrap.Modal.getInstance(document.getElementById("editTagModal"));
+
+    console.log("🧪 saveEditedTag called with:", { tagId, newTagName });
 
     if (!tagId || !newTagName) {
         alert("Please enter a valid tag name.");
@@ -672,18 +694,22 @@ async function saveEditedTag() {
             body: JSON.stringify({ tag: newTagName }),
         });
 
+        const responseText = await response.text(); // get raw response
+        console.log("📥 Raw Server Response:", responseText);
+
         if (response.ok) {
             console.log("✅ Tag updated successfully!");
-            fetchTags(); // ✅ Refresh tags in Organizer & Viewer
-            fetchContent(); // ✅ Refresh Viewer Mode Content Blocks
-            editTagModal.hide(); // ✅ Close the modal
+            fetchTags(); // ✅ Refresh tag list
+            fetchContent(); // ✅ Refresh viewer content
+            editTagModal.hide();
         } else {
-            console.error("❌ Failed to update tag.");
+            console.error("❌ Failed to update tag. Status:", response.status);
         }
     } catch (error) {
         console.error("❌ Error updating tag:", error);
     }
 }
+
 
 
 

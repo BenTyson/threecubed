@@ -309,3 +309,13 @@ cursor: pointer; /* Changes cursor to pointer on hover */
 	color: white;
 
 }
+
+.tag-clickable:hover {
+    text-decoration: underline;
+}
+
+#editTagModal.modal.show {
+    display: block !important;
+    z-index: 1060 !important;
+    opacity: 1 !important;
+}
