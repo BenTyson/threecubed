@@ -242,42 +242,42 @@ function removeView2Tag(tag) {
  * ✅ Update the UI to show selected tags while maintaining capitalization
  */
 function updateSelectedView2TagsUI() {
-    selectedView2TagsContainer.innerHTML = ""; // Clear previous selections
+    const containers = [
+        document.getElementById("selectedView2Tags"), // desktop
+        document.querySelector("#mobileTagContainer #selectedView2Tags") // mobile
+    ];
 
-    activeView2Tags.forEach(tagLower => {
-        // ✅ Find the original capitalization from the tag list
-        const tagElement = document.querySelector(`#view2TagList .list-group-item[data-tag="${tagLower}"]`);
-        
-        let originalTag = tagLower; // Default fallback
+    containers.forEach(container => {
+        if (!container) return;
+        container.innerHTML = ""; // Clear previous selections
 
-        if (tagElement) {
-            // Extract only the tag name, ignoring the count badge
-            const tagSpan = tagElement.querySelector("span:first-child"); // Selects the first <span> inside the button
-            if (tagSpan) {
-                originalTag = tagSpan.textContent.trim(); // Use the proper capitalization
+        activeView2Tags.forEach(tagLower => {
+            // 🔍 Find original capitalization (desktop reference)
+            const tagElement = document.querySelector(`#view2TagList .list-group-item[data-tag="${tagLower}"]`);
+            let originalTag = tagLower;
+            if (tagElement) {
+                const tagSpan = tagElement.querySelector("span:first-child");
+                if (tagSpan) originalTag = tagSpan.textContent.trim();
             }
-        }
 
-        // ✅ Create the selected tag element
-        const selectedTag = document.createElement("span");
-        selectedTag.classList.add("tag-pill", "bg-primary", "text-white", "px-2", "py-1", "rounded", "mb-1");
-        selectedTag.setAttribute("data-tag", tagLower);
+            const selectedTag = document.createElement("span");
+            selectedTag.classList.add("tag-pill", "bg-primary", "text-white", "px-2", "py-1", "rounded", "mb-1");
+            selectedTag.setAttribute("data-tag", tagLower);
 
-        // ✅ Create the "X" button properly and add event listener
-        const removeButton = document.createElement("span");
-        removeButton.classList.add("remove-tag", "ms-2", "cursor-pointer");
-        removeButton.innerHTML = "✖";
-        
-        // ✅ Correctly attach event listener using an inline function
-        removeButton.onclick = function() {
-            removeView2Tag(tagLower); // ✅ Ensure function is called with lowercase tag
-        };
+            const removeButton = document.createElement("span");
+            removeButton.classList.add("remove-tag", "ms-2", "cursor-pointer");
+            removeButton.innerHTML = "✖";
+            removeButton.onclick = function () {
+                removeView2Tag(tagLower);
+            };
 
-        selectedTag.appendChild(document.createTextNode(originalTag + " "));
-        selectedTag.appendChild(removeButton);
-        selectedView2TagsContainer.appendChild(selectedTag);
+            selectedTag.appendChild(document.createTextNode(originalTag + " "));
+            selectedTag.appendChild(removeButton);
+            container.appendChild(selectedTag);
+        });
     });
 }
+
 
 
 
