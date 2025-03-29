@@ -338,3 +338,13 @@ cursor: pointer; /* Changes cursor to pointer on hover */
     z-index: 1060 !important;
     opacity: 1 !important;
 }
+
+a.headLogo {
+	text-decoration: none;
+	color: #343434;
+}
+
+a.headLogo:hover {
+	text-decoration: none;
+	color: #0c7b91;
+}
