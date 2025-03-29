@@ -242,41 +242,46 @@ function removeView2Tag(tag) {
  * ✅ Update the UI to show selected tags while maintaining capitalization
  */
 function updateSelectedView2TagsUI() {
-    const containers = [
-        document.getElementById("selectedView2Tags"), // desktop
-        document.querySelector("#mobileTagContainer #selectedView2Tags") // mobile
-    ];
+    const desktopContainer = document.getElementById("selectedView2Tags");
+    const mobileContainer = document.getElementById("selectedView2TagsMobile");
 
-    containers.forEach(container => {
-        if (!container) return;
-        container.innerHTML = ""; // Clear previous selections
+    // Clear both containers
+    desktopContainer.innerHTML = "";
+    mobileContainer.innerHTML = "";
 
-        activeView2Tags.forEach(tagLower => {
-            // 🔍 Find original capitalization (desktop reference)
-            const tagElement = document.querySelector(`#view2TagList .list-group-item[data-tag="${tagLower}"]`);
-            let originalTag = tagLower;
-            if (tagElement) {
-                const tagSpan = tagElement.querySelector("span:first-child");
-                if (tagSpan) originalTag = tagSpan.textContent.trim();
+    activeView2Tags.forEach(tagLower => {
+        // Get the original capitalization
+        const tagElement = document.querySelector(`#view2TagList .list-group-item[data-tag="${tagLower}"]`);
+        let originalTag = tagLower;
+
+        if (tagElement) {
+            const tagSpan = tagElement.querySelector("span:first-child");
+            if (tagSpan) {
+                originalTag = tagSpan.textContent.trim();
             }
+        }
 
-            const selectedTag = document.createElement("span");
-            selectedTag.classList.add("tag-pill", "bg-primary", "text-white", "px-2", "py-1", "rounded", "mb-1");
-            selectedTag.setAttribute("data-tag", tagLower);
+        // Create tag pill
+        const tagPill = document.createElement("span");
+        tagPill.classList.add("tag-pill", "bg-primary", "text-white", "px-2", "py-1", "rounded", "mb-1");
+        tagPill.setAttribute("data-tag", tagLower);
 
-            const removeButton = document.createElement("span");
-            removeButton.classList.add("remove-tag", "ms-2", "cursor-pointer");
-            removeButton.innerHTML = "✖";
-            removeButton.onclick = function () {
-                removeView2Tag(tagLower);
-            };
+        const removeBtn = document.createElement("span");
+        removeBtn.classList.add("remove-tag", "ms-2", "cursor-pointer");
+        removeBtn.innerHTML = "✖";
+        removeBtn.onclick = function () {
+            removeView2Tag(tagLower);
+        };
 
-            selectedTag.appendChild(document.createTextNode(originalTag + " "));
-            selectedTag.appendChild(removeButton);
-            container.appendChild(selectedTag);
-        });
+        tagPill.appendChild(document.createTextNode(originalTag + " "));
+        tagPill.appendChild(removeBtn);
+
+        // Append to both containers
+        desktopContainer.appendChild(tagPill.cloneNode(true));
+        mobileContainer.appendChild(tagPill);
     });
 }
+
 
 
 

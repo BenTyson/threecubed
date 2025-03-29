@@ -54,9 +54,21 @@
             </div>
             <div class="offcanvas-body">
                 <div id="mobileTagContainer">
-                    <div id="selectedView2Tags" class="mb-3"></div>
-                    <!-- We'll duplicate the content of #view2TagContainer here -->
+                    <!-- ✅ Selected Tags for Mobile -->
+                    <div id="selectedView2TagsMobile" class="mb-3"></div>
+
+                    <!-- ✅ Content Search Box (Always Visible) -->
+                    <div class="mb-3">
+                        <input type="text" id="view2ContentSearch" class="form-control" placeholder="Search content...">
+                    </div>
+
+                    <!-- ✅ Tag Search Box -->
+                    <input type="text" id="view2TagSearch" class="form-control mb-3" placeholder="Search tags...">
+
+                    <!-- ✅ Tag List -->
+                    <div id="view2TagList" class="list-group collapse show"></div>
                 </div>
+
             </div>
         </div>
 
