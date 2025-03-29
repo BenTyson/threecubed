@@ -41,8 +41,8 @@
     <div class="container-fluid mt-4">
 
         <!-- Mobile Hamburger Menu (visible only on small screens) -->
-        <button class="btn btn-primary d-md-none mb-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileTagSidebar" aria-controls="mobileTagSidebar">
-            ☰ Filters
+        <button class="btn btn-outline-primary d-md-none mb-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileTagSidebar" aria-controls="mobileTagSidebar">
+            ☰ Search + Filters
         </button>
 
 
@@ -53,21 +53,19 @@
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
             <div class="offcanvas-body">
-                <div id="mobileTagContainer">
-                    <!-- ✅ Selected Tags for Mobile -->
-                    <div id="selectedView2TagsMobile" class="mb-3"></div>
+                <!-- ✅ Offcanvas Sidebar for Mobile Tag Filters -->
+<div id="mobileTagContainer">
+    <div id="selectedView2TagsMobile" class="mb-3"></div>
 
-                    <!-- ✅ Content Search Box (Always Visible) -->
-                    <div class="mb-3">
-                        <input type="text" id="view2ContentSearch" class="form-control" placeholder="Search content...">
-                    </div>
+    <div class="mb-3">
+        <input type="text" id="mobileView2ContentSearch" class="form-control" placeholder="Search content...">
+    </div>
 
-                    <!-- ✅ Tag Search Box -->
-                    <input type="text" id="view2TagSearch" class="form-control mb-3" placeholder="Search tags...">
+    <input type="text" id="mobileView2TagSearch" class="form-control mb-3" placeholder="Search tags...">
 
-                    <!-- ✅ Tag List -->
-                    <div id="view2TagList" class="list-group collapse show"></div>
-                </div>
+    <div id="mobileView2TagList" class="list-group collapse show"></div>
+</div>
+
 
             </div>
         </div>
@@ -142,46 +140,40 @@
 
 
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // 📱 Only run this on small screens (mobile)
+    if (window.innerWidth < 768) {
+        const mobileTagSearch = document.getElementById("mobileView2TagSearch");
+        const mobileContentSearch = document.getElementById("mobileView2ContentSearch");
+
+        if (mobileTagSearch) {
+            mobileTagSearch.addEventListener("input", () => {
+                searchView2Tags();
+            });
+        }
+
+        if (mobileContentSearch) {
+            mobileContentSearch.addEventListener("input", () => {
+                filterView2Content();
+            });
+        }
+
+        console.log("📱 Mobile input listeners initialized.");
+    }
+});
+</script>
+
+
+
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    // 📱 Only run this on small screens (mobile)
-    if (window.innerWidth < 768) {
-        const desktopTagContainer = document.getElementById("view2TagContainer");
-        const mobileTagContainer = document.getElementById("mobileTagContainer");
 
-        if (desktopTagContainer && mobileTagContainer) {
-            // Clone contents without affecting event listeners (static HTML copy is enough)
-            mobileTagContainer.innerHTML = desktopTagContainer.innerHTML;
 
-            // Reassign event listeners for search/input fields inside the mobile copy
-            const mobileTagSearch = mobileTagContainer.querySelector("#view2TagSearch");
-            const mobileContentSearch = mobileTagContainer.querySelector("#view2ContentSearch");
-
-            if (mobileTagSearch) {
-                mobileTagSearch.addEventListener("input", () => {
-                    searchView2Tags();
-                });
-            }
-
-            if (mobileContentSearch) {
-                mobileContentSearch.addEventListener("input", () => {
-                    filterView2Content();
-                });
-            }
-
-            console.log("📱 Mobile tag container cloned successfully");
-        } else {
-            console.warn("⚠️ One or both tag containers not found");
-        }
-    }
-});
-</script>
 
 
 </html>

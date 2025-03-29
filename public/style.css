@@ -302,6 +302,25 @@ cursor: pointer; /* Changes cursor to pointer on hover */
 
 }
 
+.btn-outline-primary {
+    background-color: #fff;
+    border: 1px solid #0c7b91 !important;
+    color: #0c7b91 !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active,
+.btn-outline-primary:focus:active,
+.btn-outline-primary.active,
+.show > .btn-outline-primary.dropdown-toggle {
+    background-color: #e6f7fa !important;  /* subtle teal background */
+    border: 1px solid #0c7b91 !important;
+    color: #0c7b91 !important;
+    box-shadow: none !important;
+}
+
+
 .btn-primary:hover {
 
 	background-color: #109ab5;

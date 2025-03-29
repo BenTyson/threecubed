@@ -7,7 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("🚀 DOMContentLoaded Event Fired in View2.js");
 
     // ✅ Attach Tag Search Event Listener
-    const tagSearchBox = document.getElementById("view2TagSearch");
+    const tagSearchBox = getElementForContext("view2TagSearch");
+
     console.log("🔍 Checking for Tag Search Box:", tagSearchBox);
 
     if (tagSearchBox) {
@@ -21,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ✅ Attach Content Search Event Listener
-    const contentSearchBox = document.getElementById("view2ContentSearch");
+    const contentSearchBox = getElementForContext("view2ContentSearch");
     console.log("🔍 Checking for Content Search Box:", contentSearchBox);
 
     if (contentSearchBox) {
@@ -51,6 +52,12 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
+function getElementForContext(id) {
+    const isMobile = window.innerWidth < 768;
+    return isMobile
+        ? document.getElementById("mobile" + id.charAt(0).toUpperCase() + id.slice(1))
+        : document.getElementById(id);
+}
 
 
 
@@ -94,7 +101,8 @@ async function fetchView2Tags() {
         });
 
         // Select the tag container and clear it
-        const tagContainer = document.getElementById("view2TagList");
+        const tagContainer = getElementForContext("view2TagList");
+
         tagContainer.innerHTML = "";
 
         for (const [section, tags] of Object.entries(groupedTags)) {
@@ -181,7 +189,7 @@ async function fetchView2Tags() {
 const activeView2Tags = new Set();
 
 // ✅ Ensure this div exists in your HTML (above the tag list)
-const selectedView2TagsContainer = document.getElementById("selectedView2Tags");
+const selectedView2TagsContainer = getElementForContext("selectedView2Tags");
 
 
 function toggleView2Tag(tag) {
@@ -226,7 +234,8 @@ function removeView2Tag(tag) {
     updateSelectedView2TagsUI();
 
     // ✅ Find and show the corresponding tag in the list
-    const tagButtons = document.querySelectorAll("#view2TagList .list-group-item");
+    const tagButtons = getElementForContext("view2TagList")?.querySelectorAll(".list-group-item")
+;
     tagButtons.forEach(button => {
         if (button.getAttribute("data-tag") === tag.toLowerCase()) {
             button.style.display = "block"; // ✅ Show it back in the list
@@ -251,7 +260,8 @@ function updateSelectedView2TagsUI() {
 
     activeView2Tags.forEach(tagLower => {
         // Get the original capitalization
-        const tagElement = document.querySelector(`#view2TagList .list-group-item[data-tag="${tagLower}"]`);
+        const tagElement = getElementForContext("view2TagList")?.querySelector(`.list-group-item[data-tag="${tagLower}"]`)
+;
         let originalTag = tagLower;
 
         if (tagElement) {
@@ -290,7 +300,9 @@ function updateSelectedView2TagsUI() {
 
 async function filterView2Content() {
     try {
-        const searchQuery = document.getElementById("view2ContentSearch").value.toLowerCase().trim(); 
+        const contentInput = getElementForContext("view2ContentSearch");
+        const searchQuery = contentInput ? contentInput.value.toLowerCase().trim() : "";
+
         const response = await fetch("/content");
         let contentData = await response.json(); 
 
@@ -306,17 +318,16 @@ async function filterView2Content() {
         // ✅ Apply Tag Selection Filtering (Strict Matching)
         if (activeView2Tags.size > 0) {
             contentData = contentData.filter(item =>
-                item.tags.some(tag => activeView2Tags.has(tag.toLowerCase())) // Must contain at least one selected tag
+                item.tags.some(tag => activeView2Tags.has(tag.toLowerCase()))
             );
         }
 
-        // ✅ Ensure only the filtered content is displayed
         displayView2Content(contentData);
-
     } catch (error) {
         console.error("❌ Error filtering View 2 content:", error);
     }
 }
+
 
 
 
@@ -389,10 +400,11 @@ function displayView2Content(contentData) {
 
 
 function searchView2Tags() {
-    const query = document.getElementById("view2TagSearch").value.toLowerCase();
+    const tagInput = getElementForContext("view2TagSearch");
+    const query = tagInput ? tagInput.value.toLowerCase() : "";
     console.log("🔍 Searching for:", query);
 
-    const tagElements = document.querySelectorAll("#view2TagList .list-group-item");
+    const tagElements = getElementForContext("view2TagList")?.querySelectorAll(".list-group-item") || [];
 
     if (!tagElements.length) {
         console.warn("⚠️ No tags found in the list!");
@@ -404,13 +416,10 @@ function searchView2Tags() {
         const tagText = tagSpan ? tagSpan.textContent.trim().toLowerCase() : "";
 
         const shouldShow = tagText.includes(query);
-
-        // ✅ Force `display: none` or `display: block` with `!important`
         tagElement.style.setProperty("display", shouldShow ? "block" : "none", "important");
-
-        console.log(`🔍 Checking Tag: "${tagText}" - Displaying: ${shouldShow ? "✅ YES" : "❌ NO"}`);
     });
 }
+
 
 
 function highlightSearchTerm(text, searchQuery) {
