@@ -2,10 +2,17 @@ require("dotenv").config({
     path: process.env.NODE_ENV === "production" ? ".env.production" : ".env.development"
 });
 
+console.log(`🌍 NODE_ENV: ${process.env.NODE_ENV}`);
+
 const mongoose = require("mongoose");
 
-// ✅ Load MongoDB URI (Development Only)
-const mongoURI = process.env.MONGO_URI_DEV;
+// 🧠 Check for --all flag
+const deleteTagSections = process.argv.includes("--all");
+
+const mongoURI =
+    process.env.NODE_ENV === "production"
+        ? process.env.MONGO_URI_PROD
+        : process.env.MONGO_URI_DEV;
 
 if (!mongoURI) {
     console.error("❌ Error: MongoDB URI is undefined. Check your .env file and NODE_ENV setting.");
@@ -14,12 +21,10 @@ if (!mongoURI) {
 
 console.log(`🔍 Using MongoDB URI: ${mongoURI}`);
 
-// ✅ Connect to MongoDB
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(async () => {
-        console.log("✅ Connected to MongoDB (Development Mode)");
+        console.log(`✅ Connected to MongoDB (${process.env.NODE_ENV || "development"} Mode)`);
 
-        // ✅ Fetch all collections in the database
         const collections = await mongoose.connection.db.collections();
 
         if (collections.length === 0) {
@@ -27,19 +32,26 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
             process.exit(0);
         }
 
-        console.log(`🚨 Deleting ${collections.length} collections (excluding 'devitems')...`);
+        console.log(`🚨 Deleting ${collections.length} collections (except devitems${!deleteTagSections ? " and tagsections" : ""})...`);
 
-        // ✅ Drop each collection EXCEPT "devitems"
         for (let collection of collections) {
-            if (collection.collectionName !== "devitems") {
-                await collection.drop();
-                console.log(`🗑️ Dropped collection: ${collection.collectionName}`);
-            } else {
-                console.log(`⏭️ Skipped collection: ${collection.collectionName} (Dev Tasks Kept)`);
+            const name = collection.collectionName;
+
+            if (name === "devitems") {
+                console.log(`⏭️ Skipped collection: ${name} (Dev Tasks Kept)`);
+                continue;
             }
+
+            if (!deleteTagSections && name === "tagsections") {
+                console.log(`⏭️ Skipped collection: ${name} (Tag-Section Map Preserved)`);
+                continue;
+            }
+
+            await collection.drop();
+            console.log(`🗑️ Dropped collection: ${name}`);
         }
 
-        console.log("🚀 Database cleared successfully (except 'devitems')!");
+        console.log("🚀 Database cleared successfully!");
         process.exit(0);
     })
     .catch(err => {

@@ -9,20 +9,32 @@ def format_json(input_file, output_file):
 
         formatted_data = []
         skipped_entries = 0
+        error_log = []
 
         for index, entry in enumerate(data):
-            print(f"🔍 Checking entry {index + 1}: {entry}")  # Debugging print
+            print(f"🔍 Checking entry {index + 1}")
 
-            # Ensure required fields are present & not empty
-            required_fields = ["Title", "Category", "Question", "Answer", "messageType"]
-            if any(field not in entry or not str(entry[field]).strip() for field in required_fields):
-                print(f"❌ Skipping invalid entry {index + 1}: {entry}")
+            # ⚠️ 'Category' is no longer required
+            required_fields = ["Title", "Question", "Answer", "messageType"]
+            missing_or_empty = [
+                field for field in required_fields
+                if field not in entry or not str(entry[field]).strip()
+            ]
+
+            if missing_or_empty:
+                error_message = {
+                    "entry_index": index + 1,
+                    "missing_fields": missing_or_empty,
+                    "entry": entry
+                }
+                error_log.append(error_message)
+                print(f"❌ Skipping entry {index + 1} due to: {missing_or_empty}")
                 skipped_entries += 1
-                continue  # Skip incomplete entries
+                continue
 
             # ✅ Fix Empty "Tags" Handling
             entry["Tags"] = entry.get("Tags", [])
-            if isinstance(entry["Tags"], str):  # If it's an empty string, make it an empty list
+            if isinstance(entry["Tags"], str):
                 entry["Tags"] = [] if not entry["Tags"].strip() else [entry["Tags"]]
 
             formatted_data.append(entry)
@@ -30,6 +42,13 @@ def format_json(input_file, output_file):
         # Save formatted JSON
         with open(output_file, "w", encoding="utf-8") as file:
             json.dump(formatted_data, file, indent=4, ensure_ascii=False)
+
+        # Save error log if there were skipped entries
+        if error_log:
+            error_file = output_file.replace(".json", "_errors.json")
+            with open(error_file, "w", encoding="utf-8") as log:
+                json.dump(error_log, log, indent=4, ensure_ascii=False)
+            print(f"\n⚠️ Skipped entries logged to: {error_file}")
 
         print(f"\n✅ JSON successfully formatted and saved as {output_file}!")
         print(f"📌 Total skipped entries: {skipped_entries}")

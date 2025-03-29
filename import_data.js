@@ -16,7 +16,7 @@ console.log("🔍 Connecting to MongoDB:", mongoURI);
 // ✅ Define Schemas
 const contentSchema = new mongoose.Schema({
     title: { type: String, required: true, unique: true },
-    category: { type: String, required: true },
+    category: { type: String},
     tags: [{ type: String }],
     question: { type: String, required: true },
     answer: { type: String, required: true },
@@ -67,34 +67,39 @@ fs.readFile(jsonFilePath, "utf8", async (err, data) => {
         let skippedCount = 0;
         let errorCount = 0;
 
+        const skippedLogs = [];
+        const failedInsertLogs = [];
+
         const categoriesSet = new Set();
         const tagsSet = new Set();
         const messageTypesSet = new Set();
-        const originalPostsSet = new Map(); // Map to avoid duplicate URLs with different titles
+        const originalPostsSet = new Map();
 
-        for (const entry of jsonData) {
-            if (!entry.Title || !entry.Category || !entry.Question || !entry.Answer) {
-                console.log(`⚠️ Skipping entry due to missing fields: ${JSON.stringify(entry)}`);
+        for (const [index, entry] of jsonData.entries()) {
+            const requiredFields = ["Title", "Category", "Question", "Answer", "messageType"];
+            const missing = requiredFields.filter(field => !entry[field] || !entry[field].toString().trim());
+
+            if (missing.length > 0) {
+                console.log(`⚠️ Skipping entry ${index + 1}: Missing ${missing.join(", ")}`);
+                skippedLogs.push({
+                    index: index + 1,
+                    reason: `Missing fields: ${missing.join(", ")}`,
+                    entry
+                });
                 skippedCount++;
                 continue;
             }
 
-            // ✅ Standardize data
             const formattedTitle = entry.Title.trim();
             const formattedCategory = entry.Category.trim();
             const formattedMessageType = entry.messageType?.trim() || "General";
             const formattedOriginalPostTitle = entry.originalPostTitle?.trim() || "N/A";
             const formattedOriginalPostURL = entry.originalPostURL?.trim() || "N/A";
 
-            // ✅ Collect unique categories, message types, and original posts
-            categoriesSet.add(formattedCategory);
-            messageTypesSet.add(formattedMessageType);
-
             if (formattedOriginalPostURL !== "N/A") {
                 originalPostsSet.set(formattedOriginalPostURL, formattedOriginalPostTitle);
             }
 
-            // ✅ Fix Tags
             let formattedTags = [];
             if (Array.isArray(entry.Tags)) {
                 formattedTags = entry.Tags.flatMap(tag =>
@@ -105,8 +110,9 @@ fs.readFile(jsonFilePath, "utf8", async (err, data) => {
             }
 
             formattedTags.forEach(tag => tagsSet.add(tag));
+            categoriesSet.add(formattedCategory);
+            messageTypesSet.add(formattedMessageType);
 
-            // ✅ Insert or Update Content
             try {
                 const result = await Content.findOneAndUpdate(
                     { title: formattedTitle },
@@ -127,31 +133,44 @@ fs.readFile(jsonFilePath, "utf8", async (err, data) => {
                 if (result) {
                     insertedCount++;
                 } else {
-                    console.error(`❌ Failed to insert/update: ${formattedTitle}`);
-                    errorCount++;
+                    throw new Error("Unknown failure on upsert.");
                 }
             } catch (error) {
-                console.error(`❌ Error inserting/updating content for: ${formattedTitle}`, error);
+                console.error(`❌ Insert/Update failed for: ${formattedTitle}`);
+                failedInsertLogs.push({
+                    index: index + 1,
+                    title: formattedTitle,
+                    error: error.message,
+                    entry
+                });
                 errorCount++;
             }
         }
 
-        // ✅ Insert Unique Categories
+        // ✅ Write logs
+        if (skippedLogs.length > 0) {
+            fs.writeFileSync("import_skipped_entries.json", JSON.stringify(skippedLogs, null, 2));
+            console.log("📝 Skipped entries saved to: import_skipped_entries.json");
+        }
+
+        if (failedInsertLogs.length > 0) {
+            fs.writeFileSync("import_failed_updates.json", JSON.stringify(failedInsertLogs, null, 2));
+            console.log("📝 Failed inserts saved to: import_failed_updates.json");
+        }
+
+        // ✅ Insert remaining sets
         await Promise.all([...categoriesSet].map(async category => {
             await Category.findOneAndUpdate({ category }, { category }, { upsert: true });
         }));
 
-        // ✅ Insert Unique Tags
         await Promise.all([...tagsSet].map(async tag => {
             await Tag.findOneAndUpdate({ tag }, { tag }, { upsert: true });
         }));
 
-        // ✅ Insert Unique Message Types
         await Promise.all([...messageTypesSet].map(async type => {
             await MessageType.findOneAndUpdate({ type }, { type }, { upsert: true });
         }));
 
-        // ✅ Insert Unique Original Posts
         await Promise.all([...originalPostsSet.entries()].map(async ([url, title]) => {
             await OriginalPost.findOneAndUpdate(
                 { url },
@@ -165,7 +184,7 @@ fs.readFile(jsonFilePath, "utf8", async (err, data) => {
         console.log(`   ⚠️ Skipped (missing fields): ${skippedCount}`);
         console.log(`   ❌ Errors: ${errorCount}`);
 
-        // ✅ Verify Database Contents
+        // ✅ Verify Counts
         console.log("\n🔍 Verifying Data in Database...");
         const totalContents = await Content.countDocuments();
         const totalCategories = await Category.countDocuments();
