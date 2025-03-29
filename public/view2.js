@@ -1,6 +1,18 @@
+
+
+
+// 🚫 Disable console logs in production
+if (location.hostname !== "localhost") {
+  console.log = () => {};
+  console.debug = () => {};
+  console.error = () => {};
+}
+
 // =====================================================
 // 📌 VIEW 2: TAGS & CONTENT MANAGEMENT
 // =====================================================
+
+
 
 
 document.addEventListener("DOMContentLoaded", () => {
