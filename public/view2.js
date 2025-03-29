@@ -273,7 +273,8 @@ function updateSelectedView2TagsUI() {
 
         // Create tag pill
         const tagPill = document.createElement("span");
-        tagPill.classList.add("tag-pill", "bg-primary", "text-white", "px-2", "py-1", "rounded", "mb-1");
+        tagPill.classList.add("tag-pill", "bg-primary", "text-white", "px-2", "py-1", "rounded", "mb-1", "mx-1");
+
         tagPill.setAttribute("data-tag", tagLower);
 
         const removeBtn = document.createElement("span");
