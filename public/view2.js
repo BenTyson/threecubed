@@ -21,6 +21,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // ✅ Attach Tag Search Event Listener
     const tagSearchBox = getElementForContext("view2TagSearch");
 
+    populateOriginalPostDropdowns();
+
+
     console.log("🔍 Checking for Tag Search Box:", tagSearchBox);
 
     if (tagSearchBox) {
@@ -317,7 +320,7 @@ async function filterView2Content() {
         const searchQuery = contentInput ? contentInput.value.toLowerCase().trim() : "";
 
         const response = await fetch("/content");
-        let contentData = await response.json(); 
+        let contentData = await response.json();
 
         // ✅ Apply Content Search Filtering
         if (searchQuery !== "") {
@@ -328,11 +331,20 @@ async function filterView2Content() {
             );
         }
 
-        // ✅ Apply Tag Selection Filtering (Strict Matching)
+        // ✅ Apply Tag Filtering
         if (activeView2Tags.size > 0) {
             contentData = contentData.filter(item =>
                 item.tags.some(tag => activeView2Tags.has(tag.toLowerCase()))
             );
+        }
+
+        // ✅ 🔽 INSERT THIS SECTION HERE (Original Post Filter)
+        const desktopFilter = document.getElementById("originalPostFilter")?.value;
+        const mobileFilter = document.getElementById("mobileOriginalPostFilter")?.value;
+        const selectedPostTitle = window.innerWidth < 768 ? mobileFilter : desktopFilter;
+
+        if (selectedPostTitle) {
+            contentData = contentData.filter(item => item.originalPostTitle === selectedPostTitle);
         }
 
         displayView2Content(contentData);
@@ -340,6 +352,8 @@ async function filterView2Content() {
         console.error("❌ Error filtering View 2 content:", error);
     }
 }
+
+
 
 
 
@@ -487,4 +501,49 @@ async function toggleView2ParentSection(sectionName) {
         console.error("❌ Error toggling parent section:", err);
     }
 }
+
+
+
+
+async function populateOriginalPostDropdowns() {
+    try {
+        const response = await fetch("/original-posts");
+        let posts = await response.json();
+
+        // ✅ Sort by numeric prefix in title (e.g., "001 - Some Title")
+        posts.sort((a, b) => {
+            const getPartNumber = title => {
+                const match = title.match(/Part\s+(\d+)/i);
+                return match ? parseInt(match[1]) : 0;
+            };
+
+            return getPartNumber(a.title) - getPartNumber(b.title);
+        });
+
+
+        const desktopDropdown = document.getElementById("originalPostFilter");
+        const mobileDropdown = document.getElementById("mobileOriginalPostFilter");
+
+        // Clear existing options
+        desktopDropdown.innerHTML = '<option value="">Select Post</option>';
+        mobileDropdown.innerHTML = '<option value="">Select Post</option>';
+
+        // Add sorted options
+        posts.forEach(post => {
+            const option = new Option(post.title, post.title);
+            desktopDropdown.appendChild(option.cloneNode(true));
+            mobileDropdown.appendChild(option);
+        });
+
+        console.log("✅ Original Post Dropdowns Populated & Sorted");
+        console.log("📦 Posts fetched from /original-posts:", posts);
+
+    } catch (error) {
+        console.error("❌ Error populating original post dropdowns:", error);
+
+    }
+}
+
+
+
 
