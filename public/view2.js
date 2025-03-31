@@ -274,9 +274,7 @@ function updateSelectedView2TagsUI() {
     mobileContainer.innerHTML = "";
 
     activeView2Tags.forEach(tagLower => {
-        // Get the original capitalization
-        const tagElement = getElementForContext("view2TagList")?.querySelector(`.list-group-item[data-tag="${tagLower}"]`)
-;
+        const tagElement = getElementForContext("view2TagList")?.querySelector(`.list-group-item[data-tag="${tagLower}"]`);
         let originalTag = tagLower;
 
         if (tagElement) {
@@ -286,27 +284,33 @@ function updateSelectedView2TagsUI() {
             }
         }
 
-        // Create tag pill
-        const tagPill = document.createElement("span");
-        tagPill.classList.add("tag-pill", "bg-primary", "text-white", "px-2", "py-1", "rounded", "mb-1", "mx-1");
+        // 🔁 Function to create a tag pill (desktop or mobile)
+        const createTagPill = () => {
+            const pill = document.createElement("span");
+            pill.classList.add("tag-pill", "bg-primary", "text-white", "px-2", "py-1", "rounded", "mb-1", "mx-1");
+            pill.setAttribute("data-tag", tagLower);
 
-        tagPill.setAttribute("data-tag", tagLower);
+            const tagText = document.createTextNode(originalTag + " ");
+            pill.appendChild(tagText);
 
-        const removeBtn = document.createElement("span");
-        removeBtn.classList.add("remove-tag", "ms-2", "cursor-pointer");
-        removeBtn.innerHTML = "✖";
-        removeBtn.onclick = function () {
-            removeView2Tag(tagLower);
+            const removeBtn = document.createElement("span");
+            removeBtn.classList.add("remove-tag", "ms-2", "cursor-pointer");
+            removeBtn.innerHTML = "✖";
+            removeBtn.onclick = () => {
+                console.log("✖ Removing tag:", tagLower);
+                removeView2Tag(tagLower);
+            };
+
+            pill.appendChild(removeBtn);
+            return pill;
         };
 
-        tagPill.appendChild(document.createTextNode(originalTag + " "));
-        tagPill.appendChild(removeBtn);
-
-        // Append to both containers
-        desktopContainer.appendChild(tagPill.cloneNode(true));
-        mobileContainer.appendChild(tagPill);
+        desktopContainer.appendChild(createTagPill());
+        mobileContainer.appendChild(createTagPill());
     });
 }
+
+
 
 
 
