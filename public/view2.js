@@ -18,12 +18,31 @@ if (location.hostname !== "localhost") {
 document.addEventListener("DOMContentLoaded", () => {
     console.log("🚀 DOMContentLoaded Event Fired in View2.js");
 
-    // ✅ Attach Tag Search Event Listener
-    const tagSearchBox = getElementForContext("view2TagSearch");
+    
 
+    // ✅ Attach Original Post Dropdown Listeners
+    const desktopDropdown = document.getElementById("originalPostFilter");
+    const mobileDropdown = document.getElementById("mobileOriginalPostFilter");
+
+    if (desktopDropdown) {
+        desktopDropdown.addEventListener("change", () => {
+            console.log("🖱️ Desktop Original Post dropdown changed:", desktopDropdown.value);
+            filterView2Content();
+        });
+    }
+
+    if (mobileDropdown) {
+        mobileDropdown.addEventListener("change", () => {
+            console.log("📱 Mobile Original Post dropdown changed:", mobileDropdown.value);
+            filterView2Content();
+        });
+    }
+
+    // ✅ Populate dropdowns
     populateOriginalPostDropdowns();
 
-
+    // ✅ Attach Tag Search Event Listener
+    const tagSearchBox = getElementForContext("view2TagSearch");
     console.log("🔍 Checking for Tag Search Box:", tagSearchBox);
 
     if (tagSearchBox) {
@@ -50,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("❌ Content Search Box NOT found inside DOMContentLoaded");
     }
 
-
+    // ✅ Toggle collapse state icon/text
     const tagToggleButton = document.querySelector('[data-bs-target="#view2TagList"]');
     const tagToggleText = document.getElementById("tagToggleText");
     const tagToggleIcon = document.getElementById("tagToggleIcon");
@@ -62,9 +81,10 @@ document.addEventListener("DOMContentLoaded", () => {
             tagToggleIcon.textContent = isExpanded ? "▲" : "▼";
         });
     }
-
-
 });
+
+
+
 
 
 function getElementForContext(id) {
@@ -326,7 +346,9 @@ async function filterView2Content() {
         const response = await fetch("/content");
         let contentData = await response.json();
 
-        // ✅ Apply Content Search Filtering
+        console.log("🧩 Raw Content Data:", contentData);
+
+        // ✅ Apply content search
         if (searchQuery !== "") {
             contentData = contentData.filter(item =>
                 (item.title && item.title.toLowerCase().includes(searchQuery)) ||
@@ -335,20 +357,35 @@ async function filterView2Content() {
             );
         }
 
-        // ✅ Apply Tag Filtering
+        // ✅ Apply tag filter
         if (activeView2Tags.size > 0) {
             contentData = contentData.filter(item =>
-                item.tags.some(tag => activeView2Tags.has(tag.toLowerCase()))
+                item.tags?.some(tag => activeView2Tags.has(tag.toLowerCase()))
             );
         }
 
-        // ✅ 🔽 INSERT THIS SECTION HERE (Original Post Filter)
+        // ✅ Original Post filter
         const desktopFilter = document.getElementById("originalPostFilter")?.value;
         const mobileFilter = document.getElementById("mobileOriginalPostFilter")?.value;
         const selectedPostTitle = window.innerWidth < 768 ? mobileFilter : desktopFilter;
 
         if (selectedPostTitle) {
-            contentData = contentData.filter(item => item.originalPostTitle === selectedPostTitle);
+            const normalizedSelected = selectedPostTitle.trim().toLowerCase();
+
+            console.log("🎯 Filtering by Original Post Title:", normalizedSelected);
+
+            // 🧪 Debug each content item's match status
+            contentData.forEach((item, i) => {
+                console.log(`🔍 Entry ${i}:`, {
+                    originalPostTitle: item.originalPostTitle,
+                    matches: item.originalPostTitle?.trim().toLowerCase() === normalizedSelected
+                });
+            });
+
+            contentData = contentData.filter(item => {
+                const originalTitle = item.originalPostTitle?.trim().toLowerCase();
+                return originalTitle === normalizedSelected;
+            });
         }
 
         displayView2Content(contentData);
@@ -356,6 +393,10 @@ async function filterView2Content() {
         console.error("❌ Error filtering View 2 content:", error);
     }
 }
+
+
+
+
 
 
 
