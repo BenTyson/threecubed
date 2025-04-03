@@ -100,21 +100,24 @@ function getElementForContext(id) {
 /**
  * ✅ Fetch tags for View 2 and display them with Bootstrap badges
  */
+/**
+ * ✅ Fetch tags for View 2 and display them grouped by section,
+ * and sorted by usage frequency within each section (descending)
+ */
 async function fetchView2Tags() {
     try {
-        // Fetch tags, tag-section assignments, and content
         const [tagsResponse, contentResponse, tagSectionResponse] = await Promise.all([
             fetch("/tags"),
             fetch("/content"),
             fetch("/tag-sections")
         ]);
 
-        const showParentTagCounts = false; // 👈 Set to false to hide counts
+        const showParentTagCounts = false;
         const tags = await tagsResponse.json();
         const contentData = await contentResponse.json();
         const tagSections = await tagSectionResponse.json();
 
-        // Create a tag count dictionary
+        // Count how many times each tag is used
         const tagCounts = {};
         contentData.forEach(item => {
             if (Array.isArray(item.tags)) {
@@ -124,7 +127,7 @@ async function fetchView2Tags() {
             }
         });
 
-        // Group tags by section
+        // Group tags by their assigned section
         const groupedTags = {};
         tags.forEach(tagObj => {
             const tag = tagObj.tag;
@@ -135,13 +138,11 @@ async function fetchView2Tags() {
             groupedTags[section].push(tag);
         });
 
-        // Select the tag container and clear it
         const tagContainer = getElementForContext("view2TagList");
-
         tagContainer.innerHTML = "";
 
         for (const [section, tags] of Object.entries(groupedTags)) {
-            // 👉 Create parent (section) button
+            // 🔷 Create parent section button
             const parentButton = document.createElement("button");
             parentButton.classList.add(
                 "list-group-item",
@@ -154,9 +155,9 @@ async function fetchView2Tags() {
                 "py-1",
                 "px-2",
                 "border-0",
-                "d-flex",                 
-                "justify-content-between", 
-                "align-items-center"       
+                "d-flex",
+                "justify-content-between",
+                "align-items-center"
             );
             parentButton.style.fontSize = "0.75rem";
             parentButton.style.padding = "0.25rem 0.5rem";
@@ -172,15 +173,18 @@ async function fetchView2Tags() {
                 }
             `;
 
-            // 🎯 On click, toggle all child tags under this parent
+            // 🎯 Click to toggle all child tags under this section
             parentButton.onclick = () => {
                 tags.forEach(tag => toggleView2Tag(tag));
             };
 
             tagContainer.appendChild(parentButton);
 
-            // 👉 Render each child tag under this parent
-            tags.forEach(tag => {
+            // 🔽 Sort tags in this section by usage count (desc)
+            const sortedTags = [...tags].sort((a, b) => (tagCounts[b] || 0) - (tagCounts[a] || 0));
+
+            // 🔁 Render each tag button
+            sortedTags.forEach(tag => {
                 const count = tagCounts[tag] || 0;
                 const tagElement = document.createElement("button");
 
@@ -208,11 +212,12 @@ async function fetchView2Tags() {
             });
         }
 
-        console.log("✅ View 2 Tags Loaded and Grouped by Parent");
+        console.log("✅ View 2 Tags Loaded, Grouped by Section, Sorted by Usage Desc");
     } catch (error) {
         console.error("❌ Error fetching View 2 tags:", error);
     }
 }
+
 
 
 
