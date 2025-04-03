@@ -424,40 +424,47 @@ async function fetchView2Content() {
 
 function displayView2Content(contentData) {
     const contentList = document.getElementById("view2ContentList");
-    contentList.innerHTML = ""; // ✅ Clear previous content
+    contentList.innerHTML = "";
 
-
-    // ✅ Update Total Entries Count
     document.getElementById("totalEntries").textContent = `Entries: ${contentData.length}`;
-
 
     if (!Array.isArray(contentData) || contentData.length === 0) {
         contentList.innerHTML = "<p>No content available.</p>";
         return;
     }
 
+    // 🔍 Grab current search query (if any)
+    const contentInput = getElementForContext("view2ContentSearch");
+    const searchQuery = contentInput ? contentInput.value.trim() : "";
+
     contentData.forEach((item, index) => {
         const tagsHTML = item.tags.map(tag => {
             const tagLower = tag.toLowerCase();
-            const isSelected = activeView2Tags.has(tagLower) ? "bg-info text-white" : "bg-light text-dark"; // ✅ Change bg if selected
-
+            const isSelected = activeView2Tags.has(tagLower)
+                ? "bg-info text-white"
+                : "bg-light text-dark";
             return `<span class="badge ${isSelected} me-1">${tag}</span>`;
         }).join(" ");
 
-        // ✅ Ensure proper paragraph formatting
-        const formattedAnswer = item.answer
-            .split("\n") // Split into paragraphs
-            .map(para => `<p>${para.trim()}</p>`) // Wrap in <p> tags
-            .join(""); // Join them as HTML
+        // ✅ Highlight search term (if any)
+        const highlightedQuestion = highlightSearchTerm(item.question || "", searchQuery);
+        const highlightedAnswer = highlightSearchTerm(item.answer || "", searchQuery);
+        const highlightedTitle = highlightSearchTerm(item.title || "", searchQuery);
+
+        // ✅ Ensure paragraph formatting for answer
+        const formattedAnswer = highlightedAnswer
+            .split("\n")
+            .map(para => `<p>${para.trim()}</p>`)
+            .join("");
 
         const card = document.createElement("div");
-        card.classList.add("col-12", "content-block"); // ✅ Apply animation class
+        card.classList.add("col-12", "content-block");
         card.innerHTML = `
             <div class="card mb-3 shadow-sm">
                 <div class="card-body">
-                    <p><strong>${item.question}</strong></p>
+                    <p><strong>${highlightedQuestion}</strong></p>
                     <div class="card-text">${formattedAnswer}</div>
-                    <span class="head3">${item.title}</span><br/>
+                    <span class="head3">${highlightedTitle}</span><br/>
                     <p>${tagsHTML}</p>
                 </div>
             </div>
@@ -465,14 +472,14 @@ function displayView2Content(contentData) {
 
         contentList.appendChild(card);
 
-        // ✅ Delay adding "show" class to create a staggered effect
         setTimeout(() => {
             card.classList.add("show");
-        }, index * 50); // Stagger each card by 50ms
+        }, index * 50);
     });
 
-    console.log("✅ View 2 Content Updated with Proper Paragraph Formatting");
+    console.log("✅ View 2 Content Updated (With Highlighting)");
 }
+
 
 
 
