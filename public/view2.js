@@ -345,13 +345,17 @@ function updateSelectedView2TagsUI() {
 
 async function filterView2Content() {
     try {
+        // 🔄 Show loading spinner
+        showLoader();
+
+        // Small delay to help hide flashing (optional)
+        await wait(150);
+
         const contentInput = getElementForContext("view2ContentSearch");
         const searchQuery = contentInput ? contentInput.value.toLowerCase().trim() : "";
 
         const response = await fetch("/content");
         let contentData = await response.json();
-
-        console.log("🧩 Raw Content Data:", contentData);
 
         // ✅ Apply content search
         if (searchQuery !== "") {
@@ -369,35 +373,30 @@ async function filterView2Content() {
             );
         }
 
-        // ✅ Original Post filter
+        // ✅ Apply Original Post filter
         const desktopFilter = document.getElementById("originalPostFilter")?.value;
         const mobileFilter = document.getElementById("mobileOriginalPostFilter")?.value;
         const selectedPostTitle = window.innerWidth < 768 ? mobileFilter : desktopFilter;
 
         if (selectedPostTitle) {
             const normalizedSelected = selectedPostTitle.trim().toLowerCase();
-
-            console.log("🎯 Filtering by Original Post Title:", normalizedSelected);
-
-            // 🧪 Debug each content item's match status
-            contentData.forEach((item, i) => {
-                console.log(`🔍 Entry ${i}:`, {
-                    originalPostTitle: item.originalPostTitle,
-                    matches: item.originalPostTitle?.trim().toLowerCase() === normalizedSelected
-                });
-            });
-
-            contentData = contentData.filter(item => {
-                const originalTitle = item.originalPostTitle?.trim().toLowerCase();
-                return originalTitle === normalizedSelected;
-            });
+            contentData = contentData.filter(item =>
+                item.originalPostTitle?.trim().toLowerCase() === normalizedSelected
+            );
         }
 
+        // ✅ Show filtered content now that everything is ready
         displayView2Content(contentData);
+
+        // ✅ Hide the spinner
+        hideLoader();
+
     } catch (error) {
         console.error("❌ Error filtering View 2 content:", error);
+        hideLoader(); // Ensure spinner is hidden even if error
     }
 }
+
 
 
 
@@ -422,63 +421,8 @@ async function fetchView2Content() {
     }
 }
 
-function displayView2Content(contentData) {
-    const contentList = document.getElementById("view2ContentList");
-    contentList.innerHTML = "";
 
-    document.getElementById("totalEntries").textContent = `Entries: ${contentData.length}`;
 
-    if (!Array.isArray(contentData) || contentData.length === 0) {
-        contentList.innerHTML = "<p>No content available.</p>";
-        return;
-    }
-
-    // 🔍 Grab current search query (if any)
-    const contentInput = getElementForContext("view2ContentSearch");
-    const searchQuery = contentInput ? contentInput.value.trim() : "";
-
-    contentData.forEach((item, index) => {
-        const tagsHTML = item.tags.map(tag => {
-            const tagLower = tag.toLowerCase();
-            const isSelected = activeView2Tags.has(tagLower)
-                ? "bg-info text-white"
-                : "bg-light text-dark";
-            return `<span class="badge ${isSelected} me-1">${tag}</span>`;
-        }).join(" ");
-
-        // ✅ Highlight search term (if any)
-        const highlightedQuestion = highlightSearchTerm(item.question || "", searchQuery);
-        const highlightedAnswer = highlightSearchTerm(item.answer || "", searchQuery);
-        const highlightedTitle = highlightSearchTerm(item.title || "", searchQuery);
-
-        // ✅ Ensure paragraph formatting for answer
-        const formattedAnswer = highlightedAnswer
-            .split("\n")
-            .map(para => `<p>${para.trim()}</p>`)
-            .join("");
-
-        const card = document.createElement("div");
-        card.classList.add("col-12", "content-block");
-        card.innerHTML = `
-            <div class="card mb-3 shadow-sm">
-                <div class="card-body">
-                    <p><strong>${highlightedQuestion}</strong></p>
-                    <div class="card-text">${formattedAnswer}</div>
-                    <span class="head3">${highlightedTitle}</span><br/>
-                    <p>${tagsHTML}</p>
-                </div>
-            </div>
-        `;
-
-        contentList.appendChild(card);
-
-        setTimeout(() => {
-            card.classList.add("show");
-        }, index * 50);
-    });
-
-    console.log("✅ View 2 Content Updated (With Highlighting)");
-}
 
 
 
@@ -511,6 +455,71 @@ function highlightSearchTerm(text, searchQuery) {
     const regex = new RegExp(`(${searchQuery})`, "gi"); // Case-insensitive search
     return text.replace(regex, `<span class="bg-info text-white px-1 rounded">$1</span>`);
 }
+
+
+
+
+function displayView2Content(contentData) {
+    const contentList = document.getElementById("view2ContentList");
+    contentList.innerHTML = ""; // ✅ Clear previous content
+
+    document.getElementById("totalEntries").textContent = `Entries: ${contentData.length}`;
+
+    if (!Array.isArray(contentData) || contentData.length === 0) {
+        contentList.innerHTML = "<p>No content available.</p>";
+        return;
+    }
+
+    // 🔍 Grab current search query (for highlight)
+    const contentInput = getElementForContext("view2ContentSearch");
+    const searchQuery = contentInput ? contentInput.value.trim() : "";
+
+    contentData.forEach((item, index) => {
+        const tagsHTML = item.tags.map(tag => {
+            const tagLower = tag.toLowerCase();
+            const isSelected = activeView2Tags.has(tagLower)
+                ? "bg-info text-white"
+                : "bg-light text-dark";
+            return `<span class="badge ${isSelected} me-1">${tag}</span>`;
+        }).join(" ");
+
+        const highlightedQuestion = highlightSearchTerm(item.question || "", searchQuery);
+        const highlightedAnswer = highlightSearchTerm(item.answer || "", searchQuery);
+        const highlightedTitle = highlightSearchTerm(item.title || "", searchQuery);
+
+        const formattedAnswer = highlightedAnswer
+            .split("\n")
+            .map(para => `<p>${para.trim()}</p>`)
+            .join("");
+
+        const card = document.createElement("div");
+        card.classList.add("col-12", "content-block");
+        card.innerHTML = `
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <p><strong>${highlightedQuestion}</strong></p>
+                    <div class="card-text">${formattedAnswer}</div>
+                    <span class="head3">${highlightedTitle}</span><br/>
+                    <p>${tagsHTML}</p>
+                </div>
+            </div>
+        `;
+
+        contentList.appendChild(card);
+
+        // Fade-in animation
+        setTimeout(() => {
+            card.classList.add("show");
+        }, index * 50);
+    });
+
+    console.log("✅ View 2 Content Updated with Highlighting");
+}
+
+
+
+
+
 
 
 
@@ -601,6 +610,28 @@ async function populateOriginalPostDropdowns() {
     }
 }
 
+
+
+
+
+function showLoader() {
+    const loader = document.getElementById("contentLoader");
+    const contentList = document.getElementById("view2ContentList");
+    if (loader) loader.style.display = "block";
+    if (contentList) contentList.style.display = "none";
+}
+
+function hideLoader() {
+    const loader = document.getElementById("contentLoader");
+    const contentList = document.getElementById("view2ContentList");
+    if (loader) loader.style.display = "none";
+    if (contentList) contentList.style.display = "flex";
+}
+
+// Optional delay helper (to simulate smoother UX)
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 
 

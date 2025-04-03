@@ -22,11 +22,14 @@ app.use(
                 defaultSrc: ["'self'"],
                 scriptSrc: [
                     "'self'",
-                    "'unsafe-inline'",  // ✅ Allows inline scripts
-                    "'unsafe-eval'",   // ✅ Needed for some libraries
+                    "'unsafe-inline'",
+                    "'unsafe-eval'",
                     "https://cdn.quilljs.com",
-                    "https://cdn.jsdelivr.net"
+                    "https://cdn.jsdelivr.net",
+                    "https://www.googletagmanager.com",
+                    "https://www.google-analytics.com"
                 ],
+
                 scriptSrcAttr: ["'unsafe-inline'"], // ✅ Allows inline event handlers
                 styleSrc: [
                     "'self'",
@@ -41,7 +44,13 @@ app.use(
                     "https://cdn.jsdelivr.net",
                     "https://fonts.gstatic.com"
                 ],
-                connectSrc: ["'self'", "https://cdn.quilljs.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
+                connectSrc: [
+                  "'self'",
+                  "https://cdn.quilljs.com",
+                  "https://fonts.googleapis.com",
+                  "https://fonts.gstatic.com",
+                  "https://www.google-analytics.com"
+                ],
                 imgSrc: ["'self'", "data:"],
                 frameSrc: ["'self'"],
             },
