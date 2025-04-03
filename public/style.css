@@ -4,6 +4,51 @@ body {
 	background-color: #f8f9fa;
 	color: #333;
 }
+
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+
+.page-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page-header {
+  flex-shrink: 0;
+}
+
+#mainBox {
+  flex-grow: 1;
+  overflow: visible; /* ✅ Allow stickiness */
+}
+
+#mainBox .row {
+  flex-grow: 1;
+  height: auto;       /* ✅ Let height grow naturally */
+}
+
+#mainBox .col-md-3 {
+  position: sticky;
+  top: 13px; /* Adjust to match your actual header height */
+  align-self: flex-start;
+  z-index: 2;
+  height: fit-content; /* ✅ Allow sticking */
+  overflow: visible;
+}
+
+#mainBox .col-md-9 {
+  flex-grow: 1;
+  overflow-y: auto; /* ✅ Right column scrolls */
+  height: 100%;
+}
+
+
 h1, h2, h3, h4, h5 {
 	font-weight: 600;
 	color: #222;
@@ -85,15 +130,7 @@ font-weight: normal;
 	border: none;
 }
 
-.btn-edit {
-background-color: #fff; 
-color: #333; /* White text */
-border: none;
-xxpadding: 6px 12px;
-xxfont-size: 14px;
-xxborder-radius: 4px;
-xxtransition: all 0.2s ease-in-out;
-}
+
 
 .btn-edit:hover {
 	background-color: #555; /* Slightly lighter gray */
@@ -209,11 +246,15 @@ cursor: pointer; /* Changes cursor to pointer on hover */
 
 /* ✅ Left column remains scrollable */
 #view2TagContainer {
-    max-height: 600px; /* ✅ Restrict max height */
-    overflow-y: auto;  /* ✅ Enable scrolling */
-    background: white;
-    padding: 10px;
-    xxborder-right: 1px solid #ddd; /* ✅ Clean separation */
+  flex: none; /* 🧼 Stop growing */
+  overflow: visible; /* 🧼 Let height expand */
+}
+
+@media (min-width: 768px) {
+  #view2TagContainer {
+    max-height: calc(100vh - 100px); /* adjust this based on header/footer */
+    overflow-y: auto;
+  }
 }
 
 /* ✅ Keep tag list scrollable */
@@ -224,12 +265,12 @@ cursor: pointer; /* Changes cursor to pointer on hover */
 
 /* ✅ Right side content scrolls independently */
 #view2ContentWrapper {
-    height: 600px;  /* ✅ Restrict content height */
-    overflow-y: auto; /* ✅ Enable independent scrolling */
-    padding-top: 10px;
-    display: flex;
-    flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  padding: 10px;
 }
+
+
 
 /* ✅ Ensure multiple content blocks are displayed */
 #view2ContentList {
@@ -251,10 +292,7 @@ cursor: pointer; /* Changes cursor to pointer on hover */
     flex-direction: column;
 }
 
-/* ✅ Right column grows to take available space */
-#viewer2 .col-md-9 {
-    flex-grow: 1;
-}
+
 
 /* ✅ Ensure content blocks don't get squished */
 #view2ContentList .card {
@@ -263,10 +301,20 @@ cursor: pointer; /* Changes cursor to pointer on hover */
 }
 
 
+.page-layout > .container-fluid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+
 .container-fluid .row {
     margin-left: 0 !important;
     margin-right: 0 !important;
 }
+
+
+
 
 
 #viewer2 .col-md-9 {
@@ -435,3 +483,53 @@ a.headLogo:hover {
 
 
 
+footer.footer {
+  flex-shrink: 0;
+  padding: 1rem;
+}
+
+
+/* 📱 Reduce side padding on mobile */
+@media (max-width: 767.98px) {
+  .container-fluid {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  #view2ContentWrapper {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .card {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+
+.contentQuestion {
+	font-size: 0.9em;
+	color: #333;
+}
+
+.contentAnswer {
+	font-size: 0.9em;
+	color: #444;
+}
+
+
+@media (max-width: 767.98px) {
+  .mobile-filter-bar {
+    position: sticky;
+    top: 0;
+    z-index: 1045;
+    background-color: #f8f9fa;
+    padding: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  }
+}
+
+.mobile-filter-bar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* subtle shadow */
+}

@@ -480,7 +480,8 @@ function displayView2Content(contentData) {
             const isSelected = activeView2Tags.has(tagLower)
                 ? "bg-info text-white"
                 : "bg-light text-dark";
-            return `<span class="badge ${isSelected} me-1">${tag}</span>`;
+            return `<span class="badge ${isSelected} me-1" style="font-weight: 400;">${tag}</span>`;
+
         }).join(" ");
 
         const highlightedQuestion = highlightSearchTerm(item.question || "", searchQuery);
@@ -497,8 +498,8 @@ function displayView2Content(contentData) {
         card.innerHTML = `
             <div class="card mb-3 shadow-sm">
                 <div class="card-body">
-                    <p><strong>${highlightedQuestion}</strong></p>
-                    <div class="card-text">${formattedAnswer}</div>
+                    <p class="contentQuestion"><strong>${highlightedQuestion}</strong></p>
+                    <div class="card-text contentAnswer">${formattedAnswer}</div>
                     <span class="head3">${highlightedTitle}</span><br/>
                     <p>${tagsHTML}</p>
                 </div>
@@ -591,8 +592,8 @@ async function populateOriginalPostDropdowns() {
         const mobileDropdown = document.getElementById("mobileOriginalPostFilter");
 
         // Clear existing options
-        desktopDropdown.innerHTML = '<option value="">Select Post</option>';
-        mobileDropdown.innerHTML = '<option value="">Select Post</option>';
+        desktopDropdown.innerHTML = '<option value="">All Posts</option>';
+        mobileDropdown.innerHTML = '<option value="">All Posts</option>';
 
         // Add sorted options
         posts.forEach(post => {
