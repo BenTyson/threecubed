@@ -412,14 +412,18 @@ async function filterView2Content() {
  * ✅ Fetch all content for View 2
  */
 async function fetchView2Content() {
-    try {
-        const response = await fetch("/content");
-        const contentData = await response.json();
-        displayView2Content(contentData);
-    } catch (error) {
-        console.error("❌ Error fetching View 2 content:", error);
-    }
+  try {
+    showLoader();
+    const response = await fetch("/content");
+    const contentData = await response.json();
+    displayView2Content(contentData);
+    hideLoader();
+  } catch (error) {
+    console.error("❌ Error fetching View 2 content:", error);
+    hideLoader();
+  }
 }
+
 
 
 
@@ -453,7 +457,8 @@ function searchView2Tags() {
 function highlightSearchTerm(text, searchQuery) {
     if (!searchQuery) return text; // No search term, return original text
     const regex = new RegExp(`(${searchQuery})`, "gi"); // Case-insensitive search
-    return text.replace(regex, `<span class="bg-info text-white px-1 rounded">$1</span>`);
+    return text.replace(regex, `<span style="background-color: #d0f0ff; color: #000;" class="px-1 rounded">$1</span>`);
+
 }
 
 
@@ -464,6 +469,10 @@ function displayView2Content(contentData) {
     contentList.innerHTML = ""; // ✅ Clear previous content
 
     document.getElementById("totalEntries").textContent = `Entries: ${contentData.length}`;
+    const totalEntriesMobile = document.getElementById("totalEntriesMobile");
+    if (totalEntriesMobile) totalEntriesMobile.textContent = `Entries: ${contentData.length}`;
+
+
 
     if (!Array.isArray(contentData) || contentData.length === 0) {
         contentList.innerHTML = "<p>No content available.</p>";

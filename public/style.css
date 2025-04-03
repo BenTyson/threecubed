@@ -470,13 +470,14 @@ a.headLogo:hover {
 @keyframes sk-dot-gradient {
   0% {
     background: #105969;
-    box-shadow: 0 0 10px #105969;
+    box-shadow: 0 0 6px #105969; 
   }
   100% {
     background: #8be9fd;
-    box-shadow: 0 0 12px #8be9fd;
+    box-shadow: 0 0 8px #8be9fd; 
   }
 }
+
 
 
 /*END LOADER*/
@@ -533,3 +534,58 @@ footer.footer {
 .mobile-filter-bar {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* subtle shadow */
 }
+
+
+
+#scrollToTopBtn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1050;
+  display: none;
+  background-color: #0c7b91;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: opacity 0.3s ease-in-out;
+}
+#scrollToTopBtn:hover {
+  background-color: #109ab5;
+}
+
+
+
+.mobile-header-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1050;
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  height: 52px;
+}
+
+/* Keep logo perfectly centered even with side buttons */
+.mobile-header-bar h1 {
+  font-size: 0.9em;
+  pointer-events: none; /* Avoids blocking button clicks underneath */
+}
+
+.mobile-header-bar h1 a {
+  pointer-events: auto; /* Restore link behavior */
+}
+
+.mobile-header-bar .btn {
+  z-index: 2;
+}
+
+@media (min-width: 768px) {
+  .mobile-header-bar {
+    display: none !important;
+  }
+}
+
