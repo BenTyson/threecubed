@@ -485,9 +485,17 @@ a.headLogo:hover {
 
 
 footer.footer {
-  flex-shrink: 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1030;
+  background-color: #f8f9fa; /* Match site bg */
   padding: 1rem;
+  box-shadow: 0 -1px 4px rgba(0,0,0,0.05);
+  border-top: 1px solid #ddd;
 }
+
 
 
 /* 📱 Reduce side padding on mobile */
@@ -500,6 +508,7 @@ footer.footer {
   #view2ContentWrapper {
     padding-left: 8px;
     padding-right: 8px;
+    padding-bottom: 100px;
   }
 
   .card {
@@ -553,7 +562,14 @@ footer.footer {
   cursor: pointer;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   transition: opacity 0.3s ease-in-out;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0; /* 🧼 reset any default padding */
+  line-height: 1; /* ensures no vertical bias */
 }
+
 #scrollToTopBtn:hover {
   background-color: #109ab5;
 }
