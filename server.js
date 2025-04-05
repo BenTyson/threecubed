@@ -182,7 +182,7 @@ const Content = mongoose.model("Content", contentSchema);
 // Fetch all content
 app.get("/content", async (req, res) => {
     try {
-        const content = await Content.find({}, "title category tags question answer messageType originalPostTitle originalPostURL");
+        const content = await Content.find({}, "title tags question answer passageIntro passageContent messageType originalPostTitle originalPostURL");
         
         // ✅ Debugging: Log the output to confirm correct data retrieval
         console.log("📤 Sending Content Data:", content);

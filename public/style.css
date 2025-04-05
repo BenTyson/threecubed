@@ -605,3 +605,14 @@ footer.footer {
   }
 }
 
+
+.contentIntro {
+    color: #555;
+    font-size: .8rem;
+    border-left: 3px solid #cce5ff;
+    padding-left: 12px;
+    margin-bottom: 10px;
+    background-color: #f8f9fa;
+    font-weight: 500;
+}
+

@@ -472,8 +472,6 @@ function displayView2Content(contentData) {
     const totalEntriesMobile = document.getElementById("totalEntriesMobile");
     if (totalEntriesMobile) totalEntriesMobile.textContent = `Entries: ${contentData.length}`;
 
-
-
     if (!Array.isArray(contentData) || contentData.length === 0) {
         contentList.innerHTML = "<p>No content available.</p>";
         return;
@@ -484,46 +482,71 @@ function displayView2Content(contentData) {
     const searchQuery = contentInput ? contentInput.value.trim() : "";
 
     contentData.forEach((item, index) => {
+        console.log("🧪 Card Entry:", item);
         const tagsHTML = item.tags.map(tag => {
             const tagLower = tag.toLowerCase();
             const isSelected = activeView2Tags.has(tagLower)
                 ? "bg-info text-white"
                 : "bg-light text-dark";
             return `<span class="badge ${isSelected} me-1" style="font-weight: 400;">${tag}</span>`;
-
         }).join(" ");
 
-        const highlightedQuestion = highlightSearchTerm(item.question || "", searchQuery);
-        const highlightedAnswer = highlightSearchTerm(item.answer || "", searchQuery);
         const highlightedTitle = highlightSearchTerm(item.title || "", searchQuery);
-
-        const formattedAnswer = highlightedAnswer
-            .split("\n")
-            .map(para => `<p>${para.trim()}</p>`)
-            .join("");
 
         const card = document.createElement("div");
         card.classList.add("col-12", "content-block");
-        card.innerHTML = `
+
+        let cardHTML = `
             <div class="card mb-3 shadow-sm">
                 <div class="card-body">
-                    <p class="contentQuestion"><strong>${highlightedQuestion}</strong></p>
-                    <div class="card-text contentAnswer">${formattedAnswer}</div>
-                    <span class="head3">${highlightedTitle}</span><br/>
-                    <p>${tagsHTML}</p>
+        `;
+
+        // 🧠 Decide rendering logic based on messageType
+        if ((item.messageType || "").toLowerCase() === "q & a") {
+            const highlightedQuestion = highlightSearchTerm(item.question || "", searchQuery);
+            const highlightedAnswer = highlightSearchTerm(item.answer || "", searchQuery);
+            const formattedAnswer = highlightedAnswer
+                .split("\n")
+                .map(para => `<p>${para.trim()}</p>`)
+                .join("");
+
+            cardHTML += `
+                <p class="contentQuestion"><strong>${highlightedQuestion}</strong></p>
+                <div class="card-text contentAnswer">${formattedAnswer}</div>
+            `;
+        } else {
+            // 🆕 Blog or other message types
+            const highlightedIntro = highlightSearchTerm(item.passageIntro || "", searchQuery);
+            const highlightedContent = highlightSearchTerm(item.passageContent || "", searchQuery);
+            const formattedContent = highlightedContent
+                .split("\n")
+                .map(para => `<p>${para.trim()}</p>`)
+                .join("");
+
+            if (highlightedIntro) {
+                cardHTML += `<p class="contentIntro"><em>${highlightedIntro}</em></p>`;
+            }
+
+            cardHTML += `<div class="card-text contentPassage">${formattedContent}</div>`;
+        }
+
+        cardHTML += `
+            <span class="head3">${highlightedTitle}</span><br/>
+            <p>${tagsHTML}</p>
                 </div>
             </div>
         `;
 
+        card.innerHTML = cardHTML;
         contentList.appendChild(card);
 
-        // Fade-in animation
+        // 🌀 Fade-in animation
         setTimeout(() => {
             card.classList.add("show");
         }, index * 50);
     });
 
-    console.log("✅ View 2 Content Updated with Highlighting");
+    console.log("✅ View 2 Content Updated with Q&A/Blog Switching");
 }
 
 
