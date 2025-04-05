@@ -227,6 +227,57 @@ async function fetchView2Tags() {
  * ✅ Toggle tag selection & filter View 2 content
  */
 const activeView2Tags = new Set();
+const activeMessageTypes = new Set();
+
+
+function setupMessageTypeButtons(contentData) {
+    const desktopContainer = document.getElementById("messageTypeFilters") || document.getElementById("view2MessageTypeFilters");
+    const mobileContainer = document.getElementById("mobileMessageTypeFilters");
+
+    if (!desktopContainer && !mobileContainer) return;
+
+    const types = Array.from(new Set(contentData.map(item => (item.messageType || "").trim())))
+        .filter(Boolean)
+        .sort();
+
+    // Clear previous buttons
+    if (desktopContainer) desktopContainer.innerHTML = "";
+    if (mobileContainer) mobileContainer.innerHTML = "";
+
+    types.forEach(type => {
+        const createButton = () => {
+            const btn = document.createElement("button");
+            btn.classList.add("btn", "btn-outline-secondary", "btn-sm", "py-0", "px-2", "small");
+            btn.textContent = /^[a-z]+$/.test(type) 
+              ? type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()
+              : type;
+
+            btn.setAttribute("data-type", type);
+
+            btn.onclick = () => {
+                const isActive = activeMessageTypes.has(type);
+                if (isActive) {
+                    activeMessageTypes.delete(type);
+                    btn.classList.remove("btn-primary");
+                    btn.classList.add("btn-outline-secondary");
+                } else {
+                    activeMessageTypes.add(type);
+                    btn.classList.add("btn-primary");
+                    btn.classList.remove("btn-outline-secondary");
+                }
+                filterView2Content();
+            };
+
+            return btn;
+        };
+
+        if (desktopContainer) desktopContainer.appendChild(createButton());
+        if (mobileContainer) mobileContainer.appendChild(createButton());
+    });
+}
+
+
+
 
 // ✅ Ensure this div exists in your HTML (above the tag list)
 const selectedView2TagsContainer = getElementForContext("selectedView2Tags");
@@ -385,6 +436,13 @@ async function filterView2Content() {
             );
         }
 
+        // ✅ Apply messageType filter
+        if (activeMessageTypes.size > 0) {
+            contentData = contentData.filter(item =>
+                activeMessageTypes.has((item.messageType || "").trim())
+            );
+        }
+
         // ✅ Show filtered content now that everything is ready
         displayView2Content(contentData);
 
@@ -412,17 +470,19 @@ async function filterView2Content() {
  * ✅ Fetch all content for View 2
  */
 async function fetchView2Content() {
-  try {
-    showLoader();
-    const response = await fetch("/content");
-    const contentData = await response.json();
-    displayView2Content(contentData);
-    hideLoader();
-  } catch (error) {
-    console.error("❌ Error fetching View 2 content:", error);
-    hideLoader();
-  }
+    try {
+        showLoader();
+        const response = await fetch("/content");
+        const contentData = await response.json();
+        setupMessageTypeButtons(contentData); // 🆕 Added
+        displayView2Content(contentData);
+        hideLoader();
+    } catch (error) {
+        console.error("❌ Error fetching View 2 content:", error);
+        hideLoader();
+    }
 }
+
 
 
 

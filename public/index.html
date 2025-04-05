@@ -102,6 +102,8 @@
                     <input type="text" id="mobileView2ContentSearch" class="form-control" placeholder="Search content...">
                 </div>
 
+                <div id="mobileMessageTypeFilters" class="mb-3 d-flex flex-wrap gap-2"></div>
+
                 <input type="text" id="mobileView2TagSearch" class="form-control mb-3" placeholder="Search tags...">
 
                 <div class="mb-3">
@@ -142,8 +144,10 @@
                                     <input type="text" id="view2ContentSearch" class="form-control" placeholder="Search content...">
                                 </div>
 
-                                <!-- ✅ Tag Search Box -->
-                                <input type="text" id="view2TagSearch" class="form-control mb-3" placeholder="Search tags...">
+                                <!-- ✅ Message Type Filter Buttons (Desktop) -->
+                                <div id="messageTypeFilters" class="mb-3 d-flex flex-wrap gap-2"></div>
+
+
 
                                 <!-- 🔽 Original Post Filter -->
                                 <div class="mb-3">
@@ -151,6 +155,9 @@
                                     <option value="">Select Post</option>
                                   </select>
                                 </div>
+
+                                <!-- ✅ Tag Search Box -->
+                                <input type="text" id="view2TagSearch" class="form-control mb-3" placeholder="Search tags...">
 
 
                                 <!-- ✅ Selected Tags -->
@@ -183,6 +190,7 @@
 
                         <div id="view2ContentWrapper">
                             <div id="totalEntriesMobile" class="head4 mb-2 d-md-none px-2">Entries: 0</div>
+
                             <div id="view2ContentList" class="row row-cols-1 g-4"></div>
                         </div>
                     </div>
