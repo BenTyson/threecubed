@@ -2,7 +2,7 @@
 body {
 	font-family: 'Inter', sans-serif;
 	background-color: #f8f9fa;
-	color: #333;
+	color: #444;
 }
 
 
@@ -614,5 +614,68 @@ footer.footer {
     margin-bottom: 10px;
     background-color: #f8f9fa;
     font-weight: 500;
+}
+
+
+.content-block {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+
+.message-type-link {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s ease-in-out;
+}
+
+.message-type-link:hover {
+    color: #0c7b91;
+    text-decoration: none;
+}
+
+
+.post-link {
+    text-decoration: none;
+    color: #0c7b91;
+    display: inline-block;
+    margin-bottom: 3px;
+    font-size: .7em;
+    transition: color 0.2s ease-in-out;
+}
+
+.post-link:hover {
+    color: #333;
+    text-decoration: none;
+}
+
+.card-text {
+
+	font-weight: 400;
+	font-size: 0.9em;
+}
+
+.btn-outline-jr {
+	background: #efefef;
+	border: 1px solid #efefef;
+	color: #333;
+}
+
+.btn-outline-jr:hover {
+	background: #0c7b91;
+	border: 1px solid #0c7b91;
+	color: #fff;
+}
+
+.btn-jr {
+    background: #0c7b91;
+    border: 1px solid #0c7b91;
+    color: #fff;
+}
+
+.btn-jr:hover {
+    background: #109ab5;
+    border-color: #109ab5;
+    color: #fff;
 }
 

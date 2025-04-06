@@ -95,15 +95,12 @@ function getElementForContext(id) {
 }
 
 
+function toTitleCase(str) {
+    return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+}
 
 
-/**
- * ✅ Fetch tags for View 2 and display them with Bootstrap badges
- */
-/**
- * ✅ Fetch tags for View 2 and display them grouped by section,
- * and sorted by usage frequency within each section (descending)
- */
+
 async function fetchView2Tags() {
     try {
         const [tagsResponse, contentResponse, tagSectionResponse] = await Promise.all([
@@ -240,41 +237,66 @@ function setupMessageTypeButtons(contentData) {
         .filter(Boolean)
         .sort();
 
-    // Clear previous buttons
+    // Clear old
     if (desktopContainer) desktopContainer.innerHTML = "";
     if (mobileContainer) mobileContainer.innerHTML = "";
 
-    types.forEach(type => {
-        const createButton = () => {
-            const btn = document.createElement("button");
-            btn.classList.add("btn", "btn-outline-secondary", "btn-sm", "py-0", "px-2", "small");
-            btn.textContent = /^[a-z]+$/.test(type) 
-              ? type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()
-              : type;
+    // Define active style inline
+    const activeStyle = {
+        backgroundColor: "#0c7b91",
+        color: "#fff",
+        border: "1px solid #0c7b91"
+    };
 
-            btn.setAttribute("data-type", type);
+    const inactiveStyle = {
+        backgroundColor: "#efefef",
+        color: "#333",
+        border: "1px solid #efefef"
+    };
 
-            btn.onclick = () => {
-                const isActive = activeMessageTypes.has(type);
-                if (isActive) {
-                    activeMessageTypes.delete(type);
-                    btn.classList.remove("btn-primary");
-                    btn.classList.add("btn-outline-secondary");
-                } else {
-                    activeMessageTypes.add(type);
-                    btn.classList.add("btn-primary");
-                    btn.classList.remove("btn-outline-secondary");
-                }
-                filterView2Content();
-            };
+    const createButton = (type) => {
+        const btn = document.createElement("button");
+        //btn.textContent = /^[a-z]+$/.test(type) 
+          //  ? type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()
+            //: type;
+        btn.textContent = toTitleCase(type);
 
-            return btn;
+        btn.setAttribute("data-type", type);
+        Object.assign(btn.style, {
+            fontSize: "0.8rem",
+            padding: "3px 8px",
+            margin: "0 4px 4px 0",
+            borderRadius: "4px",
+            cursor: "pointer",
+            ...inactiveStyle
+        });
+
+        btn.onclick = () => {
+            const isActive = activeMessageTypes.has(type);
+
+            if (isActive) {
+                activeMessageTypes.delete(type);
+                Object.assign(btn.style, inactiveStyle);
+            } else {
+                activeMessageTypes.add(type);
+                Object.assign(btn.style, activeStyle);
+            }
+
+            filterView2Content();
         };
 
-        if (desktopContainer) desktopContainer.appendChild(createButton());
-        if (mobileContainer) mobileContainer.appendChild(createButton());
+        return btn;
+    };
+
+    types.forEach(type => {
+        const btnDesktop = createButton(type);
+        const btnMobile = createButton(type);
+        if (desktopContainer) desktopContainer.appendChild(btnDesktop);
+        if (mobileContainer) mobileContainer.appendChild(btnMobile);
     });
 }
+
+
 
 
 
@@ -474,14 +496,52 @@ async function fetchView2Content() {
         showLoader();
         const response = await fetch("/content");
         const contentData = await response.json();
-        setupMessageTypeButtons(contentData); // 🆕 Added
+        setupMessageTypeButtons(contentData);
+
+        const contentList = document.getElementById("view2ContentList");
+
+        // ✅ If intro doesn't exist yet, inject it ONCE
+        if (!document.getElementById("introCard")) {
+            const intro = document.createElement("div");
+            intro.classList.add("col-12", "content-block");
+            intro.id = "introCard";
+            intro.innerHTML = `
+                <div id="introCard" class="card mb-3 card-text shadow-sm border-primary">
+                    <div class="card-body" style="border: 1px solid #cce5ff; color: #333; xxbackground: #f2f9ff; border-radius: 10px;">
+                        <h5 class="card-title head2">Welcome to JR Prudence One</h5>
+                        <p>
+                            This reader is dedicated to exploring and understanding the JR Prudence material. Our goal is to make this body of knowledge as accessible and searchable as possible. You can browse by topic, filter by message type, or dive into specific posts using the sidebar tools.</p>
+
+                            <p>Please note: this site is a work in progress. New content is being organized and added regularly. We appreciate your patience as we continue refining the experience. Thank you for being here.</p>
+
+                        <p id="messageTypeQuickFilter" class="head2">
+                            Message Types:<br>
+                        </p>
+
+                        <p id="postQuickFilter" class="head2">
+                            posts:<br>
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            contentList.appendChild(intro);
+        }
+
+        // ✅ Render the rest of the content below
+        injectIntroMessageTypes(contentData);
+        await injectIntroPostTitles();
         displayView2Content(contentData);
         hideLoader();
+
     } catch (error) {
         console.error("❌ Error fetching View 2 content:", error);
         hideLoader();
     }
 }
+
+
+
 
 
 
@@ -523,27 +583,188 @@ function highlightSearchTerm(text, searchQuery) {
 
 
 
+function applyIntroCardLogic(contentData, contentList) {
+    const introCard = document.getElementById("introCard");
+
+    // 🧠 Determine filter activity
+    const hasTags = activeView2Tags?.size > 0;
+    const hasTypes = activeMessageTypes?.size > 0;
+    const searchQuery = getElementForContext("view2ContentSearch")?.value?.trim();
+    const desktopPost = document.getElementById("originalPostFilter")?.value?.trim();
+    const mobilePost = document.getElementById("mobileOriginalPostFilter")?.value?.trim();
+
+    const hasFilters = (
+        hasTags ||
+        hasTypes ||
+        (searchQuery && searchQuery !== "") ||
+        (desktopPost && desktopPost !== "") ||
+        (mobilePost && mobilePost !== "")
+    );
+
+    // 🧼 Clear content list EXCEPT intro
+    Array.from(contentList.children).forEach(child => {
+        if (child.id !== "introCard") contentList.removeChild(child);
+    });
+
+    // 🎭 Show/hide introCard
+    if (introCard) {
+        introCard.style.display = hasFilters ? "none" : "block";
+    }
+
+    // 🛑 If no filters, skip rendering content
+    return !hasFilters;
+}
+
+async function injectIntroMessageTypes(contentData) {
+    const container = document.getElementById("messageTypeQuickFilter");
+    if (!container || !Array.isArray(contentData)) return;
+
+    // Clear previous content
+    //container.innerHTML = "";
+
+    // Extract and sort unique message types
+    const messageTypes = Array.from(
+        new Set(contentData.map(item => (item.messageType || "").trim()))
+    ).filter(Boolean).sort();
+
+    messageTypes.forEach(type => {
+        const link = document.createElement("a");
+        link.href = "#";
+        link.classList.add("head2", "post-link");
+        link.style.textDecoration = "none";
+        link.style.color = "#0c7b91";
+
+        // Hover effect
+        link.onmouseover = () => link.style.color = "#333";
+        link.onmouseout = () => link.style.color = "#0c7b91";
+
+        link.textContent = `- ${type}`;
+
+        link.onclick = (e) => {
+            e.preventDefault();
+            activeMessageTypes.clear();
+            activeMessageTypes.add(type);
+            filterView2Content();
+        };
+
+        container.appendChild(link);
+        container.appendChild(document.createElement("br"));
+    });
+}
+
+
+
+
+
+
+async function injectIntroPostTitles() {
+    try {
+        const response = await fetch("/original-posts");
+        const posts = await response.json();
+
+        const container = document.getElementById("postQuickFilter");
+        if (!container) return;
+
+        posts.sort((a, b) => {
+            const getPart = title => {
+                const match = title.match(/Part\s+(\d+)/i);
+                return match ? parseInt(match[1]) : 0;
+            };
+            return getPart(a.title) - getPart(b.title);
+        });
+
+        posts.forEach(post => {
+            const link = document.createElement("a");
+            link.href = "#";
+            link.classList.add("head3", "post-link");
+            link.style.textDecoration = "none";
+            link.style.color = "#0c7b91";
+
+            // Add hyphen before title
+            link.textContent = `- ${post.title}`;
+
+            // Hover color effect
+            link.onmouseover = () => link.style.color = "#333";
+            link.onmouseout = () => link.style.color = "#0c7b91";
+
+            link.onclick = (e) => {
+                e.preventDefault();
+
+                const desktop = document.getElementById("originalPostFilter");
+                const mobile = document.getElementById("mobileOriginalPostFilter");
+
+                if (desktop) desktop.value = post.title;
+                if (mobile) mobile.value = post.title;
+
+                filterView2Content();
+            };
+
+            container.appendChild(link);
+            container.appendChild(document.createElement("br")); // Add line break
+        });
+
+    } catch (err) {
+        console.error("❌ Failed to inject post titles:", err);
+    }
+}
+
+
+
+
+
+
+
 
 function displayView2Content(contentData) {
     const contentList = document.getElementById("view2ContentList");
-    contentList.innerHTML = ""; // ✅ Clear previous content
+    const introCard = document.getElementById("introCard");
 
-    document.getElementById("totalEntries").textContent = `Entries: ${contentData.length}`;
-    const totalEntriesMobile = document.getElementById("totalEntriesMobile");
-    if (totalEntriesMobile) totalEntriesMobile.textContent = `Entries: ${contentData.length}`;
+    // 🧼 Clear all except introCard
+    Array.from(contentList.children).forEach(child => {
+        if (child.id !== "introCard") contentList.removeChild(child);
+    });
 
-    if (!Array.isArray(contentData) || contentData.length === 0) {
-        contentList.innerHTML = "<p>No content available.</p>";
+    // 🧮 Entry count
+    const entryCount = contentData.length;
+    const countEl = document.getElementById("totalEntries");
+    const countMobileEl = document.getElementById("totalEntriesMobile");
+    if (countEl) countEl.textContent = `Entries: ${entryCount}`;
+    if (countMobileEl) countMobileEl.textContent = `Entries: ${entryCount}`;
+
+    // 🧠 Determine if filters are applied
+    const hasActiveFilters = (
+        activeView2Tags.size > 0 ||
+        activeMessageTypes.size > 0 ||
+        getElementForContext("view2ContentSearch")?.value.trim() ||
+        document.getElementById("originalPostFilter")?.value?.trim() ||
+        document.getElementById("mobileOriginalPostFilter")?.value?.trim()
+    );
+
+    // 📦 Show/hide intro card
+    if (introCard) {
+        introCard.style.display = hasActiveFilters ? "none" : "block";
+    }
+
+    // 🚫 No matching content
+    if (!Array.isArray(contentData) || entryCount === 0) {
+        if (hasActiveFilters) {
+            const msg = document.createElement("p");
+            msg.textContent = "No content available.";
+            msg.classList.add("text-muted", "px-3");
+            contentList.appendChild(msg);
+        }
         return;
     }
 
-    // 🔍 Grab current search query (for highlight)
-    const contentInput = getElementForContext("view2ContentSearch");
-    const searchQuery = contentInput ? contentInput.value.trim() : "";
+    // 🔍 Get search query
+    const searchInput = getElementForContext("view2ContentSearch");
+    const searchQuery = searchInput ? searchInput.value.trim() : "";
 
+    // 🔁 Render cards
     contentData.forEach((item, index) => {
-        console.log("🧪 Card Entry:", item);
-        const tagsHTML = item.tags.map(tag => {
+        console.log("🧪 Rendering Card:", item);
+
+        const tagsHTML = (item.tags || []).map(tag => {
             const tagLower = tag.toLowerCase();
             const isSelected = activeView2Tags.has(tagLower)
                 ? "bg-info text-white"
@@ -552,7 +773,6 @@ function displayView2Content(contentData) {
         }).join(" ");
 
         const highlightedTitle = highlightSearchTerm(item.title || "", searchQuery);
-
         const card = document.createElement("div");
         card.classList.add("col-12", "content-block");
 
@@ -561,8 +781,8 @@ function displayView2Content(contentData) {
                 <div class="card-body">
         `;
 
-        // 🧠 Decide rendering logic based on messageType
-        if ((item.messageType || "").toLowerCase() === "q & a") {
+        const type = (item.messageType || "").toLowerCase();
+        if (type === "q & a") {
             const highlightedQuestion = highlightSearchTerm(item.question || "", searchQuery);
             const highlightedAnswer = highlightSearchTerm(item.answer || "", searchQuery);
             const formattedAnswer = highlightedAnswer
@@ -575,7 +795,6 @@ function displayView2Content(contentData) {
                 <div class="card-text contentAnswer">${formattedAnswer}</div>
             `;
         } else {
-            // 🆕 Blog or other message types
             const highlightedIntro = highlightSearchTerm(item.passageIntro || "", searchQuery);
             const highlightedContent = highlightSearchTerm(item.passageContent || "", searchQuery);
             const formattedContent = highlightedContent
@@ -600,14 +819,16 @@ function displayView2Content(contentData) {
         card.innerHTML = cardHTML;
         contentList.appendChild(card);
 
-        // 🌀 Fade-in animation
+        // ✨ Animation
         setTimeout(() => {
             card.classList.add("show");
         }, index * 50);
     });
 
-    console.log("✅ View 2 Content Updated with Q&A/Blog Switching");
+    console.log("✅ View 2 Content Rendered Successfully");
 }
+
+
 
 
 
